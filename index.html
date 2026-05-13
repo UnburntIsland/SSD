@@ -50,7 +50,7 @@
 
       .app {
         --app-gap: 12px;
-        --side-width: 368px;
+        --side-width: 430px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) var(--side-width);
         gap: var(--app-gap);
@@ -93,9 +93,7 @@
         position: absolute;
         left: 16px;
         top: 14px;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+        display: block;
         max-width: calc(100% - 32px);
         pointer-events: none;
       }
@@ -242,7 +240,12 @@
         display: flex;
         min-height: 0;
         flex-direction: column;
-        gap: 8px;
+        gap: 7px;
+      }
+
+      .hud-strip {
+        display: inline-block;
+        white-space: nowrap;
       }
 
       .panel {
@@ -253,32 +256,38 @@
       }
 
       .panel.header {
-        padding: 12px 14px;
+        display: none;
+        padding: 8px 11px;
       }
 
       .header h2 {
         margin: 0;
         color: #1f4b38;
-        font-size: 27px;
+        font-size: 21px;
         line-height: 1.1;
       }
 
       .header .tag {
-        margin-top: 6px;
+        margin-top: 3px;
         color: var(--muted);
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 800;
+        line-height: 1.25;
       }
 
       .metrics {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        padding: 7px;
       }
 
       .metric {
-        padding: 8px 9px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 34px;
+        align-items: center;
+        gap: 5px 7px;
+        padding: 4px 7px;
         border: 2px solid rgba(105, 126, 86, 0.38);
         border-radius: 8px;
         background: #fff7dc;
@@ -286,21 +295,23 @@
 
       .metric-label {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 900;
       }
 
       .metric-value {
-        margin-top: 3px;
-        font-size: 21px;
+        margin-top: 0;
+        text-align: right;
+        font-size: 17px;
         font-weight: 950;
         color: #244f3c;
       }
 
       .bar {
         position: relative;
-        height: 8px;
-        margin-top: 7px;
+        grid-column: 1 / -1;
+        height: 7px;
+        margin-top: 0;
         overflow: hidden;
         border-radius: 999px;
         background: #dccfa8;
@@ -317,12 +328,12 @@
       .tabs {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 7px;
-        padding: 8px;
+        gap: 6px;
+        padding: 7px;
       }
 
       .tab {
-        min-height: 34px;
+        min-height: 32px;
         border: 2px solid rgba(68, 92, 66, 0.42);
         border-radius: 7px;
         background: #efe5bd;
@@ -346,19 +357,19 @@
 
       .scroll-body {
         height: 100%;
-        padding: 10px;
+        padding: 7px;
         overflow: auto;
       }
 
       .card {
-        padding: 10px;
-        border: 2px solid rgba(105, 126, 86, 0.34);
-        border-radius: 8px;
+        padding: 7px;
+        border: 1px solid rgba(105, 126, 86, 0.34);
+        border-radius: 6px;
         background: #fff7dc;
       }
 
       .card + .card {
-        margin-top: 9px;
+        margin-top: 5px;
       }
 
       .card-title {
@@ -367,50 +378,325 @@
         justify-content: space-between;
         gap: 8px;
         color: #244f3c;
+        font-size: 13px;
         font-weight: 950;
       }
 
       .card small {
         display: block;
-        margin-top: 5px;
+        margin-top: 4px;
         color: #5e7568;
-        line-height: 1.45;
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .section-title {
+        margin: 10px 2px 7px;
+        color: #244f3c;
+        font-size: 12px;
+        font-weight: 950;
+        letter-spacing: 0;
+      }
+
+      .section-title:first-child {
+        margin-top: 0;
+      }
+
+      .hero-summary {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+
+      .hero-card {
+        min-width: 0;
+        padding: 7px 8px;
+        border: 1px solid rgba(46, 121, 93, 0.35);
+        border-radius: 6px;
+        background: linear-gradient(135deg, #fff8df, #efe4bd);
+      }
+
+      .hero-kicker {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 950;
+      }
+
+      .hero-main {
+        margin-top: 3px;
+        color: #1f4b38;
+        font-size: 18px;
+        font-weight: 950;
+        line-height: 1.18;
+        overflow-wrap: anywhere;
+      }
+
+      .hero-sub {
+        margin-top: 3px;
+        color: #5e7568;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+
+      .drawer {
+        overflow: hidden;
+        border: 1px solid rgba(105, 126, 86, 0.34);
+        border-radius: 6px;
+        background: #fff7dc;
+      }
+
+      .drawer + .drawer {
+        margin-top: 6px;
+      }
+
+      .drawer summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 31px;
+        padding: 0 8px;
+        cursor: pointer;
+        color: #244f3c;
+        font-size: 13px;
+        font-weight: 950;
+        list-style: none;
+        background: rgba(219, 232, 192, 0.58);
+      }
+
+      .drawer summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .drawer summary::after {
+        content: "+";
+        display: inline-grid;
+        place-items: center;
+        width: 17px;
+        height: 17px;
+        border-radius: 999px;
+        background: #2e795d;
+        color: #fff7d7;
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .drawer[open] summary::after {
+        content: "-";
+      }
+
+      .drawer-body {
+        padding: 7px;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .status-tile {
+        min-width: 0;
+        padding: 6px 7px;
+        border: 1px solid rgba(105, 126, 86, 0.34);
+        border-radius: 6px;
+        background: #fff7dc;
+      }
+
+      .status-label {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 900;
+      }
+
+      .status-value {
+        margin-top: 2px;
+        color: #244f3c;
+        font-size: 16px;
+        font-weight: 950;
+        overflow-wrap: anywhere;
+      }
+
+      .focus-card {
+        padding: 8px;
+        border: 1px solid rgba(46, 121, 93, 0.35);
+        border-left: 5px solid var(--accent);
+        border-radius: 6px;
+        background: #fff7dc;
+      }
+
+      .focus-card.warn {
+        border-left-color: var(--warn);
+      }
+
+      .focus-card.bad {
+        border-left-color: var(--bad);
+      }
+
+      .focus-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #244f3c;
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .focus-card small {
+        display: block;
+        margin-top: 4px;
+        color: #5e7568;
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .inventory-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .inventory-item {
+        min-width: 0;
+        min-height: 44px;
+        padding: 6px;
+        border: 1px solid rgba(105, 126, 86, 0.34);
+        border-radius: 6px;
+        background: #fff7dc;
+      }
+
+      .inventory-item.empty {
+        opacity: 0.62;
+      }
+
+      .inventory-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 13px;
+        height: 13px;
+        flex: 0 0 auto;
+        border: 2px solid rgba(36, 79, 60, 0.35);
+        border-radius: 4px;
+      }
+
+      .item-name {
+        flex: 1;
+        min-width: 0;
+        color: #244f3c;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .item-count {
+        min-width: 24px;
+        color: #244f3c;
+        text-align: right;
+        font-size: 18px;
+        font-weight: 950;
+      }
+
+      .inventory-item small {
+        display: block;
+        margin-top: 3px;
+        color: #5e7568;
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .meter-line {
+        height: 6px;
+        margin-top: 5px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dccfa8;
+      }
+
+      .meter-line > i {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+      }
+
+      .tip-list {
+        display: grid;
+        gap: 5px;
+      }
+
+      .tip-row {
+        padding: 7px 8px;
+        border: 1px solid rgba(105, 126, 86, 0.24);
+        border-radius: 6px;
+        background: rgba(255, 247, 220, 0.75);
+        color: #385441;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.35;
       }
 
       .chip {
         display: inline-flex;
         align-items: center;
-        min-height: 22px;
-        padding: 0 7px;
+        min-height: 19px;
+        padding: 0 6px;
         border-radius: 999px;
         background: #dbe8c0;
         color: #355b43;
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 900;
         white-space: nowrap;
       }
 
       .quick {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 7px;
-        padding: 8px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 7px;
       }
 
       .quick button {
-        min-height: 34px;
+        min-height: 32px;
+        padding: 0 4px;
         border: 2px solid rgba(68, 92, 66, 0.45);
         border-radius: 7px;
         background: #fff7dc;
         color: #294b39;
         cursor: pointer;
         font-size: 13px;
-        font-weight: 900;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .log-drawer summary::after {
+        content: "+";
+        float: right;
+        display: inline-grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        margin-top: 7px;
+        border-radius: 999px;
+        background: #2e795d;
+        color: #fff7d7;
+        font-size: 15px;
+        font-weight: 950;
+      }
+
+      .log-drawer[open] summary::after {
+        content: "-";
       }
 
       .log {
-        max-height: 112px;
-        padding: 10px;
+        max-height: 118px;
+        padding: 0 10px 10px;
         overflow: auto;
         color: #385441;
         font-size: 13px;
@@ -421,6 +707,23 @@
         margin-top: 7px;
         padding-top: 7px;
         border-top: 1px solid rgba(98, 119, 82, 0.22);
+      }
+
+      .log-drawer {
+        overflow: hidden;
+      }
+
+      .log-drawer summary {
+        min-height: 34px;
+        padding: 0 12px;
+        cursor: pointer;
+        color: #244f3c;
+        font-weight: 950;
+        list-style: none;
+      }
+
+      .log-drawer summary::-webkit-details-marker {
+        display: none;
       }
 
       .dialogue {
@@ -592,7 +895,7 @@
 
         <section class="panel">
           <div class="tabs">
-            <button class="tab active" data-tab="guide">今日</button>
+            <button class="tab active" data-tab="guide">概覽</button>
             <button class="tab" data-tab="bag">背包</button>
             <button class="tab" data-tab="codex">圖鑑</button>
             <button class="tab" data-tab="people">居民</button>
@@ -605,12 +908,15 @@
 
         <section class="panel quick">
           <button id="saveBtn">儲存</button>
-          <button id="codexBtn">切換圖鑑 B</button>
-          <button id="mapBtn">小地圖 M</button>
-          <button id="speedBtn">時間速度 x1</button>
+          <button id="codexBtn">圖鑑 B</button>
+          <button id="mapBtn">地圖 M</button>
+          <button id="speedBtn">速度 x1</button>
         </section>
 
-        <section class="panel log" id="log"></section>
+        <details class="panel log-drawer">
+          <summary>巡島紀錄</summary>
+          <section class="log" id="log"></section>
+        </details>
       </aside>
     </div>
 
@@ -970,7 +1276,7 @@
           npcKid: "npcKid.png",
           muntjac: "muntjac.png",
           pangolin: "pangolin.png",
-          blackBear: "blackBear.svg",
+          blackBear: "blackBear.png",
           redstart: "redstart.png",
           streamfish: "streamfish.png",
           firefly: "firefly.png",
@@ -978,9 +1284,9 @@
           landcrab: "landcrab.png",
           butterfly: "butterfly.png",
           trash: "trash.png",
-          trashMonster1: "trashMonster1.svg",
-          trashMonster2: "trashMonster2.svg",
-          trashMonster3: "trashMonster3.svg",
+          trashMonster1: "trashMonster1.png",
+          trashMonster2: "trashMonster2.png",
+          trashMonster3: "trashMonster3.png",
           drain: "drain.png",
           sprout: "sprout.png",
           lamp: "lamp.png",
@@ -991,7 +1297,7 @@
           buildingEcoStation: "buildingEcoStation.png",
           buildingDataLab: "buildingDataLab.png",
           buildingWorkshop: "buildingWorkshop.png",
-          recycleYard: "recycleYard.svg",
+          recycleYard: "recycleYard.png",
           bridge: "bridge.png",
           tileGrass: "tileGrass.png",
           tileHub: "tileHub.png",
@@ -1011,7 +1317,7 @@
           npcKid: { w: 42, h: 58 },
           muntjac: { w: 58, h: 42 },
           pangolin: { w: 60, h: 36 },
-          blackBear: { w: 68, h: 52 },
+          blackBear: { w: 64, h: 64 },
           redstart: { w: 44, h: 34 },
           streamfish: { w: 54, h: 26 },
           firefly: { w: 42, h: 42 },
@@ -1067,12 +1373,12 @@
             id: "recycleYard",
             label: "回收場",
             sprite: "recycleYard",
-            x: 17.4 * TILE,
-            y: 36.15 * TILE,
-            w: 7.8 * TILE,
-            h: 5.15 * TILE,
-            block: { x: 17.8 * TILE, y: 37.1 * TILE, w: 7.1 * TILE, h: 4.2 * TILE },
-            door: { x: 21.3 * TILE, y: 41.7 * TILE },
+            x: 16 * TILE,
+            y: 35.8 * TILE,
+            w: 12 * TILE,
+            h: 5.5 * TILE,
+            block: { x: 16.35 * TILE, y: 36.85 * TILE, w: 11.35 * TILE, h: 4.65 * TILE },
+            door: { x: 18.95 * TILE, y: 41.4 * TILE },
             facility: "recycle",
           },
         ];
@@ -1946,6 +2252,23 @@
           return 18 + stage * 16 + absorbed * 3;
         }
 
+        function monsterDetectRadius(monster) {
+          return 130 + monster.stage * 48 + Math.min(monster.absorbed, 8) * 5;
+        }
+
+        function nearestTrashForMonster(monster, range) {
+          let best = null;
+          let bestDistance = Infinity;
+          for (const trash of state.trash) {
+            const d = dist(monster, trash);
+            if (d < range && d < bestDistance) {
+              best = trash;
+              bestDistance = d;
+            }
+          }
+          return best;
+        }
+
         function createTrashMonster(x, y, trashHeld) {
           const absorbed = Math.max(1, trashHeld.length);
           const stage = monsterStageFor(absorbed);
@@ -1960,6 +2283,9 @@
             trashHeld: [...trashHeld],
             hp: monsterMaxHp(stage, absorbed),
             pulse: Math.random() * Math.PI * 2,
+            target: null,
+            wait: randRange(20, 90),
+            mode: "idle",
           };
         }
 
@@ -2004,8 +2330,32 @@
         function updateMonsters(dt) {
           for (const monster of state.monsters) {
             absorbNearbyTrash(monster);
-            moveToward(monster, state.player, 34 + monster.stage * 13, dt, { collide: true });
-            if (!state.battle && dist(monster, state.player) < 34 + monster.stage * 4) startBattle(monster);
+            const playerDistance = dist(monster, state.player);
+            if (playerDistance <= monsterDetectRadius(monster)) {
+              monster.mode = "chase";
+              monster.target = null;
+              moveToward(monster, state.player, 38 + monster.stage * 14, dt, { collide: true });
+              if (!state.battle && dist(monster, state.player) < 34 + monster.stage * 4) startBattle(monster);
+              continue;
+            }
+
+            const nearbyTrash = nearestTrashForMonster(monster, 150 + monster.stage * 38);
+            if (nearbyTrash) {
+              monster.mode = "forage";
+              monster.target = nearbyTrash;
+              moveToward(monster, nearbyTrash, 22 + monster.stage * 8, dt, { collide: true });
+              continue;
+            }
+
+            monster.mode = "idle";
+            if (monster.wait > 0) {
+              monster.wait -= dt * 60;
+              continue;
+            }
+            if (!monster.target || moveToward(monster, monster.target, 16 + monster.stage * 4, dt, { collide: true })) {
+              monster.target = randomRoadPoint() || { x: monster.x, y: monster.y };
+              monster.wait = randRange(24, 90);
+            }
           }
         }
 
@@ -2289,7 +2639,8 @@
             weakened: false,
             log: [`第 ${monster.stage} 階垃圾怪靠近了。`],
           };
-          showDialogue("垃圾怪遭遇", "進入回合制戰鬥：按 1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理。", 4.2);
+          state.dialogue = null;
+          dialogueEl.hidden = true;
           uiDirty = true;
         }
 
@@ -2719,15 +3070,15 @@
           }
           drawHabitatLandmarks();
 
-          const bridgeW = 6.45 * TILE;
-          const bridgeH = bridgeW * (96 / 286);
+          const bridgeH = 3.25 * TILE;
+          const bridgeW = bridgeH * (286 / 96);
           const bridgeX = riverCenterX(34) * TILE - bridgeW / 2;
-          const bridgeY = 33.05 * TILE;
+          const bridgeY = 32.9 * TILE;
           if (!drawSpriteToBox("bridge", bridgeX, bridgeY, bridgeW, bridgeH)) {
             ctx.fillStyle = "#8b6f3f";
-            ctx.fillRect(bridgeX, 33.4 * TILE, bridgeW, 0.82 * TILE);
+            ctx.fillRect(bridgeX, 33 * TILE, bridgeW, 3 * TILE);
             ctx.fillStyle = "#d7bc75";
-            for (let i = 0; i < 6; i++) ctx.fillRect(bridgeX + i * TILE + 7, 33.55 * TILE, 24, 6);
+            for (let i = 0; i < 9; i++) ctx.fillRect(bridgeX + i * TILE + 8, 33.45 * TILE, 24, 7);
           }
 
           for (const building of buildingDefs) {
@@ -2790,7 +3141,10 @@
           ctx.fillRect(monster.x - 3, monster.y - 13, monster.w + 6, 6);
           ctx.fillStyle = dangerColor;
           ctx.fillRect(monster.x - 2, monster.y - 12, (monster.w + 4) * clamp(monster.hp / monsterMaxHp(monster.stage, monster.absorbed), 0, 1), 4);
-          if (dist(monster, state.player) < 84) drawWorldLabel(`第 ${monster.stage} 階垃圾怪`, monster.x + monster.w / 2, monster.y - 28, dangerColor, "#244f3c");
+          if (dist(monster, state.player) < 84) {
+            const modeLabel = monster.mode === "chase" ? "追擊" : monster.mode === "forage" ? "找垃圾" : "警戒";
+            drawWorldLabel(`第 ${monster.stage} 階垃圾怪｜${modeLabel}`, monster.x + monster.w / 2, monster.y - 28, dangerColor, "#244f3c");
+          }
         }
 
         function drawAnimal(actor) {
@@ -3052,43 +3406,158 @@
           const battle = state.battle;
           const monster = battleMonster();
           if (!battle || !monster) return;
-          const x = 112;
-          const y = 92;
-          const w = canvas.width - 224;
-          const h = 300;
-          ctx.fillStyle = "rgba(21, 34, 28, 0.96)";
-          ctx.fillRect(x, y, w, h);
-          ctx.strokeStyle = "#fff3bf";
-          ctx.lineWidth = 4;
-          ctx.strokeRect(x, y, w, h);
-          ctx.fillStyle = "#f8de8f";
-          ctx.font = "bold 22px sans-serif";
+          const enemyMax = monsterMaxHp(monster.stage, monster.absorbed);
+          const drawFitted = (text, x, y, maxWidth) => {
+            let line = text;
+            while (ctx.measureText(line).width > maxWidth && line.length > 4) line = `${line.slice(0, -2)}...`;
+            ctx.fillText(line, x, y);
+          };
+          const drawTechPanel = (x, y, w, h, fill = "rgba(235, 251, 255, 0.96)", stroke = "#1b5f88") => {
+            ctx.fillStyle = "rgba(8, 26, 35, 0.22)";
+            ctx.fillRect(x + 6, y + 7, w, h);
+            ctx.fillStyle = fill;
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = "rgba(255,255,255,0.32)";
+            ctx.fillRect(x + 8, y + 8, w - 16, 3);
+          };
+          const drawHpPanel = (x, y, w, h, title, hp, maxHp, sub, align = "left") => {
+            drawTechPanel(x, y, w, h);
+            ctx.fillStyle = "#247bb3";
+            ctx.fillRect(x, y, w, 25);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 15px sans-serif";
+            ctx.textAlign = align;
+            ctx.fillText(title, align === "right" ? x + w - 12 : x + 12, y + 18);
+            ctx.fillStyle = "#1c5876";
+            ctx.font = "bold 13px sans-serif";
+            ctx.fillText(sub, align === "right" ? x + w - 12 : x + 12, y + 48);
+            const rate = clamp(hp / maxHp, 0, 1);
+            const bx = x + 18;
+            const by = y + h - 27;
+            const bw = w - 36;
+            ctx.fillStyle = "#9db5b2";
+            ctx.fillRect(bx, by, bw, 14);
+            ctx.fillStyle = rate > 0.52 ? "#4fae62" : rate > 0.24 ? "#e1a23b" : "#cf5048";
+            ctx.fillRect(bx, by, Math.max(3, bw * rate), 14);
+            ctx.fillStyle = "#f5fbff";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`${Math.ceil(hp)} / ${maxHp}`, bx + bw / 2, by + 11);
+          };
+          const drawPlatform = (cx, cy, w, h, top, side) => {
+            ctx.fillStyle = "rgba(6, 25, 29, 0.26)";
+            ctx.beginPath();
+            ctx.ellipse(cx + 10, cy + 18, w * 0.52, h * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = side;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 14, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = top;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(24, 73, 84, 0.44)";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          };
+
+          const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          bg.addColorStop(0, "#72c5df");
+          bg.addColorStop(0.38, "#e4f4d9");
+          bg.addColorStop(0.62, "#77bd73");
+          bg.addColorStop(1, "#315e45");
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = "rgba(255,255,255,0.22)";
+          for (let i = 0; i < 10; i++) ctx.fillRect(i * 104 + 18, 54 + (i % 4) * 18, 58, 4);
+          ctx.fillStyle = "rgba(24, 89, 100, 0.14)";
+          for (let x = -40; x < canvas.width; x += 64) ctx.fillRect(x, 338, 42, 5);
+          ctx.fillStyle = "rgba(22, 64, 49, 0.19)";
+          ctx.fillRect(0, 334, canvas.width, 118);
+          ctx.fillStyle = "rgba(11, 45, 49, 0.25)";
+          ctx.fillRect(0, 450, canvas.width, 38);
+
+          drawTechPanel(328, 24, 304, 44, "rgba(18, 61, 83, 0.88)", "#8fd3ff");
+          ctx.fillStyle = "#e8f7ff";
+          ctx.font = "bold 18px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("垃圾淨化戰", 480, 53);
+
+          drawHpPanel(568, 82, 340, 90, `第 ${monster.stage} 階垃圾怪`, monster.hp, enemyMax, `吸收 ${monster.absorbed} 件垃圾`, "right");
+          drawHpPanel(52, 342, 334, 90, "回收調查員", state.health, state.maxHealth, `夥伴 ${partnerCount()}｜回收 ${state.recyclePoints}`, "left");
+
+          drawPlatform(238, 396, 280, 58, "#d9c678", "#9b7a40");
+          drawPlatform(724, 266, 244, 48, "#d8cf8d", "#907b47");
+
+          ctx.strokeStyle = "rgba(255, 244, 176, 0.72)";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(630, 176, 190, 118);
+          ctx.strokeStyle = "rgba(255, 244, 176, 0.32)";
+          ctx.strokeRect(640, 186, 170, 98);
+
+          drawSpriteToBox("player", 184, 254, 104, 144, false);
+          if (state.progress.blackBear?.partnered) drawSpriteToBox("blackBear", 118, 322, 74, 74, false);
+
+          const monsterSprite = `trashMonster${monster.stage}`;
+          const monsterSize = SPRITE_DRAW_SIZES[monsterSprite] || { w: 54, h: 52 };
+          const scale = monster.stage === 3 ? 2.35 : monster.stage === 2 ? 2.08 : 1.9;
+          const mw = monsterSize.w * scale;
+          const mh = monsterSize.h * scale;
+          drawSpriteToBox(monsterSprite, 724 - mw / 2, 265 - mh + 8, mw, mh, true);
+
+          drawTechPanel(44, 444, 872, 48, "rgba(236, 247, 255, 0.98)", "#1b5f88");
+          ctx.fillStyle = "#16384e";
+          ctx.font = "bold 15px sans-serif";
           ctx.textAlign = "left";
-          ctx.fillText(`第 ${monster.stage} 階垃圾怪`, x + 24, y + 38);
-          ctx.font = "bold 14px sans-serif";
-          ctx.fillStyle = "#fff7d7";
-          ctx.fillText(`玩家體力 ${state.health}/${state.maxHealth}`, x + 24, y + 68);
-          ctx.fillText(`怪物體力 ${monster.hp}/${monsterMaxHp(monster.stage, monster.absorbed)}｜已吸收 ${monster.absorbed} 件垃圾`, x + 24, y + 92);
+          drawFitted(battle.log[0] || "選擇技能開始行動。", 64, 474, 820);
+
+          drawTechPanel(34, 506, 892, 112, "rgba(15, 55, 86, 0.96)", "#8fd3ff");
+          ctx.fillStyle = "#e8f7ff";
+          ctx.font = "bold 15px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("技能指令", 56, 532);
+          ctx.fillStyle = "rgba(143, 211, 255, 0.28)";
+          ctx.fillRect(142, 521, 760, 2);
 
           const options = [
-            "1 淨化打擊",
-            `2 分類分析${state.recycleStats.played ? "" : "（未練習）"}`,
-            `3 夥伴支援${partnerCount() ? `（${partnerCount()}）` : "（未解鎖）"}`,
-            "4 防禦整理",
+            { key: "1", name: "淨化打擊", meta: "工具系", desc: "穩定輸出" },
+            { key: "2", name: "分類分析", meta: state.recycleStats.played ? "回收系" : "未練習", desc: "練習分類後削弱敵方" },
+            { key: "3", name: "夥伴支援", meta: partnerCount() ? `${partnerCount()} 夥伴` : "未解鎖", desc: "已信任動物加入支援" },
+            { key: "4", name: "防禦整理", meta: "守備", desc: "回血並降低下一擊" },
           ];
           for (let i = 0; i < options.length; i++) {
-            const ox = x + 24 + (i % 2) * (w / 2 - 18);
-            const oy = y + 122 + Math.floor(i / 2) * 48;
-            ctx.fillStyle = "#efe5bd";
-            ctx.fillRect(ox, oy, w / 2 - 42, 34);
-            ctx.fillStyle = "#244f3c";
+            const opt = options[i];
+            const ox = 54 + (i % 2) * 438;
+            const oy = 540 + Math.floor(i / 2) * 36;
+            const fill = i === 0 ? "#f7d36f" : i === 1 ? "#76c6cc" : i === 2 ? "#8fd17b" : "#d9d2a5";
+            ctx.fillStyle = fill;
+            ctx.fillRect(ox, oy, 414, 30);
+            ctx.strokeStyle = "#0e314a";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(ox, oy, 414, 30);
+            ctx.fillStyle = "#0e314a";
+            ctx.fillRect(ox + 8, oy + 6, 24, 18);
+            ctx.fillStyle = "#fff7d7";
+            ctx.font = "bold 13px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(opt.key, ox + 20, oy + 20);
+            ctx.fillStyle = "#0e314a";
             ctx.font = "bold 15px sans-serif";
-            ctx.fillText(options[i], ox + 12, oy + 22);
+            ctx.textAlign = "left";
+            ctx.fillText(opt.name, ox + 42, oy + 20);
+            ctx.font = "bold 11px sans-serif";
+            drawFitted(opt.desc, ox + 152, oy + 20, 130);
+            ctx.textAlign = "right";
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillText(opt.meta, ox + 400, oy + 20);
           }
-
-          ctx.fillStyle = "#dbe8c0";
-          ctx.font = "13px sans-serif";
-          battle.log.forEach((line, i) => ctx.fillText(line, x + 24, y + 232 + i * 21));
         }
 
         function drawRecycleOverlay() {
@@ -3150,8 +3619,7 @@
             return;
           }
           if (state.battle) {
-            promptEl.hidden = false;
-            promptEl.textContent = "戰鬥中：按 1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理";
+            promptEl.hidden = true;
             return;
           }
           if (state.recycleGame) {
@@ -3194,16 +3662,14 @@
           uiDirty = false;
           const zone = currentZoneAt();
           sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜回收點數 ${state.recyclePoints}`;
-          hudPills.innerHTML = [
+          hudPills.hidden = Boolean(state.battle);
+          const hudText = [
             `第 ${state.day} 天`,
             formatClock(),
             state.weather,
-            zone.name,
             `體力 ${state.health}/${state.maxHealth}`,
-            `背包 ${backpackTotal()}`,
-            `回收 ${state.recyclePoints}`,
-            `筆記 ${state.notes}`,
-          ].map((text) => `<span class="pill">${text}</span>`).join("");
+          ].join("｜");
+          hudPills.innerHTML = `<span class="pill hud-strip">${hudText}</span>`;
 
           const setMetric = (valueEl, barEl, value, invert = false) => {
             valueEl.textContent = Math.round(value);
@@ -3216,7 +3682,7 @@
           setMetric(ui.waterValue, ui.waterBar, state.ecology.water);
           setMetric(ui.pollutionValue, ui.pollutionBar, state.ecology.pollution, true);
           setMetric(ui.bioValue, ui.bioBar, state.ecology.bio);
-          speedBtn.textContent = `時間速度 x${state.speedOptions[state.speedIndex]}`;
+          speedBtn.textContent = `速度 x${state.speedOptions[state.speedIndex]}`;
           renderSidePanel();
           renderLog();
         }
@@ -3224,27 +3690,87 @@
         function renderSidePanel() {
           if (activeTab === "guide") {
             const partners = partnerCount();
+            const seenAnimals = animalDefs.filter((animal) => state.progress[animal.id]?.seen).length;
+            const unlocked = Object.keys(state.unlockedCards).length;
+            const threatClass = state.monsters.length ? "bad" : state.trash.length > 10 ? "warn" : "";
+            const threatTitle = state.monsters.length ? "垃圾怪活動中" : state.trash.length ? "道路垃圾待清理" : "巡查狀態穩定";
+            const threatChip = state.monsters.length ? `${state.monsters.length} 隻` : `${state.trash.length} 件`;
+            const threatText = state.monsters.length
+              ? "垃圾怪現在只會在偵測範圍內追擊。靠近前先觀察路線，避免讓牠路過更多垃圾。"
+              : state.trash.length
+                ? "優先撿主路、橋邊與回收場附近垃圾；放太久才會腐化成垃圾怪。"
+                : "附近暫時乾淨，可以去補圖鑑、累積夥伴信任或到回收場整理背包。";
             sideBody.innerHTML = `
-              <div class="card">
-                <div class="card-title">今日巡查方針 <span class="chip">${state.trash.length} 垃圾</span></div>
-                <small>路上的垃圾會慢慢腐化；太久沒撿會變成垃圾怪。垃圾怪會追玩家，路過其他垃圾還會吸收並升階。</small>
+              <div class="hero-summary">
+                <div class="hero-card">
+                  <div class="hero-kicker">目前目標</div>
+                  <div class="hero-main">${threatTitle}</div>
+                  <div class="hero-sub">${threatText}</div>
+                </div>
+                <div class="hero-card">
+                  <div class="hero-kicker">資源狀態</div>
+                  <div class="hero-main">${backpackTotal()} / ${state.recyclePoints}</div>
+                  <div class="hero-sub">背包件數 / 回收點數</div>
+                </div>
               </div>
-              <div class="card">
-                <div class="card-title">今日建議 <span class="chip">${state.weather}</span></div>
-                <small>${getDailyAdvice()}</small>
-              </div>
-              <div class="card">
-                <div class="card-title">養成進度 <span class="chip">${partners} 夥伴</span></div>
-                <small>已收錄 ${animalDefs.filter((a) => state.progress[a.id]?.seen).length} / ${animalDefs.length} 種動物，知識卡 ${Object.keys(state.unlockedCards).length} / ${knowledgeCards.length}。</small>
-              </div>
-              <div class="card">
-                <div class="card-title">戰鬥技能來源 <span class="chip">1-4</span></div>
-                <small>基礎技能靠巡查工具；分類分析會因回收小遊戲變強；夥伴支援來自動物信任，台灣藍鵲提升攻擊，台灣黑熊提供守護。</small>
-              </div>
-              <div class="card">
-                <div class="card-title">操作</div>
-                <small>WASD/方向鍵移動，Shift 快走，Space/E 互動，戰鬥用 1-4，回收分類用 1-5，B 查看圖鑑，M 切換小地圖。</small>
-              </div>
+
+              <details class="drawer" open>
+                <summary>巡查摘要 <span class="chip">${state.weather}</span></summary>
+                <div class="drawer-body">
+                  <div class="status-grid">
+                    <div class="status-tile">
+                      <div class="status-label">道路垃圾</div>
+                      <div class="status-value">${state.trash.length}</div>
+                    </div>
+                    <div class="status-tile">
+                      <div class="status-label">垃圾怪</div>
+                      <div class="status-value">${state.monsters.length}</div>
+                    </div>
+                    <div class="status-tile">
+                      <div class="status-label">夥伴</div>
+                      <div class="status-value">${partners}</div>
+                    </div>
+                    <div class="status-tile">
+                      <div class="status-label">圖鑑</div>
+                      <div class="status-value">${seenAnimals}/${animalDefs.length}</div>
+                    </div>
+                  </div>
+                  <div class="focus-card ${threatClass}" style="margin-top:8px;">
+                    <div class="focus-title">${currentZoneAt().name} <span class="chip">${threatChip}</span></div>
+                    <small>${getDailyAdvice()}</small>
+                  </div>
+                </div>
+              </details>
+
+              <details class="drawer">
+                <summary>養成與戰鬥 <span class="chip">${unlocked}/${knowledgeCards.length}</span></summary>
+                <div class="drawer-body">
+                  <div class="status-grid">
+                    <div class="status-tile">
+                      <div class="status-label">知識卡</div>
+                      <div class="status-value">${unlocked}/${knowledgeCards.length}</div>
+                    </div>
+                    <div class="status-tile">
+                      <div class="status-label">分類完美</div>
+                      <div class="status-value">${state.recycleStats.perfect}/${state.recycleStats.played}</div>
+                    </div>
+                  </div>
+                  <div class="tip-list" style="margin-top: 8px;">
+                    <div class="tip-row">戰鬥：1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理</div>
+                    <div class="tip-row">分類完美會提高「分類分析」威力；台灣藍鵲、台灣黑熊會強化夥伴支援。</div>
+                  </div>
+                </div>
+              </details>
+
+              <details class="drawer">
+                <summary>操作提示 <span class="chip">快捷鍵</span></summary>
+                <div class="drawer-body">
+                  <div class="tip-list">
+                    <div class="tip-row">探索：WASD/方向鍵移動，Shift 快走，Space/E 互動。</div>
+                    <div class="tip-row">介面：B 切換圖鑑，M 小地圖，Esc 取消行動或暫停分類。</div>
+                  </div>
+                </div>
+              </details>
             `;
             return;
           }
@@ -3252,33 +3778,66 @@
           if (activeTab === "bag") {
             const categoryRows = trashTypes.map((type) => {
               const count = state.backpack[type.id] || 0;
+              const category = categoryDef(type.category);
+              const fill = clamp(count / 5, 0, 1) * 100;
               return `
-                <div class="card">
-                  <div class="card-title">${type.name} <span class="chip">${count}</span></div>
-                  <small>${categoryDef(type.category).label}｜${type.hint}</small>
+                <div class="inventory-item ${count ? "" : "empty"}">
+                  <div class="inventory-top">
+                    <span class="swatch" style="background:${type.color}"></span>
+                    <span class="item-name">${type.name}</span>
+                    <span class="item-count">${count}</span>
+                  </div>
+                  <div class="meter-line"><i style="width:${fill}%"></i></div>
+                  <small>${category.label}｜${type.hint}</small>
                 </div>
               `;
             }).join("");
+            const total = backpackTotal();
+            const capacityHint = total >= 5 ? "可直接去回收場，會抽最多 5 件進行分類。" : `再收集 ${5 - total} 件左右，就能玩一輪完整分類。`;
             sideBody.innerHTML = `
-              <div class="card">
-                <div class="card-title">背包暫存 <span class="chip">${backpackTotal()} 件</span></div>
-                <small>${backpackSummary()}</small>
+              <div class="hero-summary">
+                <div class="hero-card">
+                  <div class="hero-kicker">背包暫存</div>
+                  <div class="hero-main">${total} 件</div>
+                  <div class="hero-sub">${total ? backpackSummary() : "目前沒有垃圾。靠近路上垃圾按 Space/E 撿起。"}</div>
+                </div>
+                <div class="hero-card">
+                  <div class="hero-kicker">回收場</div>
+                  <div class="hero-main">${state.recyclePoints} 點</div>
+                  <div class="hero-sub">${state.recycleStats.perfect}/${state.recycleStats.played} 次完美分類</div>
+                </div>
               </div>
-              <div class="card">
-                <div class="card-title">回收場 <span class="chip">${state.recyclePoints} 點</span></div>
-                <small>到社區南側的回收場互動，會抽最多 5 件背包垃圾做分類。完美通過可得 bonus，也會讓戰鬥的分類分析更有效。</small>
-              </div>
-              <div class="card">
-                <div class="card-title">分類成績 <span class="chip">${state.recycleStats.perfect}/${state.recycleStats.played}</span></div>
-                <small>完美次數 / 遊玩次數。回收點數達 25 後，森林有機會出現台灣黑熊線索。</small>
-              </div>
-              ${categoryRows}
+
+              <details class="drawer" open>
+                <summary>分類內容 <span class="chip">${total} 件</span></summary>
+                <div class="drawer-body">
+                  <div class="inventory-grid">
+                    ${categoryRows}
+                  </div>
+                </div>
+              </details>
+
+              <details class="drawer">
+                <summary>回收規則 <span class="chip">${total >= 5 ? "可分類" : "收集中"}</span></summary>
+                <div class="drawer-body">
+                  <div class="focus-card ${total >= 5 ? "warn" : ""}">
+                    <div class="focus-title">${total ? "下一步" : "收集開始"} <span class="chip">${total}/5</span></div>
+                    <small>${total ? backpackSummary() : "在路上撿垃圾，或擊敗垃圾怪後取得牠吸收的垃圾。"} ${capacityHint}</small>
+                  </div>
+                  <div class="tip-list" style="margin-top: 8px;">
+                    <div class="tip-row">到社區南側回收場互動，使用 1-5 選分類。</div>
+                    <div class="tip-row">完美通過會拿 bonus，並強化戰鬥技能「分類分析」。</div>
+                  </div>
+                </div>
+              </details>
             `;
             return;
           }
 
           if (activeTab === "codex") {
-            sideBody.innerHTML = animalDefs.map((animal) => {
+            const seen = animalDefs.filter((animal) => state.progress[animal.id]?.seen);
+            const partnered = animalDefs.filter((animal) => state.progress[animal.id]?.partnered);
+            const animalCards = animalDefs.map((animal) => {
               const p = state.progress[animal.id] || { trust: 0, seen: false, partnered: false };
               return `
                 <div class="card">
@@ -3286,21 +3845,64 @@
                   <small>${p.seen ? `${animal.habitat}｜信任 ${p.trust}/${animal.trustGoal}｜技能：${animal.skill}` : `線索：${animal.habitat}，環境條件達標後可能出現。`}</small>
                 </div>
               `;
-            }).join("") + `
-              <div class="card">
-                <div class="card-title">知識卡</div>
-                <small>${knowledgeCards.map((card) => state.unlockedCards[card.id] ? `已解鎖：${card.id}｜${card.text}` : `未解鎖：${card.id}`).join("<br>")}</small>
+            }).join("");
+            sideBody.innerHTML = `
+              <div class="hero-summary">
+                <div class="hero-card">
+                  <div class="hero-kicker">收錄動物</div>
+                  <div class="hero-main">${seen.length}/${animalDefs.length}</div>
+                  <div class="hero-sub">已觀察物種</div>
+                </div>
+                <div class="hero-card">
+                  <div class="hero-kicker">生態夥伴</div>
+                  <div class="hero-main">${partnered.length}</div>
+                  <div class="hero-sub">可支援戰鬥</div>
+                </div>
               </div>
+              <details class="drawer" open>
+                <summary>角色圖鑑 <span class="chip">${seen.length}/${animalDefs.length}</span></summary>
+                <div class="drawer-body">${animalCards}</div>
+              </details>
+              <details class="drawer">
+                <summary>知識卡 <span class="chip">${Object.keys(state.unlockedCards).length}/${knowledgeCards.length}</span></summary>
+                <div class="drawer-body">
+                  ${knowledgeCards.map((card) => `
+                    <div class="card">
+                      <div class="card-title">${state.unlockedCards[card.id] ? card.id : "未解鎖知識"}</div>
+                      <small>${state.unlockedCards[card.id] ? card.text : `線索：${card.id}`}</small>
+                    </div>
+                  `).join("")}
+                </div>
+              </details>
             `;
             return;
           }
 
-          sideBody.innerHTML = state.npcs.map((npc) => `
-            <div class="card">
-              <div class="card-title">${npc.name} <span class="chip">${npc.role}</span></div>
-              <small>目前：${npc.currentAct}</small>
+          sideBody.innerHTML = `
+            <div class="hero-summary">
+              <div class="hero-card">
+                <div class="hero-kicker">居民</div>
+                <div class="hero-main">${state.npcs.length}</div>
+                <div class="hero-sub">可對話角色</div>
+              </div>
+              <div class="hero-card">
+                <div class="hero-kicker">現在地</div>
+                <div class="hero-main">${currentZoneAt().name}</div>
+                <div class="hero-sub">靠近居民按 Space/E</div>
+              </div>
             </div>
-          `).join("");
+            <details class="drawer" open>
+              <summary>居民行程 <span class="chip">${state.npcs.length}</span></summary>
+              <div class="drawer-body">
+                ${state.npcs.map((npc) => `
+                  <div class="card">
+                    <div class="card-title">${npc.name} <span class="chip">${npc.role}</span></div>
+                    <small>目前：${npc.currentAct}</small>
+                  </div>
+                `).join("")}
+              </div>
+            </details>
+          `;
         }
 
         function getDailyAdvice() {

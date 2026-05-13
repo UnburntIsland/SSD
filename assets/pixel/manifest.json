@@ -64,12 +64,12 @@
   },
   {
     "name": "blackBear",
-    "file": "blackBear.svg",
+    "file": "blackBear.png",
     "size": [
       128,
-      96
+      128
     ],
-    "source": "svg-pixel"
+    "source": "gpt-image-2"
   },
   {
     "name": "redstart",
@@ -136,30 +136,30 @@
   },
   {
     "name": "trashMonster1",
-    "file": "trashMonster1.svg",
-    "size": [
-      82,
-      78
-    ],
-    "source": "svg-pixel"
-  },
-  {
-    "name": "trashMonster2",
-    "file": "trashMonster2.svg",
+    "file": "trashMonster1.png",
     "size": [
       96,
       92
     ],
-    "source": "svg-pixel"
+    "source": "gpt-image-2"
   },
   {
-    "name": "trashMonster3",
-    "file": "trashMonster3.svg",
+    "name": "trashMonster2",
+    "file": "trashMonster2.png",
     "size": [
       128,
       120
     ],
-    "source": "svg-pixel"
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "trashMonster3",
+    "file": "trashMonster3.png",
+    "size": [
+      150,
+      140
+    ],
+    "source": "gpt-image-2"
   },
   {
     "name": "drain",
@@ -253,12 +253,12 @@
   },
   {
     "name": "recycleYard",
-    "file": "recycleYard.svg",
+    "file": "recycleYard.png",
     "size": [
-      256,
-      168
+      384,
+      176
     ],
-    "source": "svg-pixel"
+    "source": "gpt-image-2"
   },
   {
     "name": "bridge",

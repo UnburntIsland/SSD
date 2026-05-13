@@ -27,6 +27,7 @@
 ## 美術資產
 
 - 模型生成概念圖：`assets/source/gpt-image-2/taiwan-recycling-creatures-concept.png`
-- 遊戲內像素資產：`blackBear.svg`、`trashMonster1.svg`、`trashMonster2.svg`、`trashMonster3.svg`、`recycleYard.svg`
+- 新版替換 sheet：`assets/source/gpt-image-2/taiwan-recycling-replacement-sheet.png`
+- 遊戲內像素資產：`blackBear.png`、`trashMonster1.png`、`trashMonster2.png`、`trashMonster3.png`、`recycleYard.png`
 
 後續可擴充方向：把垃圾種類對應更細的台灣回收規則、加入廚餘/電池/保麗龍等特殊題型、讓不同怪物階段有不同攻擊模式，並為每個動物夥伴做獨立技能動畫。
