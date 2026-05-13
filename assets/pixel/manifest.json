@@ -403,5 +403,50 @@
       112
     ],
     "source": "generated-world-map"
+  },
+  {
+    "name": "itemPlastic",
+    "file": "itemPlastic.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-inventory-icons"
+  },
+  {
+    "name": "itemPaper",
+    "file": "itemPaper.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-inventory-icons"
+  },
+  {
+    "name": "itemMetal",
+    "file": "itemMetal.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-inventory-icons"
+  },
+  {
+    "name": "itemGlass",
+    "file": "itemGlass.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-inventory-icons"
+  },
+  {
+    "name": "itemGeneral",
+    "file": "itemGeneral.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-inventory-icons"
   }
 ]

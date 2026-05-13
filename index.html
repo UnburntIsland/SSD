@@ -131,6 +131,61 @@
         display: none;
       }
 
+      .quest-hud {
+        position: absolute;
+        left: 16px;
+        top: 74px;
+        z-index: 4;
+        width: min(330px, calc(100% - 32px));
+        padding: 9px 10px;
+        border: 2px solid rgba(255, 247, 214, 0.64);
+        border-radius: 8px;
+        background: rgba(25, 55, 42, 0.9);
+        color: #fff5cf;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+        pointer-events: none;
+      }
+
+      .quest-hud[hidden] {
+        display: none;
+      }
+
+      .quest-kicker {
+        color: #dbe8c0;
+        font-size: 10px;
+        font-weight: 950;
+      }
+
+      .quest-title {
+        margin-top: 2px;
+        font-size: 13px;
+        font-weight: 950;
+        line-height: 1.22;
+      }
+
+      .quest-sub {
+        margin-top: 3px;
+        color: #dbe8c0;
+        font-size: 10px;
+        font-weight: 850;
+        line-height: 1.28;
+      }
+
+      .quest-progress {
+        height: 6px;
+        margin-top: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(220, 207, 168, 0.46);
+      }
+
+      .quest-progress i {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: #f7d36f;
+      }
+
       .player-status {
         position: absolute;
         left: 16px;
@@ -177,6 +232,46 @@
         height: 100%;
         border-radius: inherit;
         background: #f7d36f;
+      }
+
+      .toast-stack {
+        position: absolute;
+        right: 18px;
+        top: 150px;
+        z-index: 8;
+        display: grid;
+        gap: 6px;
+        width: min(300px, calc(100% - 36px));
+        pointer-events: none;
+      }
+
+      .toast-stack[hidden] {
+        display: none;
+      }
+
+      .toast {
+        padding: 8px 10px;
+        border: 2px solid rgba(255, 247, 214, 0.68);
+        border-left-width: 5px;
+        border-radius: 8px;
+        background: rgba(28, 48, 36, 0.94);
+        color: #fff7d7;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1.3;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
+      }
+
+      .toast.good {
+        border-left-color: var(--good);
+      }
+
+      .toast.warn {
+        border-left-color: var(--warn);
+      }
+
+      .toast.bad {
+        border-left-color: var(--bad);
       }
 
       .start {
@@ -654,16 +749,57 @@
       .inventory-top {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 8px;
       }
 
-      .swatch {
-        width: 13px;
-        height: 13px;
+      .item-icon,
+      .animal-icon {
         flex: 0 0 auto;
-        border: 2px solid rgba(36, 79, 60, 0.35);
-        border-radius: 4px;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .item-icon {
+        width: 32px;
+        height: 32px;
+        padding: 2px;
+        border: 1px solid rgba(36, 79, 60, 0.22);
+        border-radius: 6px;
+        background: rgba(255, 248, 218, 0.72);
+      }
+
+      .animal-card {
+        display: grid;
+        grid-template-columns: 46px 1fr;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .animal-icon-frame {
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 42px;
+        flex: 0 0 auto;
+        overflow: hidden;
+        border: 1px solid rgba(36, 79, 60, 0.22);
+        border-radius: 6px;
+        background: rgba(219, 232, 192, 0.58);
+      }
+
+      .animal-icon {
+        max-width: 42px;
+        max-height: 38px;
+        object-fit: contain;
+      }
+
+      .animal-icon.locked {
+        opacity: 0.38;
+        filter: grayscale(1) brightness(0.72);
+      }
+
+      .animal-info {
+        min-width: 0;
       }
 
       .item-name {
@@ -922,6 +1058,18 @@
           max-width: calc(100% - 20px);
         }
 
+        .quest-hud {
+          left: 10px;
+          top: 68px;
+          width: min(300px, calc(100% - 20px));
+        }
+
+        .toast-stack {
+          right: 10px;
+          top: 132px;
+          width: min(280px, calc(100% - 20px));
+        }
+
         .pill {
           padding: 6px 8px;
           font-size: 12px;
@@ -943,8 +1091,10 @@
       <main class="stage" aria-label="森循島遊戲畫面">
         <canvas id="game" width="960" height="640"></canvas>
         <div class="hud-pill" id="hudPills"></div>
+        <div class="quest-hud" id="questHud" hidden></div>
         <div class="player-status" id="playerStatus" hidden></div>
         <div class="prompt" id="prompt" hidden></div>
+        <div class="toast-stack" id="toastStack" hidden></div>
         <div class="dialogue" id="dialogue" hidden>
           <b id="dialogueTitle"></b>
           <span id="dialogueText"></span>
@@ -1040,8 +1190,10 @@
         const loadBtn = document.getElementById("loadBtn");
         const resetBtn = document.getElementById("resetBtn");
         const hudPills = document.getElementById("hudPills");
+        const questHud = document.getElementById("questHud");
         const playerStatus = document.getElementById("playerStatus");
         const promptEl = document.getElementById("prompt");
+        const toastStack = document.getElementById("toastStack");
         const dialogueEl = document.getElementById("dialogue");
         const dialogueTitle = document.getElementById("dialogueTitle");
         const dialogueText = document.getElementById("dialogueText");
@@ -1151,11 +1303,11 @@
         ];
 
         const trashTypes = [
-          { id: "plastic", name: "寶特瓶", category: "plastic", reward: 8, color: "#5ba9b9", hint: "瓶身壓扁、瓶蓋分開更好回收。" },
-          { id: "paper", name: "紙餐盒", category: "paper", reward: 7, color: "#d8bd78", hint: "乾淨紙類可回收，油污嚴重要改一般垃圾。" },
-          { id: "metal", name: "鋁罐", category: "metal", reward: 9, color: "#b7b6a6", hint: "金屬罐沖一下再回收，能降低異味。" },
-          { id: "glass", name: "玻璃瓶", category: "glass", reward: 10, color: "#7fbf9f", hint: "玻璃要避免破裂，和其他回收物分開放。" },
-          { id: "general", name: "菸蒂與髒污袋", category: "general", reward: 5, color: "#c44f45", hint: "菸蒂、髒污塑膠袋通常不進一般回收。" },
+          { id: "plastic", name: "寶特瓶", category: "plastic", reward: 8, color: "#5ba9b9", icon: "itemPlastic", hint: "瓶身壓扁、瓶蓋分開更好回收。" },
+          { id: "paper", name: "紙餐盒", category: "paper", reward: 7, color: "#d8bd78", icon: "itemPaper", hint: "乾淨紙類可回收，油污嚴重要改一般垃圾。" },
+          { id: "metal", name: "鋁罐", category: "metal", reward: 9, color: "#b7b6a6", icon: "itemMetal", hint: "金屬罐沖一下再回收，能降低異味。" },
+          { id: "glass", name: "玻璃瓶", category: "glass", reward: 10, color: "#7fbf9f", icon: "itemGlass", hint: "玻璃要避免破裂，和其他回收物分開放。" },
+          { id: "general", name: "菸蒂與髒污袋", category: "general", reward: 5, color: "#c44f45", icon: "itemGeneral", hint: "菸蒂、髒污塑膠袋通常不進一般回收。" },
         ];
 
         const recycleCategories = [
@@ -1378,6 +1530,63 @@
           { id: "日常綠地", text: "蜜源植物、落葉角落與少修剪草地能支撐昆蟲與鳥類。" },
         ];
 
+        const MISSION_DEFS = [
+          {
+            id: "first-cleanup",
+            title: "清出第一條安全步道",
+            instruction: "在主路、橋邊或回收場附近撿起 3 件道路垃圾。",
+            progress: (s) => s.stats.trashCollected,
+            goal: 3,
+            reward: { exp: 10, points: 12 },
+            perk: "巡查靴：移動速度提升",
+          },
+          {
+            id: "first-recycle",
+            title: "完成第一次回收分類",
+            instruction: "帶垃圾到南側回收場，完成 1 輪分類小遊戲。",
+            progress: (s) => s.recycleStats.played,
+            goal: 1,
+            reward: { exp: 14, points: 20 },
+            perk: "分類手冊：後續回收點數 +10%",
+          },
+          {
+            id: "field-care",
+            title: "修復兩處環境問題",
+            instruction: "處理 2 個自然事件，像是污染溯源、採樣或動線調整。",
+            progress: (s) => s.stats.eventsResolved,
+            goal: 2,
+            reward: { exp: 18, points: 24 },
+            perk: "現地工具包：環境行動判定更寬",
+          },
+          {
+            id: "wildlife-log",
+            title: "建立初步生態圖鑑",
+            instruction: "觀察 3 種不同動物，累積物種紀錄與信任。",
+            progress: (s) => animalDefs.filter((animal) => s.progress[animal.id]?.seen).length,
+            goal: 3,
+            reward: { exp: 20, points: 18 },
+            perk: "觀察筆記：後續動物信任 +1",
+          },
+          {
+            id: "monster-response",
+            title: "阻止垃圾怪擴散",
+            instruction: "擊敗 1 隻垃圾怪，把牠吸收的垃圾帶回回收場。",
+            progress: (s) => s.stats.monstersDefeated,
+            goal: 1,
+            reward: { exp: 22, points: 30 },
+            perk: "防護手套：垃圾怪傷害降低",
+          },
+          {
+            id: "island-steward",
+            title: "成為森循島守護者",
+            instruction: "累積 160 回收點數，維持巡查、分類與生態紀錄循環。",
+            progress: (s) => s.recyclePoints,
+            goal: 160,
+            reward: { exp: 30, points: 40 },
+            perk: "森循島守護者：主循環完成",
+          },
+        ];
+
         const npcDefs = [
           {
             id: "teacher",
@@ -1483,6 +1692,11 @@
           tileCoast: "tileCoast.png",
           tileWater: "tileWater.png",
           worldMap: "worldMap.png",
+          itemPlastic: "itemPlastic.png",
+          itemPaper: "itemPaper.png",
+          itemMetal: "itemMetal.png",
+          itemGlass: "itemGlass.png",
+          itemGeneral: "itemGeneral.png",
           weatherSunny: "weatherSunny.png",
           weatherCloudy: "weatherCloudy.png",
           weatherRain: "weatherRain.png",
@@ -1627,14 +1841,22 @@
           npcs: [],
           backpack: Object.fromEntries(trashTypes.map((type) => [type.id, 0])),
           recycleStats: { played: 0, perfect: 0 },
+          stats: { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 },
+          completedMissions: {},
           progress: {},
           unlockedCards: {},
           log: [],
+          toasts: [],
           dialogue: null,
           fieldAction: null,
           battle: null,
           recycleGame: null,
         };
+
+        function assetUrl(name, fallback = "trash") {
+          const file = ASSET_FILES[name] || ASSET_FILES[fallback] || "";
+          return `${ASSET_BASE}${file}`;
+        }
 
         function weatherDef(name = state.weather) {
           return WEATHER_DEFS[name] || WEATHER_DEFS["晴朗"];
@@ -1642,8 +1864,7 @@
 
         function weatherIconUrl(name = state.weather) {
           const def = weatherDef(name);
-          const file = ASSET_FILES[def.icon] || ASSET_FILES.weatherSunny;
-          return `${ASSET_BASE}${file}`;
+          return assetUrl(def.icon, "weatherSunny");
         }
 
         function weatherChipHtml(name = state.weather) {
@@ -1752,6 +1973,7 @@
           }
           if (state.level >= MAX_PLAYER_LEVEL) state.exp = 0;
           if (leveled) addLog(`等級提升至 Lv ${state.level}，最大體力提高到 ${state.maxHealth}。`);
+          addToast(`${label}：EXP +${gained}${leveled ? `｜Lv ${state.level}` : ""}`, leveled ? "good" : "warn");
           uiDirty = true;
         }
 
@@ -1759,6 +1981,7 @@
           const type = trashDef(typeId);
           state.backpack[type.id] = (state.backpack[type.id] || 0) + amount;
           addLog(`${label}：${type.name} +${amount}`);
+          addToast(`${type.name} +${amount}`, "good");
           uiDirty = true;
         }
 
@@ -1771,6 +1994,7 @@
           }
           const summary = Object.entries(counts).map(([id, count]) => `${trashDef(id).name} ${count}`).join("、");
           addLog(`${label}：${summary || "無"}`);
+          if (summary) addToast(`${label}：${summary}`, "good", 3.2);
           uiDirty = true;
         }
 
@@ -1932,6 +2156,67 @@
           state.log.unshift(text);
           state.log = state.log.slice(0, 8);
           uiDirty = true;
+        }
+
+        function defaultStats() {
+          return { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 };
+        }
+
+        function addToast(text, type = "good", seconds = 2.8) {
+          if (!state.started) return;
+          state.toasts.unshift({
+            id: makeUid("toast"),
+            text,
+            type,
+            until: performance.now() + seconds * 1000,
+          });
+          state.toasts = state.toasts.slice(0, 4);
+        }
+
+        function renderToasts() {
+          const now = performance.now();
+          state.toasts = state.toasts.filter((toast) => toast.until > now);
+          toastStack.hidden = state.toasts.length === 0;
+          if (toastStack.hidden) return;
+          toastStack.innerHTML = state.toasts.map((toast) => `<div class="toast ${toast.type}">${toast.text}</div>`).join("");
+        }
+
+        function missionProgress(mission) {
+          return clamp(Math.floor(mission.progress(state)) || 0, 0, mission.goal);
+        }
+
+        function getActiveMission() {
+          return MISSION_DEFS.find((mission) => !state.completedMissions[mission.id]) || MISSION_DEFS[MISSION_DEFS.length - 1];
+        }
+
+        function evaluateMissions() {
+          for (const mission of MISSION_DEFS) {
+            if (state.completedMissions[mission.id]) continue;
+            if (missionProgress(mission) < mission.goal) break;
+            state.completedMissions[mission.id] = true;
+            const reward = mission.reward || {};
+            if (reward.points) state.recyclePoints += reward.points;
+            if (reward.exp) addExperience(reward.exp, "任務完成");
+            applyMissionPerk(mission);
+            addLog(`任務完成：${mission.title}。獎勵：EXP +${reward.exp || 0}、回收點數 +${reward.points || 0}${mission.perk ? `、${mission.perk}` : ""}。`);
+            addToast(`任務完成：${mission.title}`, "good", 4.2);
+            uiDirty = true;
+          }
+        }
+
+        function applyMissionPerk(mission) {
+          if (!mission) return;
+          if (mission.id === "first-cleanup") {
+            state.player.speed = Math.max(state.player.speed, 152);
+          }
+          if (mission.id === "island-steward") {
+            showDialogue("森循島守護者", "你已完成一輪穩定的巡查循環：探索、任務、收集、回收、升級與守護。接下來可以挑戰完美分類、完整圖鑑與稀有夥伴。", 6);
+          }
+          if (mission.perk) addToast(`解鎖加成：${mission.perk}`, "warn", 4.2);
+        }
+
+        function syncMissionPerks() {
+          if (state.completedMissions["first-cleanup"]) state.player.speed = Math.max(state.player.speed, 152);
         }
 
         function unlockCard(id) {
@@ -2238,15 +2523,20 @@
           state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
           state.backpack = Object.fromEntries(trashTypes.map((type) => [type.id, 0]));
           state.recycleStats = { played: 0, perfect: 0 };
+          state.stats = defaultStats();
+          state.completedMissions = {};
           state.progress = Object.fromEntries(animalDefs.map((animal) => [animal.id, { trust: 0, seen: false, partnered: false }]));
           state.unlockedCards = {};
           state.log = [];
+          state.toasts = [];
           state.dialogue = null;
           state.fieldAction = null;
           state.battle = null;
           state.recycleGame = null;
           addLog("抵達森循島：撿垃圾、阻止垃圾怪、把資源帶回回收場。");
+          addLog("任務路線已開啟：先清出第一條安全步道。");
           addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
+          ensurePlayerOnWalkable("初始位置");
           updateCamera();
           for (let i = 0; i < ANIMAL_START_COUNT; i++) spawnAnimal({ offscreen: true });
           scheduleNextAnimalSpawn(ANIMAL_SPAWN_DELAY);
@@ -2276,6 +2566,8 @@
             ecology: state.ecology,
             backpack: state.backpack,
             recycleStats: state.recycleStats,
+            stats: state.stats,
+            completedMissions: state.completedMissions,
             trash: state.trash,
             trashSpawnTimer: state.trashSpawnTimer,
             monsters: state.monsters,
@@ -2326,9 +2618,13 @@
               dir: data.player?.dir || state.player.dir,
               facing: data.player?.facing === "right" || data.player?.facing === "left" ? data.player.facing : state.player.facing,
             };
+            ensurePlayerOnWalkable("讀檔位置");
             state.ecology = { ...state.ecology, ...(data.ecology || {}) };
             state.backpack = { ...Object.fromEntries(trashTypes.map((type) => [type.id, 0])), ...(data.backpack || {}) };
             state.recycleStats = { ...state.recycleStats, ...(data.recycleStats || {}) };
+            state.stats = { ...defaultStats(), ...(data.stats || {}) };
+            state.completedMissions = data.completedMissions || {};
+            syncMissionPerks();
             state.trash = Array.isArray(data.trash)
               ? data.trash.map(normalizeTrash).filter(Boolean).slice(0, TRASH_MAX_ACTIVE)
               : state.trash;
@@ -2341,6 +2637,7 @@
             state.log = Array.isArray(data.log) ? data.log.slice(0, 8) : state.log;
             startOverlay.hidden = true;
             addLog("已讀取自動存檔。");
+            evaluateMissions();
             writeSave();
             uiDirty = true;
             return true;
@@ -2410,6 +2707,30 @@
             isBlockedPoint(foot.x, foot.y + foot.h) ||
             isBlockedPoint(foot.x + foot.w, foot.y + foot.h)
           );
+        }
+
+        function ensurePlayerOnWalkable(reason = "") {
+          if (state.scene !== "outdoor" || canMoveTo(state.player.x, state.player.y, state.player.w, state.player.h)) return;
+          const original = { x: state.player.x, y: state.player.y };
+          for (let radius = 1; radius <= 8; radius++) {
+            for (let oy = -radius; oy <= radius; oy++) {
+              for (let ox = -radius; ox <= radius; ox++) {
+                if (Math.abs(ox) !== radius && Math.abs(oy) !== radius) continue;
+                const x = clamp(original.x + ox * TILE, 12, WORLD_W - state.player.w - 12);
+                const y = clamp(original.y + oy * TILE, 12, WORLD_H - state.player.h - 12);
+                if (!canMoveTo(x, y, state.player.w, state.player.h)) continue;
+                state.player.x = x;
+                state.player.y = y;
+                addLog(`${reason || "位置"}校正：已移到最近的可行走區域。`);
+                addToast("位置已校正到安全路面", "warn", 3.2);
+                return;
+              }
+            }
+          }
+          state.player.x = 10 * TILE;
+          state.player.y = 34 * TILE;
+          addLog("位置校正：回到社區主路。");
+          addToast("已返回社區主路", "warn", 3.2);
         }
 
         function canSpawnAt(point, options = {}) {
@@ -2708,10 +3029,12 @@
 
         function collectTrash(trash) {
           state.trash = state.trash.filter((item) => item.uid !== trash.uid);
+          state.stats.trashCollected += 1;
           addTrashToBackpack(trash.type);
           addExperience(3, "撿起垃圾");
           adjustEco({ pollution: -1, bio: 0.4 });
           showDialogue("撿起垃圾", `${trashDef(trash.type).name}已放入背包。帶到回收場分類，可以換回收點數。`, 2.6);
+          evaluateMissions();
         }
 
         function updateTime(dt) {
@@ -2874,7 +3197,7 @@
           for (const building of buildingDefs) {
             const door = buildingDoorRect(building);
             const d = dist(state.player, door);
-            if (d < 82) candidates.push({ type: "building", ref: building, distance: d, priority: 0 });
+            if (d < 82) candidates.push({ type: "building", ref: building, distance: d, priority: 3 });
           }
           for (const animal of state.animals) {
             const d = dist(state.player, animal);
@@ -2882,15 +3205,15 @@
           }
           for (const event of state.events) {
             const d = dist(state.player, event);
-            if (d < 62) candidates.push({ type: "event", ref: event, distance: d, priority: 1 });
+            if (d < 62) candidates.push({ type: "event", ref: event, distance: d, priority: 0 });
           }
           for (const trash of state.trash) {
             const d = dist(state.player, trash);
-            if (d < 52) candidates.push({ type: "trash", ref: trash, distance: d, priority: 1 });
+            if (d < 52) candidates.push({ type: "trash", ref: trash, distance: d, priority: 0 });
           }
           for (const npc of state.npcs) {
             const d = dist(state.player, npc);
-            if (d < 60) candidates.push({ type: "npc", ref: npc, distance: d, priority: 1 });
+            if (d < 60) candidates.push({ type: "npc", ref: npc, distance: d, priority: 2 });
           }
           candidates.sort((a, b) => a.priority - b.priority || a.distance - b.distance);
           return candidates[0] || null;
@@ -2934,8 +3257,10 @@
           }
           const firstSeen = !progress.seen;
           actor.observed = true;
+          state.stats.animalsObserved += 1;
           progress.seen = true;
-          progress.trust = clamp(progress.trust + 1, 0, def.trustGoal);
+          const trustGain = state.completedMissions["wildlife-log"] ? 2 : 1;
+          progress.trust = clamp(progress.trust + trustGain, 0, def.trustGoal);
           actor.mood = "curious";
           actor.wait = 180;
           unlockCard(def.card);
@@ -2948,23 +3273,26 @@
             addLog(`${def.name}成為你的生態夥伴。`);
           } else {
             text += ` 信任 ${progress.trust} / ${def.trustGoal}。`;
+            if (trustGain > 1) text += " 觀察筆記讓信任累積更快。";
           }
           showDialogue(`${def.name}｜${def.habitat}`, text, 4.8);
+          evaluateMissions();
           uiDirty = true;
         }
 
         function startFieldAction(event) {
           const def = eventDefs.find((item) => item.id === event.id);
           const helper = eventHasHelper(def);
+          const toolBonus = state.completedMissions["field-care"] ? 0.04 : 0;
           state.fieldAction = {
             uid: event.uid,
             def,
             meter: Math.random(),
             dir: Math.random() < 0.5 ? -1 : 1,
             target: randRange(0.32, 0.68),
-            window: helper ? 0.28 : 0.19,
+            window: (helper ? 0.28 : 0.19) + toolBonus,
             speed: helper ? 0.74 : 0.92,
-            time: helper ? 8 : 6.5,
+            time: (helper ? 8 : 6.5) + (toolBonus ? 0.6 : 0),
             helper,
           };
           showDialogue(def.name, `${def.prompt}：看準下方時機條，游標進入亮區時按空白鍵。${helper ? " 夥伴技能讓判定更穩。" : ""}`, 3.8);
@@ -2984,12 +3312,14 @@
             return;
           }
           state.events = state.events.filter((item) => item.uid !== event.uid);
+          state.stats.eventsResolved += 1;
           const mult = perfect ? 1.35 : 1;
           adjustEco(def.delta, mult);
           unlockCard(def.id === "runoff" || def.id === "sample" ? "指標生物" : "日常綠地");
           addNotes(perfect ? 18 : 12, perfect ? "完整修復" : "環境行動");
           if (def.id === "litter") addTrashBundleToBackpack(["plastic", "paper", "general"], "清理分類物");
           showDialogue(def.name, `${def.note}${perfect ? " 處理得很完整，資料也更可用。" : ""}`, 4.5);
+          evaluateMissions();
         }
 
         function battleMonster() {
@@ -3033,7 +3363,8 @@
           } else if (key === "2") {
             const practiced = state.recycleStats.played > 0;
             const perfectBoost = state.recycleStats.perfect > 0 ? 5 : 0;
-            damage = practiced ? 9 + perfectBoost : 5;
+            const manualBoost = state.completedMissions["first-recycle"] ? 3 : 0;
+            damage = practiced ? 9 + perfectBoost + manualBoost : 5;
             battle.weakened = practiced;
             message = practiced
               ? `你辨識牠身上的回收物弱點，造成 ${damage} 傷害，並降低下一次攻擊。`
@@ -3088,6 +3419,7 @@
             damage = Math.ceil(damage * 0.45);
             battle.defending = false;
           }
+          if (state.completedMissions["monster-response"]) damage = Math.ceil(damage * 0.88);
           state.health = clamp(state.health - damage, 0, state.maxHealth);
           battle.playerHp = state.health;
           pushBattleLog(`垃圾怪推來混雜垃圾，造成 ${damage} 傷害。`);
@@ -3097,12 +3429,14 @@
         function finishBattle(victory, monster) {
           if (victory) {
             const drops = monster.trashHeld.length ? monster.trashHeld : ["general"];
+            state.stats.monstersDefeated += 1;
             addTrashBundleToBackpack(drops, "戰鬥回收");
             addNotes(12 + monster.stage * 8 + monster.absorbed, "擊敗垃圾怪");
             adjustEco({ pollution: -monster.stage * 4, bio: 1 + monster.stage });
             state.monsters = state.monsters.filter((item) => item.uid !== monster.uid);
             state.battle = null;
             showDialogue("垃圾怪被清理", `你擊敗第 ${monster.stage} 階垃圾怪，牠吸收的垃圾已進入背包。回收場分類越準，獎勵越高。`, 4.4);
+            evaluateMissions();
           } else {
             state.health = Math.ceil(state.maxHealth * 0.45);
             monster.x += randRange(-90, 90);
@@ -3156,15 +3490,18 @@
           const perfect = game.correct === total;
           const baseReward = game.items.reduce((sum, typeId) => sum + trashDef(typeId).reward, 0);
           const accuracy = game.correct / total;
-          const reward = Math.round(baseReward * (0.55 + accuracy * 0.45)) + (perfect ? 18 + total * 2 : 0);
+          const sortingBonus = state.completedMissions["first-recycle"] ? 1.1 : 1;
+          const reward = Math.round((baseReward * (0.55 + accuracy * 0.45) + (perfect ? 18 + total * 2 : 0)) * sortingBonus);
           for (const typeId of game.items) removeTrashFromBackpack(typeId);
           state.recyclePoints += reward;
           state.recycleStats.played += 1;
+          state.stats.recycledItems += total;
           if (perfect) state.recycleStats.perfect += 1;
           addNotes(perfect ? 16 : 8, perfect ? "完美分類" : "完成回收");
           addLog(`回收分類 ${game.correct}/${total}，獲得回收點數 +${reward}${perfect ? "（bonus）" : ""}。`);
           state.recycleGame = null;
           showDialogue("回收場結算", `${game.correct}/${total} 題正確，獲得 ${reward} 回收點數。${perfect ? "完美通過，分類分析已強化。" : "再練幾次，分類會更穩。"}`, 4.2);
+          evaluateMissions();
           uiDirty = true;
         }
 
@@ -3480,6 +3817,7 @@
             if (item.kind === "npc") drawNpc(item.data);
             if (item.kind === "player") drawPlayer();
           }
+          drawInteractionMarker();
 
           ctx.restore();
         }
@@ -3683,6 +4021,7 @@
           ctx.fillRect(exit.x - 16, exit.y - 10, exit.w + 32, exit.h + 18);
 
           drawPlayer();
+          drawInteractionMarker();
           if (dist(state.player, exit) < 96) drawWorldLabel("離開", exit.x + exit.w / 2, exit.y - 12);
         }
 
@@ -3696,6 +4035,42 @@
           ctx.fillRect(x - w / 2, y - 12, w, 20);
           ctx.fillStyle = fg;
           ctx.fillText(text, x, y + 2);
+        }
+
+        function interactablePoint(target) {
+          if (!target) return null;
+          if (target.type === "building") {
+            const door = buildingDoorRect(target.ref);
+            return { x: door.x + door.w / 2, y: door.y + 4, w: door.w, h: door.h };
+          }
+          if (target.type === "exit") {
+            return { x: target.ref.x + target.ref.w / 2, y: target.ref.y + 3, w: target.ref.w, h: target.ref.h };
+          }
+          return {
+            x: target.ref.x + (target.ref.w || 0) / 2,
+            y: target.ref.y - 6,
+            w: target.ref.w || 22,
+            h: target.ref.h || 22,
+          };
+        }
+
+        function drawInteractionMarker() {
+          if (state.battle || state.recycleGame || state.fieldAction) return;
+          const target = nearestInteractable();
+          const point = interactablePoint(target);
+          if (!point) return;
+          const bob = Math.sin(performance.now() / 150) * 2;
+          const y = point.y - 10 + bob;
+          ctx.save();
+          ctx.fillStyle = "rgba(59, 33, 24, 0.55)";
+          ctx.fillRect(point.x - 7, y - 1, 14, 14);
+          ctx.fillStyle = "#f7d36f";
+          ctx.fillRect(point.x - 5, y - 3, 10, 10);
+          ctx.fillStyle = "#fff7d7";
+          ctx.fillRect(point.x - 2, y, 4, 4);
+          ctx.fillStyle = "rgba(247, 211, 111, 0.24)";
+          ctx.fillRect(point.x - point.w * 0.35, point.y + point.h * 0.42, point.w * 0.7, 3);
+          ctx.restore();
         }
 
         function drawWeatherRain(count, speed, opacity, length, now) {
@@ -4092,6 +4467,7 @@
           drawRecycleOverlay();
           updatePrompt();
           renderPlayerStatus();
+          renderToasts();
         }
 
         function updatePrompt() {
@@ -4100,6 +4476,10 @@
             return;
           }
           if (state.battle) {
+            promptEl.hidden = true;
+            return;
+          }
+          if (state.dialogue && !state.fieldAction && !state.recycleGame) {
             promptEl.hidden = true;
             return;
           }
@@ -4174,6 +4554,19 @@
             </span>
           `;
 
+          const mission = getActiveMission();
+          const progress = missionProgress(mission);
+          const rate = clamp((progress / mission.goal) * 100, 0, 100);
+          questHud.hidden = !state.started || Boolean(state.battle);
+          if (!questHud.hidden) {
+            questHud.innerHTML = `
+              <div class="quest-kicker">目前任務 ${progress}/${mission.goal}</div>
+              <div class="quest-title">${mission.title}</div>
+              <div class="quest-sub">${mission.instruction}</div>
+              <div class="quest-progress"><i style="width:${rate}%"></i></div>
+            `;
+          }
+
           const setMetric = (valueEl, barEl, value, invert = false) => {
             valueEl.textContent = Math.round(value);
             barEl.style.width = `${clamp(value, 0, 100)}%`;
@@ -4203,6 +4596,13 @@
               : state.trash.length
                 ? "優先撿主路、橋邊與回收場附近垃圾；放太久才會腐化成垃圾怪。"
                 : "附近暫時乾淨，可以去補圖鑑、累積夥伴信任或到回收場整理背包。";
+            const mission = getActiveMission();
+            const missionDone = missionProgress(mission);
+            const missionRate = clamp((missionDone / mission.goal) * 100, 0, 100);
+            const unlockedPerks = MISSION_DEFS.filter((item) => state.completedMissions[item.id] && item.perk);
+            const perkRows = unlockedPerks.length
+              ? unlockedPerks.map((item) => `<div class="tip-row">${item.perk}</div>`).join("")
+              : `<div class="tip-row">完成任務路線後會逐步解鎖巡查、分類、環境行動與戰鬥加成。</div>`;
             sideBody.innerHTML = `
               <div class="hero-summary">
                 <div class="hero-card">
@@ -4216,6 +4616,17 @@
                   <div class="hero-sub">背包件數 / 回收點數</div>
                 </div>
               </div>
+
+              <details class="drawer" open>
+                <summary>任務路線 <span class="chip">${missionDone}/${mission.goal}</span></summary>
+                <div class="drawer-body">
+                  <div class="focus-card ${missionDone >= mission.goal ? "warn" : ""}">
+                    <div class="focus-title">${mission.title} <span class="chip">EXP +${mission.reward.exp}</span></div>
+                    <small>${mission.instruction} 完成後獲得回收點數 +${mission.reward.points}。${mission.perk ? ` 解鎖：${mission.perk}。` : ""}</small>
+                    <div class="meter-line"><i style="width:${missionRate}%"></i></div>
+                  </div>
+                </div>
+              </details>
 
               <details class="drawer" open>
                 <summary>巡查摘要 ${weatherChipHtml()}</summary>
@@ -4261,6 +4672,7 @@
                   <div class="tip-list" style="margin-top: 8px;">
                     <div class="tip-row">戰鬥：1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理</div>
                     <div class="tip-row">分類完美會提高「分類分析」威力；台灣藍鵲、台灣黑熊會強化夥伴支援。</div>
+                    ${perkRows}
                   </div>
                 </div>
               </details>
@@ -4286,7 +4698,7 @@
               return `
                 <div class="inventory-item ${count ? "" : "empty"}">
                   <div class="inventory-top">
-                    <span class="swatch" style="background:${type.color}"></span>
+                    <img class="item-icon" src="${assetUrl(type.icon)}" alt="" aria-hidden="true">
                     <span class="item-name">${type.name}</span>
                     <span class="item-count">${count}</span>
                   </div>
@@ -4343,9 +4755,14 @@
             const animalCards = animalDefs.map((animal) => {
               const p = state.progress[animal.id] || { trust: 0, seen: false, partnered: false };
               return `
-                <div class="card">
-                  <div class="card-title">${p.seen ? animal.name : "未發現動物"} <span class="chip">${p.partnered ? "夥伴" : animal.rarity}</span></div>
-                  <small>${p.seen ? `${animal.habitat}｜信任 ${p.trust}/${animal.trustGoal}｜技能：${animal.skill}` : `線索：${animal.habitat}，環境條件達標後可能出現。`}</small>
+                <div class="card animal-card">
+                  <div class="animal-icon-frame">
+                    <img class="animal-icon ${p.seen ? "" : "locked"}" src="${assetUrl(animal.sprite)}" alt="" aria-hidden="true">
+                  </div>
+                  <div class="animal-info">
+                    <div class="card-title">${p.seen ? animal.name : "未發現動物"} <span class="chip">${p.partnered ? "夥伴" : animal.rarity}</span></div>
+                    <small>${p.seen ? `${animal.habitat}｜信任 ${p.trust}/${animal.trustGoal}｜技能：${animal.skill}` : `線索：${animal.habitat}，環境條件達標後可能出現。`}</small>
+                  </div>
                 </div>
               `;
             }).join("");
