@@ -340,5 +340,68 @@
       32
     ],
     "source": "gpt-image-2"
+  },
+  {
+    "name": "weatherSunny",
+    "file": "weatherSunny.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "weatherCloudy",
+    "file": "weatherCloudy.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "weatherRain",
+    "file": "weatherRain.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "weatherFog",
+    "file": "weatherFog.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "weatherOvercast",
+    "file": "weatherOvercast.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "weatherStorm",
+    "file": "weatherStorm.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "generated-weather-icons"
+  },
+  {
+    "name": "worldMap",
+    "file": "worldMap.png",
+    "size": [
+      168,
+      112
+    ],
+    "source": "generated-world-map"
   }
 ]

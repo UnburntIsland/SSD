@@ -292,8 +292,39 @@
       }
 
       .hud-strip {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+        white-space: normal;
+      }
+
+      .weather-icon {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.22));
+      }
+
+      .hud-copy {
+        display: inline-flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.1;
+      }
+
+      .hud-main {
         white-space: nowrap;
+      }
+
+      .hud-weather-note {
+        color: #dbe8c0;
+        font-size: 10px;
+        font-weight: 900;
+        opacity: 0.92;
       }
 
       .panel {
@@ -703,6 +734,17 @@
         white-space: nowrap;
       }
 
+      .weather-chip {
+        gap: 4px;
+        padding-left: 3px;
+      }
+
+      .weather-chip .weather-icon {
+        width: 16px;
+        height: 16px;
+        filter: none;
+      }
+
       .quick {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -874,6 +916,22 @@
           font-size: 13px;
         }
 
+        .hud-pill {
+          left: 10px;
+          top: 10px;
+          max-width: calc(100% - 20px);
+        }
+
+        .pill {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+
+        .weather-icon {
+          width: 28px;
+          height: 28px;
+        }
+
         .prompt {
           min-width: min(360px, calc(100% - 32px));
         }
@@ -1030,7 +1088,57 @@
         const TRASH_START_SPAWN_DELAY = { min: 16, max: 34 };
         const TRASH_RETRY_DELAY = { min: 10, max: 18 };
         const TRASH_TRANSFORM_DELAY = { min: 170, max: 300 };
-        const WEATHER = ["晴朗", "多雲", "細雨", "薄霧"];
+        const WEATHER_DEFS = {
+          晴朗: {
+            icon: "weatherSunny",
+            note: "陽光充足",
+            visual: "sunny",
+            ecology: { water: -0.2, bio: 0.5 },
+            log: "陽光讓植被活躍，水域略微蒸散。",
+            advice: "晴朗時視野最好，適合巡查足跡、補完圖鑑或清理主路垃圾。",
+          },
+          多雲: {
+            icon: "weatherCloudy",
+            note: "雲影移動",
+            visual: "cloudy",
+            ecology: { bio: 0.2 },
+            log: "雲層遮住強光，動物活動稍微增加。",
+            advice: "多雲時野外溫和，適合去森林和濕地累積夥伴信任。",
+          },
+          細雨: {
+            icon: "weatherRain",
+            note: "水氣上升",
+            visual: "rain",
+            ecology: { water: 0.9, pollution: -0.4 },
+            log: "雨水補充溪流，也沖淡了一點污染。",
+            advice: "細雨會讓水域恢復一些，趁雨巡查排水口與河岸垃圾很有效。",
+          },
+          薄霧: {
+            icon: "weatherFog",
+            note: "視野柔化",
+            visual: "fog",
+            ecology: { water: 0.3, bio: 0.2 },
+            log: "薄霧保留濕氣，濕地生物變得更容易接近。",
+            advice: "薄霧適合低速觀察，前往濕地或溪流時留意稀有動物。",
+          },
+          陰天: {
+            icon: "weatherOvercast",
+            note: "光線偏暗",
+            visual: "overcast",
+            ecology: { water: 0.2, bio: -0.1 },
+            log: "陰天讓氣溫下降，水分較不容易流失。",
+            advice: "陰天視線較平，適合集中處理污染事件和回收分類。",
+          },
+          雷雨: {
+            icon: "weatherStorm",
+            note: "強降雨",
+            visual: "storm",
+            ecology: { water: 1.4, pollution: -0.6 },
+            log: "強降雨快速補水，但巡查時要注意閃電和路面狀況。",
+            advice: "雷雨會明顯補充水域，優先確認河道、橋邊和排水口是否有垃圾堆積。",
+          },
+        };
+        const WEATHER = Object.keys(WEATHER_DEFS);
         const keys = new Set();
 
         const zones = [
@@ -1374,6 +1482,13 @@
           tileWetland: "tileWetland.png",
           tileCoast: "tileCoast.png",
           tileWater: "tileWater.png",
+          worldMap: "worldMap.png",
+          weatherSunny: "weatherSunny.png",
+          weatherCloudy: "weatherCloudy.png",
+          weatherRain: "weatherRain.png",
+          weatherFog: "weatherFog.png",
+          weatherOvercast: "weatherOvercast.png",
+          weatherStorm: "weatherStorm.png",
         };
 
         const SPRITE_DRAW_SIZES = {
@@ -1520,6 +1635,33 @@
           battle: null,
           recycleGame: null,
         };
+
+        function weatherDef(name = state.weather) {
+          return WEATHER_DEFS[name] || WEATHER_DEFS["晴朗"];
+        }
+
+        function weatherIconUrl(name = state.weather) {
+          const def = weatherDef(name);
+          const file = ASSET_FILES[def.icon] || ASSET_FILES.weatherSunny;
+          return `${ASSET_BASE}${file}`;
+        }
+
+        function weatherChipHtml(name = state.weather) {
+          return `<span class="chip weather-chip"><img class="weather-icon" src="${weatherIconUrl(name)}" alt="" aria-hidden="true">${name}</span>`;
+        }
+
+        function pickNextWeather() {
+          const water = Math.floor(state.ecology.water / 13);
+          const pollution = Math.floor(state.ecology.pollution / 19);
+          const bio = Math.floor(state.ecology.bio / 17);
+          return WEATHER[(state.day * 5 + water + pollution + bio) % WEATHER.length];
+        }
+
+        function applyDailyWeatherEffect(name = state.weather) {
+          const def = weatherDef(name);
+          if (def.ecology) adjustEco(def.ecology);
+          return def.log || "";
+        }
 
         function clamp(value, min, max) {
           return Math.max(min, Math.min(max, value));
@@ -2579,8 +2721,9 @@
           if (state.time >= DAY_MINUTES) {
             state.time -= DAY_MINUTES;
             state.day += 1;
-            state.weather = WEATHER[(state.day * 5 + Math.floor(state.ecology.water / 14)) % WEATHER.length];
-            addLog(`第 ${state.day} 天開始，天氣：${state.weather}。`);
+            state.weather = pickNextWeather();
+            const weatherLog = applyDailyWeatherEffect(state.weather);
+            addLog(`第 ${state.day} 天開始，天氣：${state.weather}。${weatherLog}`);
             for (let i = 0; i < 3; i++) spawnEvent();
           }
           if (Math.floor(before / 30) !== Math.floor(state.time / 30)) uiDirty = true;
@@ -3555,8 +3698,57 @@
           ctx.fillText(text, x, y + 2);
         }
 
+        function drawWeatherRain(count, speed, opacity, length, now) {
+          ctx.strokeStyle = `rgba(225, 245, 247, ${opacity})`;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < count; i++) {
+            const x = (i * 47 + now * 0.11) % canvas.width;
+            const y = (i * 79 + now * speed) % canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 8, y + length);
+            ctx.stroke();
+          }
+        }
+
+        function drawWeatherClouds(alpha, now, dark = false) {
+          ctx.fillStyle = dark ? `rgba(47, 57, 61, ${alpha})` : `rgba(246, 247, 226, ${alpha})`;
+          for (let i = 0; i < 5; i++) {
+            const x = ((i * 213 + now * 0.018) % (canvas.width + 220)) - 140;
+            const y = 42 + i * 66 + Math.sin(now * 0.001 + i) * 8;
+            const w = 92 + (i % 2) * 36;
+            ctx.fillRect(Math.round(x), Math.round(y), w, 18);
+            ctx.fillRect(Math.round(x + 18), Math.round(y - 10), 42, 12);
+            ctx.fillRect(Math.round(x + 56), Math.round(y - 6), 54, 10);
+          }
+        }
+
+        function drawWeatherFog(now) {
+          for (let i = 0; i < 7; i++) {
+            const y = 80 + i * 70;
+            const x = ((now * 0.012 + i * 97) % 220) - 120;
+            ctx.fillStyle = i % 2 ? "rgba(235, 239, 218, 0.16)" : "rgba(210, 224, 213, 0.18)";
+            ctx.fillRect(Math.round(x), y, canvas.width + 140, 18);
+            ctx.fillRect(Math.round(x + 70), y + 24, canvas.width - 20, 10);
+          }
+        }
+
+        function drawSunnyGlints(now) {
+          if (state.time < 420 || state.time > 1020) return;
+          ctx.fillStyle = "rgba(255, 239, 160, 0.18)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(255, 248, 183, 0.48)";
+          for (let i = 0; i < 16; i++) {
+            const x = (i * 83 + Math.floor(now * 0.006)) % canvas.width;
+            const y = 72 + ((i * 53) % (canvas.height - 140));
+            ctx.fillRect(Math.round(x), y, 6, 2);
+            ctx.fillRect(Math.round(x + 2), y - 2, 2, 6);
+          }
+        }
+
         function drawAtmosphere() {
           const t = state.time;
+          const now = performance.now();
           if (t >= 1110 || t < 330) {
             ctx.fillStyle = "rgba(12, 28, 52, 0.42)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -3567,45 +3759,98 @@
             ctx.fillStyle = "rgba(215, 235, 228, 0.18)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
           }
-          if (state.weather === "細雨") {
-            ctx.strokeStyle = "rgba(225, 245, 247, 0.42)";
-            ctx.lineWidth = 1;
-            for (let i = 0; i < 90; i++) {
-              const x = (i * 47 + performance.now() * 0.11) % canvas.width;
-              const y = (i * 79 + performance.now() * 0.25) % canvas.height;
-              ctx.beginPath();
-              ctx.moveTo(x, y);
-              ctx.lineTo(x - 8, y + 16);
-              ctx.stroke();
+
+          const visual = weatherDef().visual;
+          if (visual === "sunny") {
+            drawSunnyGlints(now);
+          } else if (visual === "cloudy") {
+            ctx.fillStyle = "rgba(80, 92, 84, 0.06)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWeatherClouds(0.14, now);
+          } else if (visual === "rain") {
+            ctx.fillStyle = "rgba(71, 103, 116, 0.12)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWeatherRain(90, 0.25, 0.42, 16, now);
+          } else if (visual === "fog") {
+            ctx.fillStyle = "rgba(214, 224, 213, 0.14)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWeatherFog(now);
+          } else if (visual === "overcast") {
+            ctx.fillStyle = "rgba(49, 58, 62, 0.16)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWeatherClouds(0.12, now, true);
+          } else if (visual === "storm") {
+            ctx.fillStyle = "rgba(23, 34, 45, 0.26)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawWeatherRain(150, 0.36, 0.55, 20, now);
+            if (Math.floor(now / 1800) % 8 === 0 && now % 1800 < 110) {
+              ctx.fillStyle = "rgba(255, 247, 185, 0.22)";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
           }
         }
 
         function drawMiniMap() {
           if (!state.showMap || state.scene === "interior") return;
-          const w = 178;
-          const h = 116;
+          const w = 168;
+          const h = 112;
           const x = canvas.width - w - 16;
           const y = 16;
+          const pad = 5;
           ctx.fillStyle = "rgba(28, 48, 36, 0.86)";
-          ctx.fillRect(x, y, w, h);
+          ctx.fillRect(x - pad, y - pad, w + pad * 2, h + pad * 2);
           ctx.strokeStyle = "#fff3bf";
           ctx.lineWidth = 2;
-          ctx.strokeRect(x, y, w, h);
-          for (const zone of zones) {
-            const zx = x + (zone.rect.x / WORLD_W) * w;
-            const zy = y + (zone.rect.y / WORLD_H) * h;
-            const zw = (zone.rect.w / WORLD_W) * w;
-            const zh = (zone.rect.h / WORLD_H) * h;
-            ctx.fillStyle = zone.id === "river" ? "#63b5c7" : zone.id === "coast" ? "#d8bd78" : zone.id === "forest" ? "#3f8b55" : zone.id === "wetland" ? "#6ba874" : "#8fc46f";
-            ctx.fillRect(zx, zy, zw, zh);
+          ctx.strokeRect(x - pad, y - pad, w + pad * 2, h + pad * 2);
+
+          const mapImage = sprites.worldMap;
+          if (mapImage) {
+            ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(mapImage, x, y, w, h);
+            ctx.restore();
+          } else {
+            const tileW = w / MAP_W;
+            const tileH = h / MAP_H;
+            const fallbackColors = {
+              grass: "#78aa67",
+              hub: "#82ad68",
+              path: "#b58f59",
+              forest: "#456d3b",
+              meadow: "#8cbd62",
+              wetland: "#638d62",
+              coast: "#c6ad72",
+              water: "#4795a6",
+              void: "#0d1511",
+            };
+            for (let ty = 0; ty < MAP_H; ty++) {
+              for (let tx = 0; tx < MAP_W; tx++) {
+                ctx.fillStyle = fallbackColors[terrainAt(tx, ty)] || fallbackColors.void;
+                ctx.fillRect(x + tx * tileW, y + ty * tileH, Math.ceil(tileW), Math.ceil(tileH));
+              }
+            }
           }
+
+          const viewX = x + (state.camera.x / WORLD_W) * w;
+          const viewY = y + (state.camera.y / WORLD_H) * h;
+          const viewW = (canvas.width / WORLD_W) * w;
+          const viewH = (canvas.height / WORLD_H) * h;
+          ctx.strokeStyle = "rgba(255, 247, 215, 0.72)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(viewX, viewY, viewW, viewH);
+
           ctx.fillStyle = "#fff3bf";
           for (const trash of state.trash) ctx.fillRect(x + (trash.x / WORLD_W) * w - 1, y + (trash.y / WORLD_H) * h - 1, 2, 2);
+          ctx.fillStyle = "#f8de8f";
+          for (const event of state.events) ctx.fillRect(x + (event.x / WORLD_W) * w - 1, y + (event.y / WORLD_H) * h - 1, 2, 2);
           ctx.fillStyle = "#c44f45";
-          for (const monster of state.monsters) ctx.fillRect(x + (monster.x / WORLD_W) * w - 2, y + (monster.y / WORLD_H) * h - 2, 4, 4);
+          for (const monster of state.monsters) ctx.fillRect(x + (monster.x / WORLD_W) * w - 2, y + (monster.y / WORLD_H) * h - 2, 3, 3);
+          const playerX = x + (state.player.x / WORLD_W) * w;
+          const playerY = y + (state.player.y / WORLD_H) * h;
+          ctx.fillStyle = "#3b2118";
+          ctx.fillRect(playerX - 3, playerY - 3, 6, 6);
           ctx.fillStyle = "#f44f45";
-          ctx.fillRect(x + (state.player.x / WORLD_W) * w - 2, y + (state.player.y / WORLD_H) * h - 2, 4, 4);
+          ctx.fillRect(playerX - 2, playerY - 2, 4, 4);
         }
 
         function drawFieldActionOverlay() {
@@ -3917,12 +4162,17 @@
           const zone = currentZoneAt();
           sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜回收點數 ${state.recyclePoints}`;
           hudPills.hidden = Boolean(state.battle);
-          const hudText = [
-            `第 ${state.day} 天`,
-            formatClock(),
-            state.weather,
-          ].join("｜");
-          hudPills.innerHTML = `<span class="pill hud-strip">${hudText}</span>`;
+          const weather = weatherDef();
+          const hudText = [`第 ${state.day} 天`, formatClock(), state.weather].join("｜");
+          hudPills.innerHTML = `
+            <span class="pill hud-strip" aria-label="${hudText}，${weather.note}">
+              <img class="weather-icon" src="${weatherIconUrl()}" alt="" aria-hidden="true">
+              <span class="hud-copy">
+                <span class="hud-main">${hudText}</span>
+                <span class="hud-weather-note">${weather.note}</span>
+              </span>
+            </span>
+          `;
 
           const setMetric = (valueEl, barEl, value, invert = false) => {
             valueEl.textContent = Math.round(value);
@@ -3968,7 +4218,7 @@
               </div>
 
               <details class="drawer" open>
-                <summary>巡查摘要 <span class="chip">${state.weather}</span></summary>
+                <summary>巡查摘要 ${weatherChipHtml()}</summary>
                 <div class="drawer-body">
                   <div class="status-grid">
                     <div class="status-tile">
@@ -4166,6 +4416,7 @@
           if (state.ecology.pollution > 58) return "污染壓力偏高，社區站和海岸步道容易出現可處理事件。";
           if (isNight(state.time)) return "夜間適合觀察螢火蟲、陸蟹與路燈光害，但保持距離與低亮度。";
           if (state.ecology.forest < 62) return "森林健康還能提升，去近郊森林找外來植物、陷阱風險或動物足跡。";
+          if (weatherDef().advice) return weatherDef().advice;
           return "環境狀態穩定，適合補完圖鑑、累積夥伴信任或尋找稀有動物。";
         }
 
