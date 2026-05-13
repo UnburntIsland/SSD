@@ -1,0 +1,3439 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232e795d'/%3E%3Cpath d='M4 12V4h3v8zm5 0V6h3v6z' fill='%23fff7d7'/%3E%3C/svg%3E" />
+    <title>森循島</title>
+    <style>
+      :root {
+        --bg: #12251d;
+        --panel: #f4eed8;
+        --panel-2: #e5ddbd;
+        --ink: #203529;
+        --muted: #5e7568;
+        --line: #b9c394;
+        --accent: #2e795d;
+        --accent-2: #d88b3d;
+        --good: #4d9f62;
+        --warn: #c38132;
+        --bad: #c44f45;
+        --shadow: rgba(8, 20, 14, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 12%, rgba(103, 163, 119, 0.22), transparent 28%),
+          linear-gradient(135deg, #12251d, #1d3f32 48%, #1a2c28);
+        color: var(--ink);
+        font-family:
+          "Noto Sans TC",
+          "Microsoft JhengHei",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app {
+        --app-gap: 12px;
+        --side-width: 368px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--side-width);
+        gap: var(--app-gap);
+        width: min(calc(100vw - 16px), calc((100vh - 16px) * 1.5 + var(--side-width) + var(--app-gap)));
+        height: min(calc(100vh - 16px), calc((100vw - 16px - var(--side-width) - var(--app-gap)) * 0.6667));
+        margin: 8px auto;
+      }
+
+      .stage {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 3 / 2;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background: #254c35;
+        box-shadow: 0 22px 80px rgba(0, 0, 0, 0.35);
+      }
+
+      .stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        pointer-events: none;
+        border: 4px solid #e5ddbd;
+        border-radius: inherit;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #6fa466;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .hud-pill {
+        position: absolute;
+        left: 16px;
+        top: 14px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        max-width: calc(100% - 32px);
+        pointer-events: none;
+      }
+
+      .pill {
+        padding: 7px 10px;
+        border: 2px solid rgba(255, 247, 214, 0.62);
+        border-radius: 8px;
+        background: rgba(25, 55, 42, 0.86);
+        color: #fff5cf;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+      }
+
+      .prompt {
+        position: absolute;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        min-width: 360px;
+        max-width: min(720px, calc(100% - 32px));
+        padding: 10px 14px;
+        border: 3px solid #fff3bf;
+        border-radius: 8px;
+        background: rgba(28, 48, 36, 0.94);
+        color: #fff7d7;
+        text-align: center;
+        font-weight: 800;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.26);
+      }
+
+      .prompt[hidden] {
+        display: none;
+      }
+
+      .start {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background:
+          linear-gradient(rgba(120, 180, 155, 0.35), rgba(27, 57, 44, 0.22)),
+          radial-gradient(circle at 44% 36%, rgba(255, 249, 213, 0.8), transparent 23%);
+        backdrop-filter: blur(1px);
+      }
+
+      .start[hidden] {
+        display: none;
+      }
+
+      .start-card {
+        width: min(720px, calc(100% - 48px));
+        padding: 34px 38px 30px;
+        border: 4px solid #294b39;
+        border-radius: 10px;
+        background: rgba(244, 238, 216, 0.96);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+      }
+
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .brand-mark {
+        width: 86px;
+        height: 86px;
+        border: 4px solid #294b39;
+        border-radius: 8px;
+        background: #74ad68;
+        image-rendering: pixelated;
+        position: relative;
+        box-shadow: inset 0 -16px 0 rgba(35, 79, 54, 0.22);
+      }
+
+      .brand-mark::before {
+        content: "";
+        position: absolute;
+        left: 16px;
+        top: 18px;
+        width: 14px;
+        height: 48px;
+        background: #5a3a22;
+        box-shadow:
+          20px -8px 0 #2f6f44,
+          4px -8px 0 #3f8b55,
+          32px 4px 0 #276343,
+          10px 12px 0 #8ec46f;
+      }
+
+      .start h1 {
+        margin: 0;
+        color: #1f4b38;
+        font-size: 62px;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .start .subtitle {
+        margin: 6px 0 0;
+        color: #4f705f;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .start p {
+        margin: 16px 0 24px;
+        color: #395847;
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      .start-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .primary,
+      .secondary {
+        min-height: 44px;
+        padding: 0 18px;
+        border: 3px solid #294b39;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .primary {
+        background: #2e795d;
+        color: #fff8d8;
+      }
+
+      .secondary {
+        background: #efe5bd;
+        color: #294b39;
+      }
+
+      .side {
+        display: flex;
+        min-height: 0;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .panel {
+        border: 3px solid var(--line);
+        border-radius: 10px;
+        background: rgba(244, 238, 216, 0.97);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+      }
+
+      .panel.header {
+        padding: 12px 14px;
+      }
+
+      .header h2 {
+        margin: 0;
+        color: #1f4b38;
+        font-size: 27px;
+        line-height: 1.1;
+      }
+
+      .header .tag {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .metric {
+        padding: 8px 9px;
+        border: 2px solid rgba(105, 126, 86, 0.38);
+        border-radius: 8px;
+        background: #fff7dc;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .metric-value {
+        margin-top: 3px;
+        font-size: 21px;
+        font-weight: 950;
+        color: #244f3c;
+      }
+
+      .bar {
+        position: relative;
+        height: 8px;
+        margin-top: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #dccfa8;
+      }
+
+      .bar > i {
+        display: block;
+        width: 50%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--good);
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 7px;
+        padding: 8px;
+      }
+
+      .tab {
+        min-height: 34px;
+        border: 2px solid rgba(68, 92, 66, 0.42);
+        border-radius: 7px;
+        background: #efe5bd;
+        color: #385441;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .tab.active {
+        border-color: #244f3c;
+        background: #2e795d;
+        color: #fff8d8;
+      }
+
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .scroll-body {
+        height: 100%;
+        padding: 10px;
+        overflow: auto;
+      }
+
+      .card {
+        padding: 10px;
+        border: 2px solid rgba(105, 126, 86, 0.34);
+        border-radius: 8px;
+        background: #fff7dc;
+      }
+
+      .card + .card {
+        margin-top: 9px;
+      }
+
+      .card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #244f3c;
+        font-weight: 950;
+      }
+
+      .card small {
+        display: block;
+        margin-top: 5px;
+        color: #5e7568;
+        line-height: 1.45;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: #dbe8c0;
+        color: #355b43;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .quick {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+        padding: 8px;
+      }
+
+      .quick button {
+        min-height: 34px;
+        border: 2px solid rgba(68, 92, 66, 0.45);
+        border-radius: 7px;
+        background: #fff7dc;
+        color: #294b39;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .log {
+        max-height: 112px;
+        padding: 10px;
+        overflow: auto;
+        color: #385441;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .log div + div {
+        margin-top: 7px;
+        padding-top: 7px;
+        border-top: 1px solid rgba(98, 119, 82, 0.22);
+      }
+
+      .dialogue {
+        position: absolute;
+        right: 16px;
+        bottom: 18px;
+        width: min(430px, calc(100% - 32px));
+        padding: 14px 16px;
+        border: 3px solid #fff3bf;
+        border-radius: 8px;
+        background: rgba(28, 48, 36, 0.95);
+        color: #fff7d7;
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .dialogue[hidden] {
+        display: none;
+      }
+
+      .dialogue b {
+        display: block;
+        margin-bottom: 6px;
+        color: #f8de8f;
+      }
+
+      .dialogue span {
+        display: block;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 1100px) {
+        body {
+          overflow: auto;
+        }
+
+        .app {
+          grid-template-columns: 1fr;
+          width: min(960px, calc(100vw - 16px));
+          height: auto;
+          min-height: calc(100vh - 24px);
+        }
+
+        .stage {
+          height: auto;
+          min-height: 0;
+        }
+
+        .side {
+          min-height: 520px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .start-card {
+          width: calc(100% - 24px);
+          padding: 16px;
+          border-width: 3px;
+        }
+
+        .brand-row {
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+
+        .brand-mark {
+          width: 54px;
+          height: 54px;
+          border-width: 3px;
+        }
+
+        .brand-mark::before {
+          left: 10px;
+          top: 10px;
+          transform: scale(0.62);
+          transform-origin: left top;
+        }
+
+        .start h1 {
+          font-size: 40px;
+        }
+
+        .start .subtitle {
+          font-size: 14px;
+        }
+
+        .start p {
+          margin: 10px 0 12px;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .start-actions {
+          gap: 8px;
+        }
+
+        .primary,
+        .secondary {
+          min-height: 38px;
+          padding: 0 10px;
+          font-size: 13px;
+        }
+
+        .prompt {
+          min-width: min(360px, calc(100% - 32px));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <main class="stage" aria-label="森循島遊戲畫面">
+        <canvas id="game" width="960" height="640"></canvas>
+        <div class="hud-pill" id="hudPills"></div>
+        <div class="prompt" id="prompt" hidden></div>
+        <div class="dialogue" id="dialogue" hidden>
+          <b id="dialogueTitle"></b>
+          <span id="dialogueText"></span>
+        </div>
+        <section class="start" id="startOverlay">
+          <div class="start-card">
+            <div class="brand-row">
+              <div class="brand-mark" aria-hidden="true"></div>
+              <div>
+                <h1>森循島</h1>
+                <div class="subtitle">台灣生態 × 垃圾回收冒險</div>
+              </div>
+            </div>
+            <p>
+              在台灣化的社區、山林、溪流、濕地與海岸之間巡查。撿起路上的垃圾、阻止垃圾怪成長，
+              把收集到的垃圾帶到回收場分類換獎勵，也和台灣藍鵲、台灣黑熊等生態夥伴建立信任。
+            </p>
+            <div class="start-actions">
+              <button class="primary" id="startBtn">開始巡島</button>
+              <button class="secondary" id="loadBtn">讀取自動存檔</button>
+              <button class="secondary" id="resetBtn">清除存檔</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="side">
+        <section class="panel header">
+          <h2>森循島控制台</h2>
+          <div class="tag" id="sceneLine">自由探索準備中</div>
+        </section>
+
+        <section class="panel metrics">
+          <div class="metric">
+            <div class="metric-label">綠地健康</div>
+            <div class="metric-value" id="forestValue">--</div>
+            <div class="bar"><i id="forestBar"></i></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">溪流水質</div>
+            <div class="metric-value" id="waterValue">--</div>
+            <div class="bar"><i id="waterBar"></i></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">污染壓力</div>
+            <div class="metric-value" id="pollutionValue">--</div>
+            <div class="bar"><i id="pollutionBar"></i></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">生物多樣性</div>
+            <div class="metric-value" id="bioValue">--</div>
+            <div class="bar"><i id="bioBar"></i></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="tabs">
+            <button class="tab active" data-tab="guide">今日</button>
+            <button class="tab" data-tab="bag">背包</button>
+            <button class="tab" data-tab="codex">圖鑑</button>
+            <button class="tab" data-tab="people">居民</button>
+          </div>
+        </section>
+
+        <section class="panel scroll">
+          <div class="scroll-body" id="sideBody"></div>
+        </section>
+
+        <section class="panel quick">
+          <button id="saveBtn">儲存</button>
+          <button id="codexBtn">切換圖鑑 B</button>
+          <button id="mapBtn">小地圖 M</button>
+          <button id="speedBtn">時間速度 x1</button>
+        </section>
+
+        <section class="panel log" id="log"></section>
+      </aside>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d", { alpha: false });
+        ctx.imageSmoothingEnabled = false;
+
+        const startOverlay = document.getElementById("startOverlay");
+        const startBtn = document.getElementById("startBtn");
+        const loadBtn = document.getElementById("loadBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const hudPills = document.getElementById("hudPills");
+        const promptEl = document.getElementById("prompt");
+        const dialogueEl = document.getElementById("dialogue");
+        const dialogueTitle = document.getElementById("dialogueTitle");
+        const dialogueText = document.getElementById("dialogueText");
+        const sceneLine = document.getElementById("sceneLine");
+        const sideBody = document.getElementById("sideBody");
+        const logEl = document.getElementById("log");
+        const saveBtn = document.getElementById("saveBtn");
+        const codexBtn = document.getElementById("codexBtn");
+        const mapBtn = document.getElementById("mapBtn");
+        const speedBtn = document.getElementById("speedBtn");
+
+        const ui = {
+          forestValue: document.getElementById("forestValue"),
+          waterValue: document.getElementById("waterValue"),
+          pollutionValue: document.getElementById("pollutionValue"),
+          bioValue: document.getElementById("bioValue"),
+          forestBar: document.getElementById("forestBar"),
+          waterBar: document.getElementById("waterBar"),
+          pollutionBar: document.getElementById("pollutionBar"),
+          bioBar: document.getElementById("bioBar"),
+        };
+
+        const TILE = 32;
+        const MAP_W = 84;
+        const MAP_H = 56;
+        const WORLD_W = MAP_W * TILE;
+        const WORLD_H = MAP_H * TILE;
+        const SAVE_KEY = "senxunIslandPixelSandboxV2";
+        const DAY_MINUTES = 24 * 60;
+        const WEATHER = ["晴朗", "多雲", "細雨", "薄霧"];
+        const keys = new Set();
+
+        const zones = [
+          { id: "hub", name: "台灣社區生態站", rect: { x: 2 * TILE, y: 27 * TILE, w: 24 * TILE, h: 17 * TILE } },
+          { id: "meadow", name: "都會公園綠地", rect: { x: 6 * TILE, y: 8 * TILE, w: 20 * TILE, h: 16 * TILE } },
+          { id: "forest", name: "陽明山近郊森林", rect: { x: 24 * TILE, y: 4 * TILE, w: 29 * TILE, h: 30 * TILE } },
+          { id: "river", name: "淡水河溪流廊道", rect: { x: 51 * TILE, y: 4 * TILE, w: 14 * TILE, h: 48 * TILE } },
+          { id: "wetland", name: "關渡濕地", rect: { x: 41 * TILE, y: 31 * TILE, w: 15 * TILE, h: 13 * TILE } },
+          { id: "coast", name: "東北角海岸步道", rect: { x: 65 * TILE, y: 27 * TILE, w: 17 * TILE, h: 24 * TILE } },
+        ];
+
+        const trashTypes = [
+          { id: "plastic", name: "寶特瓶", category: "plastic", reward: 8, color: "#5ba9b9", hint: "瓶身壓扁、瓶蓋分開更好回收。" },
+          { id: "paper", name: "紙餐盒", category: "paper", reward: 7, color: "#d8bd78", hint: "乾淨紙類可回收，油污嚴重要改一般垃圾。" },
+          { id: "metal", name: "鋁罐", category: "metal", reward: 9, color: "#b7b6a6", hint: "金屬罐沖一下再回收，能降低異味。" },
+          { id: "glass", name: "玻璃瓶", category: "glass", reward: 10, color: "#7fbf9f", hint: "玻璃要避免破裂，和其他回收物分開放。" },
+          { id: "general", name: "菸蒂與髒污袋", category: "general", reward: 5, color: "#c44f45", hint: "菸蒂、髒污塑膠袋通常不進一般回收。" },
+        ];
+
+        const recycleCategories = [
+          { id: "paper", label: "紙類" },
+          { id: "plastic", label: "塑膠" },
+          { id: "metal", label: "金屬" },
+          { id: "glass", label: "玻璃" },
+          { id: "general", label: "不可回收/一般" },
+        ];
+
+        const animalDefs = [
+          {
+            id: "muntjac",
+            name: "山羌",
+            sprite: "muntjac",
+            habitat: "近郊森林",
+            rarity: "常見",
+            area: { x: 27 * TILE, y: 14 * TILE, w: 22 * TILE, h: 18 * TILE },
+            condition: () => true,
+            trustGoal: 3,
+            skill: "足跡辨識",
+            skillTag: "track",
+            card: "棲地干擾",
+            observe: "你放慢腳步，記錄山羌的警戒距離、蹄印與活動時間，不追逐也不叫喊。",
+          },
+          {
+            id: "pangolin",
+            name: "穿山甲",
+            sprite: "pangolin",
+            habitat: "保育廊道",
+            rarity: "稀有",
+            area: { x: 34 * TILE, y: 6 * TILE, w: 16 * TILE, h: 17 * TILE },
+            condition: (s) => s.ecology.forest >= 55 && s.ecology.pollution <= 70,
+            trustGoal: 4,
+            skill: "風險通報",
+            skillTag: "patrol",
+            card: "保育通報",
+            observe: "你只記錄翻土痕與位置，不靠近洞口。通報資料比近距離照片更有價值。",
+          },
+          {
+            id: "blackBear",
+            name: "台灣黑熊",
+            sprite: "blackBear",
+            habitat: "陽明山近郊森林",
+            rarity: "傳說",
+            area: { x: 36 * TILE, y: 10 * TILE, w: 14 * TILE, h: 20 * TILE },
+            condition: (s) => s.ecology.forest >= 62 && s.ecology.pollution <= 56 && s.recyclePoints >= 25,
+            trustGoal: 5,
+            skill: "守護姿態",
+            skillTag: "guard",
+            card: "台灣黑熊",
+            observe: "你在遠距離記錄黑熊的痕跡和白色 V 字胸斑，不餵食、不追逐，也把垃圾收好避免牠誤食。",
+          },
+          {
+            id: "redstart",
+            name: "鉛色水鶇",
+            sprite: "redstart",
+            habitat: "溪流石岸",
+            rarity: "常見",
+            area: { x: 53 * TILE, y: 8 * TILE, w: 9 * TILE, h: 32 * TILE },
+            condition: () => true,
+            trustGoal: 3,
+            skill: "溪岸觀察",
+            skillTag: "water",
+            card: "水生昆蟲",
+            observe: "鉛色水鶇在石頭上擺尾覓食，提醒你觀察水質、石岸與昆蟲量。",
+          },
+          {
+            id: "streamfish",
+            name: "溪魚",
+            sprite: "streamfish",
+            habitat: "緩流區",
+            rarity: "普通",
+            area: { x: 53 * TILE, y: 15 * TILE, w: 8 * TILE, h: 28 * TILE },
+            condition: (s) => s.ecology.water >= 46,
+            trustGoal: 3,
+            skill: "水質偵測",
+            skillTag: "water",
+            card: "指標生物",
+            observe: "水面下的小群溪魚回到緩流區。你用目視記錄，不撈捕也不投餵。",
+          },
+          {
+            id: "firefly",
+            name: "螢火蟲",
+            sprite: "firefly",
+            habitat: "低光害溪岸",
+            rarity: "稀有",
+            area: { x: 43 * TILE, y: 33 * TILE, w: 12 * TILE, h: 10 * TILE },
+            condition: (s) => s.ecology.water >= 64 && s.ecology.pollution <= 44 && isNight(s.time),
+            trustGoal: 4,
+            skill: "光害紀錄",
+            skillTag: "light",
+            card: "夜間光害",
+            observe: "你關掉手電筒，只記錄螢光出現的位置和附近燈源，不干擾求偶訊號。",
+          },
+          {
+            id: "magpie",
+            name: "台灣藍鵲",
+            sprite: "magpie",
+            habitat: "成熟樹冠",
+            rarity: "稀有",
+            area: { x: 26 * TILE, y: 5 * TILE, w: 24 * TILE, h: 12 * TILE },
+            condition: (s) => s.ecology.forest >= 68 && s.ecology.bio >= 52,
+            trustGoal: 4,
+            skill: "樹冠連通",
+            skillTag: "canopy",
+            card: "台灣藍鵲",
+            observe: "藍鵲越過連續樹冠。你標記哪些行道樹能讓公園、校園與溪岸接起來。",
+          },
+          {
+            id: "landcrab",
+            name: "陸蟹",
+            sprite: "landcrab",
+            habitat: "海岸步道",
+            rarity: "普通",
+            area: { x: 67 * TILE, y: 32 * TILE, w: 13 * TILE, h: 17 * TILE },
+            condition: (s) => s.ecology.bio >= 45,
+            trustGoal: 3,
+            skill: "夜間巡守",
+            skillTag: "coast",
+            card: "洄游路徑",
+            observe: "你在步道旁標記低速通行區，讓陸蟹能安全往返林緣與海岸。",
+          },
+          {
+            id: "butterfly",
+            name: "樺斑蝶",
+            sprite: "butterfly",
+            habitat: "街區綠地",
+            rarity: "常見",
+            area: { x: 8 * TILE, y: 9 * TILE, w: 16 * TILE, h: 14 * TILE },
+            condition: (s) => s.ecology.bio >= 30,
+            trustGoal: 2,
+            skill: "蜜源植物",
+            skillTag: "plant",
+            card: "日常綠地",
+            observe: "你記錄牠停留的蜜源植物，理解陽台、公園與校園如何成為小型補給站。",
+          },
+        ];
+
+        const eventDefs = [
+          {
+            id: "litter",
+            name: "零散垃圾",
+            sprite: "trash",
+            prompt: "分類清理",
+            zone: "hub",
+            area: { x: 7 * TILE, y: 31 * TILE, w: 18 * TILE, h: 10 * TILE },
+            skillTag: "track",
+            delta: { forest: 3, water: 2, pollution: -8, bio: 2 },
+            note: "你把瓶蓋、塑膠袋和菸蒂分類收好，也記下垃圾容易累積的位置。",
+          },
+          {
+            id: "runoff",
+            name: "雨水溝污染",
+            sprite: "drain",
+            prompt: "污染溯源",
+            zone: "river",
+            area: { x: 53 * TILE, y: 20 * TILE, w: 10 * TILE, h: 18 * TILE },
+            skillTag: "water",
+            delta: { water: 8, pollution: -10, bio: 4 },
+            note: "你沿排水口找到油膜和落葉堵塞點，把位置交給社區清潔隊。",
+          },
+          {
+            id: "invasive",
+            name: "疑似外來植物",
+            sprite: "sprout",
+            prompt: "拍照標記",
+            zone: "forest",
+            area: { x: 27 * TILE, y: 7 * TILE, w: 24 * TILE, h: 24 * TILE },
+            skillTag: "plant",
+            delta: { forest: 6, bio: 5 },
+            note: "你沒有亂拔，而是拍照、比對葉形並交給管理員確認。",
+          },
+          {
+            id: "light",
+            name: "過亮路燈",
+            sprite: "lamp",
+            prompt: "光害紀錄",
+            zone: "hub",
+            area: { x: 6 * TILE, y: 29 * TILE, w: 17 * TILE, h: 12 * TILE },
+            skillTag: "light",
+            nightOnly: true,
+            delta: { forest: 2, pollution: -3, bio: 7 },
+            note: "你記錄照明方向與時間，建議改用遮光罩和定時控制。",
+          },
+          {
+            id: "sample",
+            name: "水質採樣點",
+            sprite: "sample",
+            prompt: "採樣紀錄",
+            zone: "river",
+            area: { x: 52 * TILE, y: 9 * TILE, w: 12 * TILE, h: 32 * TILE },
+            skillTag: "water",
+            delta: { water: 5, bio: 3 },
+            note: "你記錄透明度、氣味和流速，把資料更新到社區水質表。",
+          },
+          {
+            id: "coastline",
+            name: "夜間路障",
+            sprite: "cone",
+            prompt: "調整動線",
+            zone: "coast",
+            area: { x: 66 * TILE, y: 31 * TILE, w: 15 * TILE, h: 18 * TILE },
+            skillTag: "coast",
+            delta: { forest: 2, pollution: -4, bio: 8 },
+            note: "你把臨時路障移到不阻擋洄游的位置，並加上慢行提醒。",
+          },
+        ];
+
+        const knowledgeCards = [
+          { id: "棲地干擾", text: "降低噪音、保持距離、不要切進草叢，是日常生活就能做的保育。" },
+          { id: "保育通報", text: "受困動物、陷阱、棄置漁線要拍照定位並通報，不徒手拉扯。" },
+          { id: "水生昆蟲", text: "溪石、水流與昆蟲量會影響溪流鳥類覓食，是水質的日常線索。" },
+          { id: "指標生物", text: "魚群、螢火蟲與溪鳥回來，通常代表棲地條件正在改善。" },
+          { id: "夜間光害", text: "遮光、低色溫與定時照明能減少夜間動物的訊號干擾。" },
+          { id: "台灣黑熊", text: "黑熊需要連續森林、乾淨棲地與安全距離；垃圾與廚餘會提高人熊衝突風險。" },
+          { id: "台灣藍鵲", text: "台灣藍鵲常在樹冠間群體活動，成熟樹木和連續綠廊能讓牠們更安全移動。" },
+          { id: "生態廊道", text: "行道樹、公園、校園與溪岸植栽能串成城市中的小型廊道。" },
+          { id: "洄游路徑", text: "海岸生物需要安全通道，夜間減速與不設障礙很重要。" },
+          { id: "日常綠地", text: "蜜源植物、落葉角落與少修剪草地能支撐昆蟲與鳥類。" },
+        ];
+
+        const npcDefs = [
+          {
+            id: "teacher",
+            name: "科普老師",
+            sprite: "npcTeacher",
+            role: "島上生態課程設計",
+            schedule: [
+              { from: 360, to: 660, x: 8 * TILE, y: 34 * TILE, act: "整理今日觀察板" },
+              { from: 660, to: 900, x: 15 * TILE, y: 15 * TILE, act: "在街區綠地帶戶外課" },
+              { from: 900, to: 1200, x: 35 * TILE, y: 21 * TILE, act: "巡看森林步道" },
+              { from: 1200, to: 1440, x: 12 * TILE, y: 33 * TILE, act: "回生態站整理資料" },
+            ],
+            lines: [
+              "沒有固定路線壓力。先選一處你感興趣的角落，留下可信的觀察紀錄。",
+              "圖鑑不是獎盃，而是你和環境慢慢建立關係的資料庫。",
+            ],
+          },
+          {
+            id: "ranger",
+            name: "巡查志工",
+            sprite: "npcRanger",
+            role: "通報與安全巡守",
+            schedule: [
+              { from: 360, to: 760, x: 42 * TILE, y: 9 * TILE, act: "檢查步道是否有棄置漁線" },
+              { from: 760, to: 1080, x: 57 * TILE, y: 25 * TILE, act: "沿溪流紀錄排水口" },
+              { from: 1080, to: 1440, x: 72 * TILE, y: 38 * TILE, act: "海岸步道夜間巡守" },
+            ],
+            lines: [
+              "看到危險物先標記和拍照，不要徒手處理。安全流程本身也是保育。",
+              "夥伴技能可以幫你找線索，但最後仍要靠正確通報讓現實世界接手。",
+            ],
+          },
+          {
+            id: "researcher",
+            name: "資料研究員",
+            sprite: "npcResearcher",
+            role: "知識卡與圖鑑資料",
+            schedule: [
+              { from: 360, to: 780, x: 16 * TILE, y: 33 * TILE, act: "整理圖鑑照片" },
+              { from: 780, to: 1040, x: 60 * TILE, y: 14 * TILE, act: "比對水質採樣" },
+              { from: 1040, to: 1440, x: 28 * TILE, y: 11 * TILE, act: "記錄傍晚鳥聲" },
+            ],
+            lines: [
+              "每張知識卡都要能連回生活：雨水溝、路燈、垃圾、步道動線。",
+              "稀有動物不需要一直出現。牠們偶爾出現，才像真實環境。",
+            ],
+          },
+          {
+            id: "kid",
+            name: "社區孩子",
+            sprite: "npcKid",
+            role: "生活觀察玩家視角",
+            schedule: [
+              { from: 360, to: 720, x: 13 * TILE, y: 35 * TILE, act: "看今天的生物小報" },
+              { from: 720, to: 1020, x: 17 * TILE, y: 13 * TILE, act: "在綠地找蝴蝶" },
+              { from: 1020, to: 1260, x: 42 * TILE, y: 37 * TILE, act: "等螢火蟲出現" },
+            ],
+            lines: [
+              "我想讓螢火蟲回來，可是老師說先要水乾淨，晚上也不能太亮。",
+              "如果動物自己走掉也沒關係，牠有牠的生活。",
+            ],
+          },
+        ];
+
+        const ASSET_BASE = "assets/pixel/";
+        const ASSET_FILES = {
+          player: "player.png",
+          npcTeacher: "npcTeacher.png",
+          npcRanger: "npcRanger.png",
+          npcResearcher: "npcResearcher.png",
+          npcKid: "npcKid.png",
+          muntjac: "muntjac.png",
+          pangolin: "pangolin.png",
+          blackBear: "blackBear.svg",
+          redstart: "redstart.png",
+          streamfish: "streamfish.png",
+          firefly: "firefly.png",
+          magpie: "magpie.png",
+          landcrab: "landcrab.png",
+          butterfly: "butterfly.png",
+          trash: "trash.png",
+          trashMonster1: "trashMonster1.svg",
+          trashMonster2: "trashMonster2.svg",
+          trashMonster3: "trashMonster3.svg",
+          drain: "drain.png",
+          sprout: "sprout.png",
+          lamp: "lamp.png",
+          sample: "sample.png",
+          cone: "cone.png",
+          tree: "tree.png",
+          treeTall: "treeTall.png",
+          buildingEcoStation: "buildingEcoStation.png",
+          buildingDataLab: "buildingDataLab.png",
+          buildingWorkshop: "buildingWorkshop.png",
+          recycleYard: "recycleYard.svg",
+          bridge: "bridge.png",
+          tileGrass: "tileGrass.png",
+          tileHub: "tileHub.png",
+          tilePath: "tilePath.png",
+          tileForest: "tileForest.png",
+          tileMeadow: "tileMeadow.png",
+          tileWetland: "tileWetland.png",
+          tileCoast: "tileCoast.png",
+          tileWater: "tileWater.png",
+        };
+
+        const SPRITE_DRAW_SIZES = {
+          player: { w: 42, h: 58 },
+          npcTeacher: { w: 42, h: 58 },
+          npcRanger: { w: 42, h: 58 },
+          npcResearcher: { w: 42, h: 58 },
+          npcKid: { w: 42, h: 58 },
+          muntjac: { w: 58, h: 42 },
+          pangolin: { w: 60, h: 36 },
+          blackBear: { w: 68, h: 52 },
+          redstart: { w: 44, h: 34 },
+          streamfish: { w: 54, h: 26 },
+          firefly: { w: 42, h: 42 },
+          magpie: { w: 68, h: 42 },
+          landcrab: { w: 52, h: 36 },
+          butterfly: { w: 46, h: 38 },
+          trash: { w: 38, h: 36 },
+          trashMonster1: { w: 42, h: 40 },
+          trashMonster2: { w: 54, h: 52 },
+          trashMonster3: { w: 70, h: 66 },
+          drain: { w: 44, h: 36 },
+          sprout: { w: 36, h: 40 },
+          lamp: { w: 32, h: 48 },
+          sample: { w: 34, h: 42 },
+          cone: { w: 36, h: 42 },
+        };
+
+        const buildingDefs = [
+          {
+            id: "ecoStation",
+            label: "生態站",
+            sprite: "buildingEcoStation",
+            x: 2.6 * TILE,
+            y: 24.6 * TILE,
+            w: 8.2 * TILE,
+            h: 6.15 * TILE,
+            block: { x: 3 * TILE, y: 25.5 * TILE, w: 7.5 * TILE, h: 5.2 * TILE },
+            door: { x: 6.15 * TILE, y: 31.35 * TILE },
+          },
+          {
+            id: "dataLab",
+            label: "資料室",
+            sprite: "buildingDataLab",
+            x: 14.2 * TILE,
+            y: 24.5 * TILE,
+            w: 8.82 * TILE,
+            h: 6.2 * TILE,
+            block: { x: 14.55 * TILE, y: 25.4 * TILE, w: 8.25 * TILE, h: 5.4 * TILE },
+            door: { x: 15.55 * TILE, y: 31.35 * TILE },
+          },
+          {
+            id: "workshop",
+            label: "工坊",
+            sprite: "buildingWorkshop",
+            x: 3.65 * TILE,
+            y: 36.1 * TILE,
+            w: 6.25 * TILE,
+            h: 5.25 * TILE,
+            block: { x: 4 * TILE, y: 36.9 * TILE, w: 5.8 * TILE, h: 4.4 * TILE },
+            door: { x: 5.45 * TILE, y: 41.45 * TILE },
+          },
+          {
+            id: "recycleYard",
+            label: "回收場",
+            sprite: "recycleYard",
+            x: 17.4 * TILE,
+            y: 36.15 * TILE,
+            w: 7.8 * TILE,
+            h: 5.15 * TILE,
+            block: { x: 17.8 * TILE, y: 37.1 * TILE, w: 7.1 * TILE, h: 4.2 * TILE },
+            door: { x: 21.3 * TILE, y: 41.7 * TILE },
+            facility: "recycle",
+          },
+        ];
+
+        const interiorDefs = {
+          ecoStation: {
+            name: "生態站",
+            subtitle: "巡查紀錄與棲地照護",
+            wall: "#cda96a",
+            floor: "#d8c68d",
+            accent: "#2e795d",
+            dark: "#244734",
+          },
+          dataLab: {
+            name: "資料室",
+            subtitle: "資料整理與樣本分析",
+            wall: "#b7ced0",
+            floor: "#cfbf83",
+            accent: "#5ba9b9",
+            dark: "#26485b",
+          },
+          workshop: {
+            name: "工坊",
+            subtitle: "工具維修與補給整備",
+            wall: "#b98358",
+            floor: "#c99b58",
+            accent: "#7d5635",
+            dark: "#3e2f27",
+          },
+        };
+
+        const sprites = {};
+        let activeTab = "guide";
+        let lastTime = 0;
+        let saveTimer = 0;
+        let uiDirty = true;
+
+        const state = {
+          started: false,
+          showMap: true,
+          speedIndex: 0,
+          speedOptions: [1, 1.5, 2],
+          day: 1,
+          time: 7 * 60,
+          weather: "晴朗",
+          notes: 0,
+          recyclePoints: 0,
+          health: 42,
+          maxHealth: 42,
+          scene: "outdoor",
+          interior: null,
+          outdoorPlayer: null,
+          player: { x: 10 * TILE, y: 34 * TILE, w: 24, h: 30, speed: 138, dir: "down", facing: "left" },
+          camera: { x: 0, y: 0 },
+          ecology: { forest: 44, water: 36, pollution: 72, bio: 24 },
+          animals: [],
+          events: [],
+          trash: [],
+          monsters: [],
+          npcs: [],
+          backpack: Object.fromEntries(trashTypes.map((type) => [type.id, 0])),
+          recycleStats: { played: 0, perfect: 0 },
+          progress: {},
+          unlockedCards: {},
+          log: [],
+          dialogue: null,
+          fieldAction: null,
+          battle: null,
+          recycleGame: null,
+        };
+
+        function clamp(value, min, max) {
+          return Math.max(min, Math.min(max, value));
+        }
+
+        function lerp(a, b, t) {
+          return a + (b - a) * t;
+        }
+
+        function hash(x, y, seed = 0) {
+          let n = x * 374761393 + y * 668265263 + seed * 1442695041;
+          n = (n ^ (n >> 13)) * 1274126177;
+          return ((n ^ (n >> 16)) >>> 0) / 4294967295;
+        }
+
+        function randRange(min, max) {
+          return min + Math.random() * (max - min);
+        }
+
+        function pick(list) {
+          return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function makeUid(prefix) {
+          return crypto.randomUUID ? crypto.randomUUID() : `${prefix}_${Date.now()}_${Math.random()}`;
+        }
+
+        function trashDef(id) {
+          return trashTypes.find((type) => type.id === id) || trashTypes[0];
+        }
+
+        function categoryDef(id) {
+          return recycleCategories.find((category) => category.id === id) || recycleCategories[0];
+        }
+
+        function backpackTotal() {
+          return trashTypes.reduce((sum, type) => sum + (state.backpack[type.id] || 0), 0);
+        }
+
+        function backpackSummary() {
+          const parts = trashTypes
+            .filter((type) => (state.backpack[type.id] || 0) > 0)
+            .map((type) => `${type.name} ${state.backpack[type.id]}`);
+          return parts.length ? parts.join("、") : "空";
+        }
+
+        function partnerCount() {
+          return animalDefs.filter((animal) => state.progress[animal.id]?.partnered).length;
+        }
+
+        function hasPartnerSkill(tag) {
+          return animalDefs.some((animal) => state.progress[animal.id]?.partnered && animal.skillTag === tag);
+        }
+
+        function addTrashToBackpack(typeId, amount = 1, label = "撿起垃圾") {
+          const type = trashDef(typeId);
+          state.backpack[type.id] = (state.backpack[type.id] || 0) + amount;
+          addLog(`${label}：${type.name} +${amount}`);
+          uiDirty = true;
+        }
+
+        function addTrashBundleToBackpack(typeIds, label = "獲得垃圾") {
+          const counts = {};
+          for (const typeId of typeIds) {
+            const type = trashDef(typeId);
+            counts[type.id] = (counts[type.id] || 0) + 1;
+            state.backpack[type.id] = (state.backpack[type.id] || 0) + 1;
+          }
+          const summary = Object.entries(counts).map(([id, count]) => `${trashDef(id).name} ${count}`).join("、");
+          addLog(`${label}：${summary || "無"}`);
+          uiDirty = true;
+        }
+
+        function removeTrashFromBackpack(typeId, amount = 1) {
+          const current = state.backpack[typeId] || 0;
+          state.backpack[typeId] = Math.max(0, current - amount);
+          uiDirty = true;
+        }
+
+        function expandBackpackItems(limit = Infinity) {
+          const items = [];
+          for (const type of trashTypes) {
+            const count = state.backpack[type.id] || 0;
+            for (let i = 0; i < count && items.length < limit; i++) items.push(type.id);
+          }
+          return items.sort(() => Math.random() - 0.5);
+        }
+
+        function rectsOverlap(a, b) {
+          return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+        }
+
+        function dist(a, b) {
+          return Math.hypot(a.x + (a.w || 0) / 2 - (b.x + (b.w || 0) / 2), a.y + (a.h || 0) / 2 - (b.y + (b.h || 0) / 2));
+        }
+
+        function expandedRect(rect, margin) {
+          return { x: rect.x - margin, y: rect.y - margin, w: rect.w + margin * 2, h: rect.h + margin * 2 };
+        }
+
+        function buildingVisualRect(building) {
+          return { x: building.x, y: building.y, w: building.w, h: building.h + 22 };
+        }
+
+        function overlapsBuilding(rect, margin = 0) {
+          return buildingDefs.some((building) => rectsOverlap(rect, expandedRect(buildingVisualRect(building), margin)));
+        }
+
+        function buildingDoorRect(building) {
+          return { x: building.door.x - 22, y: building.door.y - 30, w: 44, h: 48 };
+        }
+
+        function currentInteriorDef() {
+          return interiorDefs[state.interior] || null;
+        }
+
+        function interiorExitRect() {
+          return { x: canvas.width / 2 - 58, y: canvas.height - 58, w: 116, h: 42 };
+        }
+
+        function interiorBlocks() {
+          const common = [
+            { x: 74, y: 112, w: canvas.width - 148, h: 52 },
+            { x: 86, y: 176, w: 128, h: 48 },
+            { x: canvas.width - 214, y: 176, w: 128, h: 48 },
+          ];
+          if (state.interior === "ecoStation") {
+            return [
+              ...common,
+              { x: 112, y: 254, w: 192, h: 76 },
+              { x: 600, y: 248, w: 184, h: 86 },
+              { x: 386, y: 368, w: 188, h: 76 },
+              { x: 794, y: 392, w: 58, h: 84 },
+            ];
+          }
+          if (state.interior === "dataLab") {
+            return [
+              ...common,
+              { x: 108, y: 248, w: 208, h: 82 },
+              { x: 382, y: 250, w: 210, h: 82 },
+              { x: 680, y: 234, w: 122, h: 188 },
+              { x: 252, y: 408, w: 160, h: 70 },
+            ];
+          }
+          return [
+            ...common,
+            { x: 104, y: 250, w: 228, h: 86 },
+            { x: 432, y: 236, w: 244, h: 90 },
+            { x: 712, y: 370, w: 124, h: 94 },
+            { x: 196, y: 410, w: 138, h: 80 },
+          ];
+        }
+
+        function canMoveInterior(x, y, w, h) {
+          const foot = { x: x + w * 0.2, y: y + h * 0.78, w: w * 0.6, h: h * 0.18 };
+          const walk = { x: 58, y: 166, w: canvas.width - 116, h: canvas.height - 188 };
+          if (foot.x < walk.x || foot.y < walk.y || foot.x + foot.w > walk.x + walk.w || foot.y + foot.h > walk.y + walk.h) return false;
+          return !interiorBlocks().some((block) => rectsOverlap(foot, block));
+        }
+
+        function enterInterior(building) {
+          const interior = interiorDefs[building.id];
+          if (!interior) return;
+          state.outdoorPlayer = { ...state.player };
+          state.scene = "interior";
+          state.interior = building.id;
+          state.fieldAction = null;
+          state.dialogue = null;
+          state.player = {
+            ...state.player,
+            x: canvas.width / 2 - state.player.w / 2,
+            y: canvas.height - 132,
+            dir: "up",
+          };
+          state.camera = { x: 0, y: 0 };
+          uiDirty = true;
+          addLog(`進入${interior.name}。`);
+          showDialogue(interior.name, interior.subtitle, 2.5);
+        }
+
+        function exitInterior() {
+          const building = buildingDefs.find((item) => item.id === state.interior);
+          const interior = currentInteriorDef();
+          const basePlayer = state.outdoorPlayer || state.player;
+          state.scene = "outdoor";
+          state.interior = null;
+          state.outdoorPlayer = null;
+          if (building) {
+            state.player = {
+              ...basePlayer,
+              x: building.door.x - basePlayer.w / 2,
+              y: building.door.y + 34,
+              dir: "down",
+            };
+          } else {
+            state.player = { ...basePlayer };
+          }
+          uiDirty = true;
+          updateCamera();
+          addLog(`離開${interior ? interior.name : "室內"}。`);
+          showDialogue("回到戶外", `目前位置：${currentZoneAt().name}`, 2);
+        }
+
+        function spriteVisualRect(spriteName, x, y, w, h) {
+          const size = SPRITE_DRAW_SIZES[spriteName] || { w, h };
+          const footY = y + h + 2;
+          return { x: x + w / 2 - size.w / 2, y: footY - size.h, w: size.w, h: size.h };
+        }
+
+        function isNight(time = state.time) {
+          const t = ((Math.floor(time) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+          return t >= 1110 || t < 330;
+        }
+
+        function formatClock() {
+          const t = ((Math.floor(state.time) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+          return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+        }
+
+        function currentZoneAt(x = state.player.x, y = state.player.y) {
+          if (state.scene === "interior") {
+            const interior = interiorDefs[state.interior];
+            return { id: state.interior || "interior", name: interior ? interior.name : "室內", rect: { x: 0, y: 0, w: 0, h: 0 } };
+          }
+          return zones.find((zone) => rectsOverlap({ x, y, w: 1, h: 1 }, zone.rect)) || zones[0];
+        }
+
+        function addLog(text) {
+          state.log.unshift(text);
+          state.log = state.log.slice(0, 8);
+          uiDirty = true;
+        }
+
+        function unlockCard(id) {
+          if (!id || state.unlockedCards[id]) return false;
+          state.unlockedCards[id] = true;
+          addLog(`解鎖知識卡：${id}`);
+          return true;
+        }
+
+        function addNotes(amount, label = "自然筆記") {
+          state.notes += amount;
+          addLog(`${label} +${amount}`);
+        }
+
+        function adjustEco(delta, multiplier = 1) {
+          for (const key of Object.keys(delta)) {
+            state.ecology[key] = clamp(state.ecology[key] + delta[key] * multiplier, 0, 100);
+          }
+          uiDirty = true;
+        }
+
+        function eventHasHelper(eventDef) {
+          return animalDefs.some((animal) => state.progress[animal.id]?.partnered && animal.skillTag === eventDef.skillTag);
+        }
+
+        function loadSpriteImages() {
+          let pending = Object.keys(ASSET_FILES).length;
+          let loaded = 0;
+          let failed = 0;
+          const finish = () => {
+            pending -= 1;
+            if (pending > 0) return;
+            console.info(`pixel assets loaded: ${loaded}, fallback: ${failed}`);
+            if (state.started) addLog(`像素圖片載入完成：${loaded} 個物件。`);
+            uiDirty = true;
+          };
+
+          for (const [name, file] of Object.entries(ASSET_FILES)) {
+            const img = new Image();
+            img.onload = () => {
+              sprites[name] = img;
+              loaded += 1;
+              uiDirty = true;
+              finish();
+            };
+            img.onerror = () => {
+              failed += 1;
+              console.warn(`pixel asset failed: ${file}`);
+              finish();
+            };
+            img.src = `${ASSET_BASE}${file}`;
+          }
+        }
+
+        function setupSprites() {
+          const make = (name, w, h, draw) => {
+            const c = document.createElement("canvas");
+            c.width = w;
+            c.height = h;
+            const g = c.getContext("2d");
+            g.imageSmoothingEnabled = false;
+            draw(g);
+            sprites[name] = c;
+          };
+          const px = (g, x, y, w, h, color) => {
+            g.fillStyle = color;
+            g.fillRect(x, y, w, h);
+          };
+
+          make("player", 18, 24, (g) => {
+            px(g, 7, 2, 5, 5, "#7b4c2b");
+            px(g, 6, 7, 7, 3, "#f0bf8a");
+            px(g, 5, 10, 9, 7, "#2f8060");
+            px(g, 3, 11, 3, 6, "#f0bf8a");
+            px(g, 14, 11, 2, 6, "#f0bf8a");
+            px(g, 6, 17, 4, 6, "#263c58");
+            px(g, 11, 17, 4, 6, "#263c58");
+            px(g, 5, 23, 4, 1, "#1b2634");
+            px(g, 12, 23, 4, 1, "#1b2634");
+            px(g, 8, 8, 1, 1, "#1f1a14");
+            px(g, 12, 8, 1, 1, "#1f1a14");
+          });
+
+          make("npcTeacher", 18, 24, (g) => {
+            px(g, 6, 1, 7, 6, "#4d2d23");
+            px(g, 5, 7, 9, 4, "#e6b57e");
+            px(g, 4, 11, 11, 8, "#d8a941");
+            px(g, 7, 19, 3, 5, "#42535a");
+            px(g, 12, 19, 3, 5, "#42535a");
+            px(g, 3, 13, 2, 5, "#e6b57e");
+            px(g, 15, 13, 2, 5, "#e6b57e");
+          });
+
+          make("npcRanger", 18, 24, (g) => {
+            px(g, 6, 2, 7, 5, "#3a2b1d");
+            px(g, 5, 7, 9, 4, "#c99162");
+            px(g, 4, 11, 11, 8, "#3b6a38");
+            px(g, 6, 9, 9, 2, "#34442a");
+            px(g, 7, 19, 3, 5, "#2d3c2b");
+            px(g, 12, 19, 3, 5, "#2d3c2b");
+            px(g, 14, 4, 3, 2, "#3b6a38");
+          });
+
+          make("npcResearcher", 18, 24, (g) => {
+            px(g, 6, 2, 7, 5, "#2f2b36");
+            px(g, 5, 7, 9, 4, "#d8a476");
+            px(g, 4, 11, 11, 8, "#7e527b");
+            px(g, 6, 19, 3, 5, "#303654");
+            px(g, 12, 19, 3, 5, "#303654");
+            px(g, 13, 12, 3, 4, "#f4eed8");
+          });
+
+          make("npcKid", 16, 20, (g) => {
+            px(g, 5, 1, 6, 5, "#3b2618");
+            px(g, 4, 6, 8, 4, "#e0a374");
+            px(g, 3, 10, 10, 6, "#5d7fd1");
+            px(g, 5, 16, 3, 4, "#31405f");
+            px(g, 10, 16, 3, 4, "#31405f");
+          });
+
+          make("muntjac", 22, 17, (g) => {
+            px(g, 3, 7, 12, 6, "#a46435");
+            px(g, 13, 5, 7, 6, "#b87442");
+            px(g, 17, 3, 2, 3, "#7b3e23");
+            px(g, 14, 13, 2, 4, "#5a331f");
+            px(g, 6, 13, 2, 4, "#5a331f");
+            px(g, 19, 8, 1, 1, "#101010");
+            px(g, 1, 8, 3, 2, "#7b3e23");
+          });
+
+          make("pangolin", 23, 15, (g) => {
+            px(g, 4, 6, 13, 6, "#7c6652");
+            px(g, 16, 5, 5, 4, "#8c735c");
+            for (let x = 5; x < 17; x += 4) px(g, x, 5, 3, 2, "#5b4a3d");
+            px(g, 1, 9, 5, 2, "#6c5948");
+            px(g, 18, 8, 1, 1, "#111");
+          });
+
+          make("blackBear", 28, 21, (g) => {
+            px(g, 6, 8, 17, 9, "#171717");
+            px(g, 3, 10, 5, 6, "#202020");
+            px(g, 21, 10, 5, 6, "#202020");
+            px(g, 10, 4, 11, 8, "#202020");
+            px(g, 8, 3, 3, 3, "#111");
+            px(g, 20, 3, 3, 3, "#111");
+            px(g, 14, 12, 2, 3, "#f4eed8");
+            px(g, 16, 14, 2, 3, "#f4eed8");
+            px(g, 11, 17, 3, 4, "#111");
+            px(g, 19, 17, 3, 4, "#111");
+          });
+
+          make("redstart", 18, 15, (g) => {
+            px(g, 4, 6, 9, 5, "#415b68");
+            px(g, 12, 4, 4, 4, "#506d7a");
+            px(g, 2, 8, 4, 4, "#b14f3f");
+            px(g, 15, 5, 2, 1, "#1e1e1e");
+            px(g, 7, 11, 2, 3, "#2d3338");
+          });
+
+          make("streamfish", 22, 12, (g) => {
+            px(g, 4, 4, 12, 5, "#5aa6b2");
+            px(g, 15, 3, 4, 7, "#76c6cc");
+            px(g, 1, 5, 4, 3, "#4f8e9a");
+            px(g, 17, 5, 1, 1, "#10272b");
+            px(g, 7, 6, 5, 1, "#d2f4ec");
+          });
+
+          make("firefly", 16, 16, (g) => {
+            px(g, 6, 6, 5, 4, "#514b25");
+            px(g, 4, 5, 3, 2, "#cbd6e0");
+            px(g, 10, 5, 3, 2, "#cbd6e0");
+            px(g, 7, 10, 3, 3, "#e4d85c");
+          });
+
+          make("magpie", 24, 17, (g) => {
+            px(g, 7, 6, 9, 5, "#2d6fb8");
+            px(g, 15, 4, 5, 5, "#347ecf");
+            px(g, 1, 8, 8, 3, "#1f4e93");
+            px(g, 4, 11, 4, 2, "#ffffff");
+            px(g, 19, 5, 2, 1, "#101010");
+            px(g, 10, 11, 2, 4, "#1e2a40");
+          });
+
+          make("landcrab", 20, 14, (g) => {
+            px(g, 6, 5, 8, 5, "#b65f4c");
+            px(g, 4, 4, 3, 3, "#d17858");
+            px(g, 13, 4, 3, 3, "#d17858");
+            px(g, 2, 9, 4, 2, "#8e3d35");
+            px(g, 14, 9, 4, 2, "#8e3d35");
+            px(g, 7, 4, 1, 1, "#101010");
+            px(g, 12, 4, 1, 1, "#101010");
+          });
+
+          make("butterfly", 18, 14, (g) => {
+            px(g, 8, 5, 2, 6, "#35251d");
+            px(g, 3, 2, 5, 5, "#d88b3d");
+            px(g, 10, 2, 5, 5, "#d88b3d");
+            px(g, 4, 8, 4, 4, "#f0bd61");
+            px(g, 10, 8, 4, 4, "#f0bd61");
+          });
+
+          make("trash", 18, 16, (g) => {
+            px(g, 5, 5, 7, 8, "#d8e2e1");
+            px(g, 8, 3, 4, 3, "#5aa6b2");
+            px(g, 12, 9, 4, 3, "#d88b3d");
+          });
+
+          make("trashMonster1", 20, 18, (g) => {
+            px(g, 5, 7, 10, 8, "#5f756c");
+            px(g, 3, 10, 5, 5, "#d8e2e1");
+            px(g, 13, 8, 4, 7, "#7bb8c6");
+            px(g, 7, 4, 7, 4, "#d88b3d");
+            px(g, 8, 10, 2, 2, "#111");
+            px(g, 13, 10, 2, 2, "#111");
+            px(g, 9, 15, 3, 3, "#3b2118");
+            px(g, 14, 15, 3, 3, "#3b2118");
+          });
+
+          make("trashMonster2", 24, 22, (g) => {
+            px(g, 6, 7, 13, 11, "#51645f");
+            px(g, 2, 10, 6, 7, "#d8e2e1");
+            px(g, 18, 9, 5, 8, "#69aebf");
+            px(g, 9, 3, 8, 5, "#d88b3d");
+            px(g, 8, 11, 2, 2, "#111");
+            px(g, 16, 11, 2, 2, "#111");
+            px(g, 10, 18, 4, 4, "#3b2118");
+            px(g, 17, 18, 4, 4, "#3b2118");
+          });
+
+          make("trashMonster3", 30, 28, (g) => {
+            px(g, 7, 8, 17, 15, "#4d5d59");
+            px(g, 2, 13, 7, 9, "#d8e2e1");
+            px(g, 22, 12, 7, 10, "#63a9bd");
+            px(g, 11, 2, 10, 7, "#d88b3d");
+            px(g, 10, 13, 3, 3, "#111");
+            px(g, 20, 13, 3, 3, "#111");
+            px(g, 13, 20, 7, 2, "#2d2018");
+            px(g, 8, 23, 5, 5, "#3b2118");
+            px(g, 21, 23, 5, 5, "#3b2118");
+          });
+
+          make("drain", 20, 16, (g) => {
+            px(g, 2, 6, 16, 7, "#5c6e73");
+            for (let x = 4; x < 18; x += 4) px(g, x, 7, 1, 5, "#1d3135");
+            px(g, 3, 3, 12, 3, "#83a8a7");
+          });
+
+          make("sprout", 18, 18, (g) => {
+            px(g, 8, 7, 2, 9, "#557f36");
+            px(g, 4, 5, 6, 4, "#79a946");
+            px(g, 9, 4, 6, 5, "#90bd56");
+            px(g, 6, 14, 8, 2, "#5a3a22");
+          });
+
+          make("lamp", 16, 22, (g) => {
+            px(g, 7, 6, 2, 14, "#564f44");
+            px(g, 4, 3, 8, 5, "#efd86d");
+            px(g, 5, 20, 6, 2, "#564f44");
+          });
+
+          make("sample", 16, 18, (g) => {
+            px(g, 6, 2, 4, 2, "#f4eed8");
+            px(g, 5, 4, 6, 10, "#63b5c7");
+            px(g, 6, 5, 4, 8, "#b8ecf0");
+            px(g, 4, 14, 8, 2, "#315e68");
+          });
+
+          make("cone", 18, 18, (g) => {
+            px(g, 7, 3, 4, 4, "#e98536");
+            px(g, 5, 7, 8, 5, "#e98536");
+            px(g, 3, 12, 12, 3, "#e98536");
+            px(g, 4, 9, 10, 1, "#fff2bf");
+            px(g, 2, 15, 14, 2, "#6b4a35");
+          });
+        }
+
+        function resetGame(options = {}) {
+          const { persist = true } = options;
+          state.started = true;
+          state.showMap = true;
+          state.speedIndex = 0;
+          state.day = 1;
+          state.time = 7 * 60;
+          state.weather = "晴朗";
+          state.notes = 0;
+          state.recyclePoints = 0;
+          state.health = state.maxHealth;
+          state.scene = "outdoor";
+          state.interior = null;
+          state.outdoorPlayer = null;
+          state.player = { x: 10 * TILE, y: 34 * TILE, w: 24, h: 30, speed: 138, dir: "down", facing: "left" };
+          state.camera = { x: 0, y: 0 };
+          state.ecology = { forest: 44, water: 36, pollution: 72, bio: 24 };
+          state.animals = [];
+          state.events = [];
+          state.trash = [];
+          state.monsters = [];
+          state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
+          state.backpack = Object.fromEntries(trashTypes.map((type) => [type.id, 0]));
+          state.recycleStats = { played: 0, perfect: 0 };
+          state.progress = Object.fromEntries(animalDefs.map((animal) => [animal.id, { trust: 0, seen: false, partnered: false }]));
+          state.unlockedCards = {};
+          state.log = [];
+          state.dialogue = null;
+          state.fieldAction = null;
+          state.battle = null;
+          state.recycleGame = null;
+          addLog("抵達森循島：撿垃圾、阻止垃圾怪、把資源帶回回收場。");
+          addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
+          for (let i = 0; i < 11; i++) spawnAnimal();
+          for (let i = 0; i < 7; i++) spawnEvent();
+          for (let i = 0; i < 9; i++) spawnRoadTrash();
+          startOverlay.hidden = true;
+          uiDirty = true;
+          if (persist) saveNow();
+        }
+
+        function createSaveData() {
+          const savedPlayer = state.scene === "interior" && state.outdoorPlayer ? state.outdoorPlayer : state.player;
+          return {
+            started: state.started,
+            showMap: state.showMap,
+            speedIndex: state.speedIndex,
+            day: state.day,
+            time: state.time,
+            weather: state.weather,
+            notes: state.notes,
+            recyclePoints: state.recyclePoints,
+            health: state.health,
+            player: savedPlayer,
+            ecology: state.ecology,
+            backpack: state.backpack,
+            recycleStats: state.recycleStats,
+            trash: state.trash,
+            monsters: state.monsters,
+            progress: state.progress,
+            unlockedCards: state.unlockedCards,
+            log: state.log,
+          };
+        }
+
+        function writeSave() {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(createSaveData()));
+        }
+
+        function saveNow() {
+          addLog("已儲存目前巡島紀錄。");
+          writeSave();
+          uiDirty = true;
+        }
+
+        function loadSave() {
+          const raw = localStorage.getItem(SAVE_KEY);
+          if (!raw) {
+            addLog("沒有找到自動存檔。");
+            return false;
+          }
+          try {
+            const data = JSON.parse(raw);
+            resetGame({ persist: false });
+            state.showMap = typeof data.showMap === "boolean" ? data.showMap : state.showMap;
+            state.speedIndex = clamp(data.speedIndex || 0, 0, state.speedOptions.length - 1);
+            state.day = Math.max(1, data.day || 1);
+            state.time = Number(data.time) || 7 * 60;
+            state.weather = WEATHER.includes(data.weather) ? data.weather : "晴朗";
+            state.notes = Math.max(0, data.notes || 0);
+            state.recyclePoints = Math.max(0, data.recyclePoints || 0);
+            state.health = clamp(Number(data.health) || state.maxHealth, 1, state.maxHealth);
+            const savedX = Number(data.player?.x);
+            const savedY = Number(data.player?.y);
+            const savedSpeed = Number(data.player?.speed);
+            state.player = {
+              ...state.player,
+              x: Number.isFinite(savedX) ? savedX : state.player.x,
+              y: Number.isFinite(savedY) ? savedY : state.player.y,
+              speed: Number.isFinite(savedSpeed) && savedSpeed > 0 ? savedSpeed : state.player.speed,
+              dir: data.player?.dir || state.player.dir,
+              facing: data.player?.facing === "right" || data.player?.facing === "left" ? data.player.facing : state.player.facing,
+            };
+            state.ecology = { ...state.ecology, ...(data.ecology || {}) };
+            state.backpack = { ...Object.fromEntries(trashTypes.map((type) => [type.id, 0])), ...(data.backpack || {}) };
+            state.recycleStats = { ...state.recycleStats, ...(data.recycleStats || {}) };
+            state.trash = Array.isArray(data.trash) ? data.trash : state.trash;
+            state.monsters = Array.isArray(data.monsters) ? data.monsters : state.monsters;
+            state.progress = { ...state.progress, ...(data.progress || {}) };
+            state.unlockedCards = data.unlockedCards || {};
+            state.log = Array.isArray(data.log) ? data.log.slice(0, 8) : state.log;
+            startOverlay.hidden = true;
+            addLog("已讀取自動存檔。");
+            writeSave();
+            uiDirty = true;
+            return true;
+          } catch (err) {
+            console.warn(err);
+            addLog("存檔讀取失敗，已保留新遊戲狀態。");
+            return false;
+          }
+        }
+
+        function riverCenterX(tileY) {
+          return 57 + Math.sin(tileY * 0.32) * 3.4 + Math.sin(tileY * 0.09) * 1.2;
+        }
+
+        function isBridgeTile(tx, ty) {
+          const cx = riverCenterX(ty);
+          return ty >= 33 && ty <= 35 && Math.abs(tx - cx) <= 4.8;
+        }
+
+        function isWetlandPool(tx, ty) {
+          const dx = (tx - 48.5) / 5.6;
+          const dy = (ty - 37.5) / 3.8;
+          const smallDx = (tx - 53) / 2.4;
+          const smallDy = (ty - 41.5) / 2.2;
+          return dx * dx + dy * dy < 1 || smallDx * smallDx + smallDy * smallDy < 1;
+        }
+
+        function isPathTile(tx, ty) {
+          const eastWest = ty >= 33 && ty <= 35 && tx >= 5 && tx <= 75;
+          const hubVertical = tx >= 11 && tx <= 13 && ty >= 12 && ty <= 43;
+          const meadowLoop = ty >= 15 && ty <= 17 && tx >= 11 && tx <= 47;
+          const forestFork = tx >= 35 && tx <= 37 && ty >= 10 && ty <= 31;
+          const coastSpine = tx >= 70 && tx <= 72 && ty >= 29 && ty <= 49;
+          const coastShore = ty >= 43 && ty <= 45 && tx >= 66 && tx <= 80;
+          return eastWest || hubVertical || meadowLoop || forestFork || coastSpine || coastShore || isBridgeTile(tx, ty);
+        }
+
+        function terrainAt(tx, ty) {
+          if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return "void";
+          const cx = riverCenterX(ty);
+          const inRiver = ty >= 3 && ty <= 53 && Math.abs(tx - cx) <= 2.35;
+          const inShoreWater = tx >= 79 && ty >= 39 + Math.sin(ty * 0.65) * 2;
+          if (isPathTile(tx, ty) && (!inRiver || isBridgeTile(tx, ty))) return "path";
+          if ((inRiver && !isBridgeTile(tx, ty)) || isWetlandPool(tx, ty) || inShoreWater) return "water";
+          if (tx >= 66 && ty >= 27) return "coast";
+          if (tx >= 41 && tx <= 55 && ty >= 31 && ty <= 44) return "wetland";
+          if (tx >= 24 && tx <= 53 && ty >= 4 && ty <= 34) return "forest";
+          if (tx >= 6 && tx <= 26 && ty >= 8 && ty <= 24) return "meadow";
+          if (tx >= 2 && tx <= 26 && ty >= 27 && ty <= 45) return "hub";
+          return "grass";
+        }
+
+        function isBlockedPoint(x, y) {
+          if (x < 8 || y < 8 || x > WORLD_W - 8 || y > WORLD_H - 8) return true;
+          const tx = Math.floor(x / TILE);
+          const ty = Math.floor(y / TILE);
+          const terrain = terrainAt(tx, ty);
+          if (terrain === "void" || terrain === "water") return true;
+          return buildingDefs.some(({ block }) => x > block.x && x < block.x + block.w && y > block.y && y < block.y + block.h);
+        }
+
+        function canMoveTo(x, y, w, h) {
+          const foot = { x: x + w * 0.2, y: y + h * 0.78, w: w * 0.6, h: h * 0.18 };
+          return !(
+            isBlockedPoint(foot.x, foot.y) ||
+            isBlockedPoint(foot.x + foot.w, foot.y) ||
+            isBlockedPoint(foot.x, foot.y + foot.h) ||
+            isBlockedPoint(foot.x + foot.w, foot.y + foot.h)
+          );
+        }
+
+        function canSpawnAt(point, options = {}) {
+          const w = options.w || 28;
+          const h = options.h || 28;
+          const footX = point.x + w / 2;
+          const footY = point.y + h;
+          const terrain = terrainAt(Math.floor(footX / TILE), Math.floor(footY / TILE));
+          if (options.allowWater) {
+            if (terrain !== "water") return false;
+          } else if (!canMoveTo(point.x, point.y, w, h)) {
+            return false;
+          }
+          if (options.avoidBuildings !== false) {
+            const visual = options.sprite ? spriteVisualRect(options.sprite, point.x, point.y, w, h) : { x: point.x, y: point.y, w, h };
+            if (overlapsBuilding(visual, options.buildingMargin ?? 12)) return false;
+          }
+          return true;
+        }
+
+        function randomPointIn(area, options = {}) {
+          for (let i = 0; i < 34; i++) {
+            const point = {
+              x: area.x + randRange(10, Math.max(11, area.w - 10)),
+              y: area.y + randRange(10, Math.max(11, area.h - 10)),
+            };
+            if (canSpawnAt(point, options)) return point;
+          }
+          return null;
+        }
+
+        function spawnAnimal() {
+          const candidates = animalDefs.filter((def) => def.condition(state));
+          if (!candidates.length || state.animals.length > 28) return;
+          const def = pick(candidates);
+          const aquatic = def.id === "streamfish";
+          const w = aquatic ? 34 : 30;
+          const h = aquatic ? 20 : 28;
+          const p = randomPointIn(def.area, { allowWater: aquatic, w, h, sprite: def.sprite });
+          if (!p) return;
+          state.animals.push({
+            uid: crypto.randomUUID ? crypto.randomUUID() : `a_${Date.now()}_${Math.random()}`,
+            id: def.id,
+            x: p.x,
+            y: p.y,
+            w,
+            h,
+            target: randomPointIn(def.area, { allowWater: aquatic, w, h, sprite: def.sprite }) || { x: p.x, y: p.y },
+            wait: randRange(20, 160),
+            life: randRange(260, 520),
+            mood: "wander",
+          });
+        }
+
+        function spawnEvent() {
+          const candidates = eventDefs.filter((def) => (!def.nightOnly || isNight(state.time)) && (def.id !== "light" || state.ecology.pollution < 85) && state.events.filter((event) => event.id === def.id).length < 2);
+          if (!candidates.length || state.events.length > 14) return;
+          const def = pick(candidates);
+          const p = randomPointIn(def.area, { w: 32, h: 32, sprite: def.sprite, buildingMargin: 18 });
+          if (!p) return;
+          state.events.push({
+            uid: crypto.randomUUID ? crypto.randomUUID() : `e_${Date.now()}_${Math.random()}`,
+            id: def.id,
+            x: p.x,
+            y: p.y,
+            w: 32,
+            h: 32,
+            life: randRange(320, 620),
+            pulse: Math.random() * Math.PI * 2,
+          });
+        }
+
+        function randomRoadPoint() {
+          for (let i = 0; i < 80; i++) {
+            const tx = Math.floor(randRange(5, MAP_W - 5));
+            const ty = Math.floor(randRange(8, MAP_H - 7));
+            if (!isPathTile(tx, ty)) continue;
+            const point = {
+              x: tx * TILE + randRange(3, 12),
+              y: ty * TILE + randRange(2, 10),
+            };
+            if (canSpawnAt(point, { w: 26, h: 24, sprite: "trash", buildingMargin: 20 })) return point;
+          }
+          return randomPointIn(zones[0].rect, { w: 26, h: 24, sprite: "trash", buildingMargin: 20 });
+        }
+
+        function spawnRoadTrash() {
+          if (state.trash.length > 20) return;
+          const p = randomRoadPoint();
+          if (!p) return;
+          const type = pick(trashTypes);
+          state.trash.push({
+            uid: makeUid("trash"),
+            type: type.id,
+            x: p.x,
+            y: p.y,
+            w: 26,
+            h: 24,
+            age: 0,
+            transform: randRange(70, 125),
+            pulse: Math.random() * Math.PI * 2,
+          });
+        }
+
+        function monsterStageFor(absorbed) {
+          if (absorbed >= 6) return 3;
+          if (absorbed >= 3) return 2;
+          return 1;
+        }
+
+        function monsterMaxHp(stage, absorbed) {
+          return 18 + stage * 16 + absorbed * 3;
+        }
+
+        function createTrashMonster(x, y, trashHeld) {
+          const absorbed = Math.max(1, trashHeld.length);
+          const stage = monsterStageFor(absorbed);
+          return {
+            uid: makeUid("monster"),
+            x,
+            y,
+            w: 28 + stage * 5,
+            h: 28 + stage * 5,
+            stage,
+            absorbed,
+            trashHeld: [...trashHeld],
+            hp: monsterMaxHp(stage, absorbed),
+            pulse: Math.random() * Math.PI * 2,
+          };
+        }
+
+        function evolveMonster(monster) {
+          const nextStage = monsterStageFor(monster.absorbed);
+          if (nextStage === monster.stage) return;
+          monster.stage = nextStage;
+          monster.w = 28 + nextStage * 5;
+          monster.h = 28 + nextStage * 5;
+          monster.hp = Math.min(monsterMaxHp(nextStage, monster.absorbed), (monster.hp || 0) + 18);
+          addLog(`垃圾怪吸收垃圾，進階到第 ${nextStage} 階。`);
+          uiDirty = true;
+        }
+
+        function transformTrashToMonster(trash) {
+          state.trash = state.trash.filter((item) => item.uid !== trash.uid);
+          state.monsters.push(createTrashMonster(trash.x, trash.y, [trash.type]));
+          adjustEco({ pollution: 4, bio: -1 });
+          addLog(`${trashDef(trash.type).name}放太久，變成第 1 階垃圾怪。`);
+        }
+
+        function updateTrash(dt) {
+          for (const trash of [...state.trash]) {
+            trash.age += dt;
+            if (trash.age >= trash.transform) transformTrashToMonster(trash);
+          }
+          if (state.trash.length < 8 && Math.random() < dt * 0.34) spawnRoadTrash();
+        }
+
+        function absorbNearbyTrash(monster) {
+          for (let i = state.trash.length - 1; i >= 0; i--) {
+            const trash = state.trash[i];
+            if (dist(monster, trash) > 42) continue;
+            state.trash.splice(i, 1);
+            monster.trashHeld.push(trash.type);
+            monster.absorbed += 1;
+            monster.hp = Math.min(monsterMaxHp(monster.stage, monster.absorbed), monster.hp + 7);
+            evolveMonster(monster);
+          }
+        }
+
+        function updateMonsters(dt) {
+          for (const monster of state.monsters) {
+            absorbNearbyTrash(monster);
+            moveToward(monster, state.player, 34 + monster.stage * 13, dt, { collide: true });
+            if (!state.battle && dist(monster, state.player) < 34 + monster.stage * 4) startBattle(monster);
+          }
+        }
+
+        function collectTrash(trash) {
+          state.trash = state.trash.filter((item) => item.uid !== trash.uid);
+          addTrashToBackpack(trash.type);
+          adjustEco({ pollution: -1, bio: 0.4 });
+          showDialogue("撿起垃圾", `${trashDef(trash.type).name}已放入背包。帶到回收場分類，可以換回收點數。`, 2.6);
+        }
+
+        function updateTime(dt) {
+          const speed = state.speedOptions[state.speedIndex];
+          const before = state.time;
+          state.time += dt * 3.2 * speed;
+          if (state.time >= DAY_MINUTES) {
+            state.time -= DAY_MINUTES;
+            state.day += 1;
+            state.weather = WEATHER[(state.day * 5 + Math.floor(state.ecology.water / 14)) % WEATHER.length];
+            addLog(`第 ${state.day} 天開始，天氣：${state.weather}。`);
+            for (let i = 0; i < 3; i++) spawnEvent();
+          }
+          if (Math.floor(before / 30) !== Math.floor(state.time / 30)) uiDirty = true;
+        }
+
+        function scheduleFor(npc) {
+          const t = ((Math.floor(state.time) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+          return npc.schedule.find((slot) => t >= slot.from && t < slot.to) || npc.schedule[npc.schedule.length - 1];
+        }
+
+        function moveToward(entity, target, speed, dt, options = {}) {
+          const dx = target.x - entity.x;
+          const dy = target.y - entity.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 2) return true;
+          const step = Math.min(d, speed * dt);
+          const nx = entity.x + (dx / d) * step;
+          const ny = entity.y + (dy / d) * step;
+          if (options.collide && entity.w && entity.h) {
+            let moved = false;
+            if (canMoveTo(nx, entity.y, entity.w, entity.h)) {
+              entity.x = nx;
+              moved = true;
+            }
+            if (canMoveTo(entity.x, ny, entity.w, entity.h)) {
+              entity.y = ny;
+              moved = true;
+            }
+            return d < 4 || (!moved && d < 10);
+          }
+          entity.x = nx;
+          entity.y = ny;
+          return false;
+        }
+
+        function updateNpcs(dt) {
+          for (const npc of state.npcs) {
+            const slot = scheduleFor(npc);
+            npc.currentAct = slot.act;
+            moveToward(npc, slot, 52, dt, { collide: true });
+          }
+        }
+
+        function updateAnimals(dt) {
+          for (const animal of state.animals) {
+            const def = animalDefs.find((item) => item.id === animal.id);
+            animal.life -= dt;
+            if (animal.wait > 0) {
+              animal.wait -= dt * 60;
+              continue;
+            }
+            if (!animal.target || moveToward(animal, animal.target, 18 + hash(animal.x | 0, animal.y | 0) * 26, dt, { collide: def.id !== "streamfish" })) {
+              animal.target = randomPointIn(def.area, { allowWater: def.id === "streamfish", w: animal.w, h: animal.h, sprite: def.sprite }) || { x: animal.x, y: animal.y };
+              animal.wait = randRange(40, 170);
+            }
+          }
+          state.animals = state.animals.filter((animal) => animal.life > 0 || dist(animal, state.player) < 190);
+          if (state.animals.length < 13 && Math.random() < dt * 0.48) spawnAnimal();
+        }
+
+        function updateEvents(dt) {
+          for (const event of state.events) event.life -= dt;
+          state.events = state.events.filter((event) => event.life > 0 || dist(event, state.player) < 160);
+          if (state.events.length < 8 && Math.random() < dt * 0.22) spawnEvent();
+        }
+
+        function updateFieldAction(dt) {
+          const action = state.fieldAction;
+          if (!action) return;
+          action.time -= dt;
+          action.meter += action.dir * dt * action.speed;
+          if (action.meter <= 0) {
+            action.meter = 0;
+            action.dir = 1;
+          } else if (action.meter >= 1) {
+            action.meter = 1;
+            action.dir = -1;
+          }
+          if (action.time <= 0) finishFieldAction(false);
+        }
+
+        function updatePlayer(dt) {
+          if (state.fieldAction || state.battle || state.recycleGame) return;
+          let dx = 0;
+          let dy = 0;
+          if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
+          if (keys.has("arrowright") || keys.has("d")) dx += 1;
+          if (keys.has("arrowup") || keys.has("w")) dy -= 1;
+          if (keys.has("arrowdown") || keys.has("s")) dy += 1;
+          if (!dx && !dy) return;
+          const len = Math.hypot(dx, dy) || 1;
+          dx /= len;
+          dy /= len;
+          if (dx > 0) state.player.facing = "right";
+          if (dx < 0) state.player.facing = "left";
+          if (Math.abs(dx) > Math.abs(dy)) state.player.dir = dx > 0 ? "right" : "left";
+          else state.player.dir = dy > 0 ? "down" : "up";
+          const speed = state.player.speed * (keys.has("shift") ? 1.42 : 1);
+          const nx = state.player.x + dx * speed * dt;
+          const ny = state.player.y + dy * speed * dt;
+          const canMove = state.scene === "interior" ? canMoveInterior : canMoveTo;
+          if (canMove(nx, state.player.y, state.player.w, state.player.h)) state.player.x = nx;
+          if (canMove(state.player.x, ny, state.player.w, state.player.h)) state.player.y = ny;
+        }
+
+        function updateCamera() {
+          if (state.scene === "interior") {
+            state.camera.x = 0;
+            state.camera.y = 0;
+            return;
+          }
+          state.camera.x = clamp(state.player.x - canvas.width / 2, 0, WORLD_W - canvas.width);
+          const topUiSafeZone = Math.min(86, canvas.height * 0.13);
+          state.camera.y = clamp(state.player.y - canvas.height / 2 - topUiSafeZone, 0, WORLD_H - canvas.height);
+        }
+
+        function getAnimalProgress(id) {
+          if (!state.progress[id]) state.progress[id] = { trust: 0, seen: false, partnered: false };
+          return state.progress[id];
+        }
+
+        function nearestInteractable() {
+          const candidates = [];
+          if (state.scene === "interior") {
+            const exit = interiorExitRect();
+            const d = dist(state.player, exit);
+            return d < 72 ? { type: "exit", ref: exit, distance: d } : null;
+          }
+          for (const building of buildingDefs) {
+            const door = buildingDoorRect(building);
+            const d = dist(state.player, door);
+            if (d < 82) candidates.push({ type: "building", ref: building, distance: d, priority: 0 });
+          }
+          for (const animal of state.animals) {
+            const d = dist(state.player, animal);
+            if (d < 58) candidates.push({ type: "animal", ref: animal, distance: d, priority: 1 });
+          }
+          for (const event of state.events) {
+            const d = dist(state.player, event);
+            if (d < 62) candidates.push({ type: "event", ref: event, distance: d, priority: 1 });
+          }
+          for (const trash of state.trash) {
+            const d = dist(state.player, trash);
+            if (d < 52) candidates.push({ type: "trash", ref: trash, distance: d, priority: 1 });
+          }
+          for (const npc of state.npcs) {
+            const d = dist(state.player, npc);
+            if (d < 60) candidates.push({ type: "npc", ref: npc, distance: d, priority: 1 });
+          }
+          candidates.sort((a, b) => a.priority - b.priority || a.distance - b.distance);
+          return candidates[0] || null;
+        }
+
+        function interact() {
+          if (!state.started) {
+            resetGame();
+            return;
+          }
+          if (state.fieldAction) {
+            const diff = Math.abs(state.fieldAction.meter - state.fieldAction.target);
+            finishFieldAction(diff <= state.fieldAction.window / 2, diff <= state.fieldAction.window / 5);
+            return;
+          }
+          const target = nearestInteractable();
+          if (!target) {
+            showDialogue("系統", "附近沒有可互動對象。試著靠近垃圾、動物、自然事件、回收場或居民。", 2.2);
+            return;
+          }
+          if (target.type === "animal") observeAnimal(target.ref);
+          if (target.type === "event") startFieldAction(target.ref);
+          if (target.type === "trash") collectTrash(target.ref);
+          if (target.type === "npc") talkToNpc(target.ref);
+          if (target.type === "building") {
+            if (target.ref.facility === "recycle") startRecycleGame();
+            else enterInterior(target.ref);
+          }
+          if (target.type === "exit") exitInterior();
+        }
+
+        function observeAnimal(actor) {
+          const def = animalDefs.find((animal) => animal.id === actor.id);
+          const progress = getAnimalProgress(def.id);
+          const firstSeen = !progress.seen;
+          progress.seen = true;
+          progress.trust = clamp(progress.trust + 1, 0, def.trustGoal);
+          actor.mood = "curious";
+          actor.wait = 180;
+          unlockCard(def.card);
+          addNotes(firstSeen ? 12 : 5, firstSeen ? "新物種觀察" : "重複觀察");
+          adjustEco(def.habitat.includes("溪") || def.habitat.includes("水") ? { water: 2, pollution: -1, bio: 2 } : { forest: 2, bio: 2 });
+          let text = def.observe;
+          if (!progress.partnered && progress.trust >= def.trustGoal) {
+            progress.partnered = true;
+            text += ` ${def.name}成為生態夥伴，解鎖夥伴技能「${def.skill}」。`;
+            addLog(`${def.name}成為你的生態夥伴。`);
+          } else {
+            text += ` 信任 ${progress.trust} / ${def.trustGoal}。`;
+          }
+          showDialogue(`${def.name}｜${def.habitat}`, text, 4.8);
+          uiDirty = true;
+        }
+
+        function startFieldAction(event) {
+          const def = eventDefs.find((item) => item.id === event.id);
+          const helper = eventHasHelper(def);
+          state.fieldAction = {
+            uid: event.uid,
+            def,
+            meter: Math.random(),
+            dir: Math.random() < 0.5 ? -1 : 1,
+            target: randRange(0.32, 0.68),
+            window: helper ? 0.28 : 0.19,
+            speed: helper ? 0.74 : 0.92,
+            time: helper ? 8 : 6.5,
+            helper,
+          };
+          showDialogue(def.name, `${def.prompt}：看準下方時機條，游標進入亮區時按空白鍵。${helper ? " 夥伴技能讓判定更穩。" : ""}`, 3.8);
+        }
+
+        function finishFieldAction(success, perfect = false) {
+          const action = state.fieldAction;
+          if (!action) return;
+          const event = state.events.find((item) => item.uid === action.uid);
+          const def = action.def;
+          state.fieldAction = null;
+          if (!event) return;
+          if (!success) {
+            addLog(`${def.name}處理失敗，先記下位置，稍後再試。`);
+            showDialogue(def.name, "這次判定失敗。現實中的環境工作也需要安全、耐心和第二次嘗試。", 3.2);
+            event.life = Math.max(event.life, 120);
+            return;
+          }
+          state.events = state.events.filter((item) => item.uid !== event.uid);
+          const mult = perfect ? 1.35 : 1;
+          adjustEco(def.delta, mult);
+          unlockCard(def.id === "runoff" || def.id === "sample" ? "指標生物" : "日常綠地");
+          addNotes(perfect ? 18 : 12, perfect ? "完整修復" : "環境行動");
+          if (def.id === "litter") addTrashBundleToBackpack(["plastic", "paper", "general"], "清理分類物");
+          showDialogue(def.name, `${def.note}${perfect ? " 處理得很完整，資料也更可用。" : ""}`, 4.5);
+        }
+
+        function battleMonster() {
+          return state.battle ? state.monsters.find((monster) => monster.uid === state.battle.monsterUid) : null;
+        }
+
+        function pushBattleLog(text) {
+          if (!state.battle) return;
+          state.battle.log.unshift(text);
+          state.battle.log = state.battle.log.slice(0, 5);
+          uiDirty = true;
+        }
+
+        function startBattle(monster) {
+          if (state.battle || state.recycleGame) return;
+          state.fieldAction = null;
+          monster.hp = monster.hp || monsterMaxHp(monster.stage, monster.absorbed);
+          state.battle = {
+            monsterUid: monster.uid,
+            playerHp: state.health,
+            monsterHp: monster.hp,
+            defending: false,
+            weakened: false,
+            log: [`第 ${monster.stage} 階垃圾怪靠近了。`],
+          };
+          showDialogue("垃圾怪遭遇", "進入回合制戰鬥：按 1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理。", 4.2);
+          uiDirty = true;
+        }
+
+        function performBattleAction(key) {
+          const battle = state.battle;
+          const monster = battleMonster();
+          if (!battle || !monster) return;
+          let damage = 0;
+          let message = "";
+          if (key === "1") {
+            damage = 10 + partnerCount() * 2 + Math.floor(state.recyclePoints / 80);
+            message = `你用夾具和垃圾袋做淨化打擊，造成 ${damage} 傷害。`;
+          } else if (key === "2") {
+            const practiced = state.recycleStats.played > 0;
+            const perfectBoost = state.recycleStats.perfect > 0 ? 5 : 0;
+            damage = practiced ? 9 + perfectBoost : 5;
+            battle.weakened = practiced;
+            message = practiced
+              ? `你辨識牠身上的回收物弱點，造成 ${damage} 傷害，並降低下一次攻擊。`
+              : `你還沒練過回收分類，只能粗略判斷，造成 ${damage} 傷害。`;
+          } else if (key === "3") {
+            const partners = partnerCount();
+            if (!partners) {
+              pushBattleLog("還沒有生態夥伴。先觀察動物、累積信任，就能在戰鬥中獲得支援。");
+              return;
+            }
+            damage = 7 + partners * 4;
+            if (hasPartnerSkill("canopy")) damage += 4;
+            if (hasPartnerSkill("guard")) {
+              const heal = 6;
+              state.health = clamp(state.health + heal, 0, state.maxHealth);
+              battle.playerHp = state.health;
+              battle.defending = true;
+              message = `生態夥伴支援，造成 ${damage} 傷害；台灣黑熊守護讓你回復 ${heal} 體力。`;
+            } else {
+              message = `生態夥伴支援，造成 ${damage} 傷害。`;
+            }
+          } else if (key === "4") {
+            battle.defending = true;
+            state.health = clamp(state.health + 3, 0, state.maxHealth);
+            battle.playerHp = state.health;
+            pushBattleLog("你整理背包、拉開距離，下一次受到的傷害降低。");
+          } else {
+            return;
+          }
+
+          if (damage > 0) {
+            monster.hp = Math.max(0, monster.hp - damage);
+            battle.monsterHp = monster.hp;
+            pushBattleLog(message);
+          }
+          if (monster.hp <= 0) {
+            finishBattle(true, monster);
+            return;
+          }
+          monsterBattleTurn(monster);
+        }
+
+        function monsterBattleTurn(monster) {
+          const battle = state.battle;
+          if (!battle) return;
+          let damage = 4 + monster.stage * 4 + Math.floor(monster.absorbed / 2);
+          if (battle.weakened) {
+            damage = Math.ceil(damage * 0.72);
+            battle.weakened = false;
+          }
+          if (battle.defending) {
+            damage = Math.ceil(damage * 0.45);
+            battle.defending = false;
+          }
+          state.health = clamp(state.health - damage, 0, state.maxHealth);
+          battle.playerHp = state.health;
+          pushBattleLog(`垃圾怪推來混雜垃圾，造成 ${damage} 傷害。`);
+          if (state.health <= 0) finishBattle(false, monster);
+        }
+
+        function finishBattle(victory, monster) {
+          if (victory) {
+            const drops = monster.trashHeld.length ? monster.trashHeld : ["general"];
+            addTrashBundleToBackpack(drops, "戰鬥回收");
+            addNotes(12 + monster.stage * 8 + monster.absorbed, "擊敗垃圾怪");
+            adjustEco({ pollution: -monster.stage * 4, bio: 1 + monster.stage });
+            state.monsters = state.monsters.filter((item) => item.uid !== monster.uid);
+            state.battle = null;
+            showDialogue("垃圾怪被清理", `你擊敗第 ${monster.stage} 階垃圾怪，牠吸收的垃圾已進入背包。回收場分類越準，獎勵越高。`, 4.4);
+          } else {
+            state.health = Math.ceil(state.maxHealth * 0.45);
+            monster.x += randRange(-90, 90);
+            monster.y += randRange(-70, 70);
+            adjustEco({ pollution: 6, bio: -2 });
+            state.battle = null;
+            showDialogue("暫時撤退", "你被垃圾怪逼退，回到安全距離。牠還在路上，先整理背包或找夥伴再戰。", 4.2);
+          }
+          uiDirty = true;
+        }
+
+        function startRecycleGame() {
+          if (state.battle) return;
+          const total = backpackTotal();
+          if (!total) {
+            showDialogue("回收場", "背包是空的。先在路上撿垃圾，或擊敗垃圾怪取得牠吸收的垃圾。", 3.2);
+            return;
+          }
+          const items = expandBackpackItems(Math.min(5, total));
+          state.recycleGame = {
+            items,
+            index: 0,
+            correct: 0,
+            answers: [],
+          };
+          state.fieldAction = null;
+          showDialogue("回收分類小遊戲", "看題目，用 1-5 選正確分類。完美通過會拿到 bonus，並強化戰鬥的分類分析。", 4.2);
+          uiDirty = true;
+        }
+
+        function handleRecycleInput(key) {
+          const game = state.recycleGame;
+          if (!game) return;
+          const index = Number(key) - 1;
+          const picked = recycleCategories[index];
+          if (!picked) return;
+          const itemType = trashDef(game.items[game.index]);
+          const correct = picked.id === itemType.category;
+          if (correct) game.correct += 1;
+          game.answers.push({ item: itemType.id, picked: picked.id, correct });
+          game.index += 1;
+          showDialogue("回收分類", `${itemType.name} → ${picked.label}：${correct ? "正確" : `應該是 ${categoryDef(itemType.category).label}`}`, 1.8);
+          if (game.index >= game.items.length) finishRecycleGame();
+          uiDirty = true;
+        }
+
+        function finishRecycleGame() {
+          const game = state.recycleGame;
+          if (!game) return;
+          const total = game.items.length;
+          const perfect = game.correct === total;
+          const baseReward = game.items.reduce((sum, typeId) => sum + trashDef(typeId).reward, 0);
+          const accuracy = game.correct / total;
+          const reward = Math.round(baseReward * (0.55 + accuracy * 0.45)) + (perfect ? 18 + total * 2 : 0);
+          for (const typeId of game.items) removeTrashFromBackpack(typeId);
+          state.recyclePoints += reward;
+          state.recycleStats.played += 1;
+          if (perfect) state.recycleStats.perfect += 1;
+          addNotes(perfect ? 16 : 8, perfect ? "完美分類" : "完成回收");
+          addLog(`回收分類 ${game.correct}/${total}，獲得回收點數 +${reward}${perfect ? "（bonus）" : ""}。`);
+          state.recycleGame = null;
+          showDialogue("回收場結算", `${game.correct}/${total} 題正確，獲得 ${reward} 回收點數。${perfect ? "完美通過，分類分析已強化。" : "再練幾次，分類會更穩。"}`, 4.2);
+          uiDirty = true;
+        }
+
+        function cancelRecycleGame() {
+          if (!state.recycleGame) return;
+          state.recycleGame = null;
+          showDialogue("回收分類", "已暫停分類，背包內容保留。", 2.2);
+          uiDirty = true;
+        }
+
+        function talkToNpc(npc) {
+          const line = pick(npc.lines);
+          showDialogue(`${npc.name}｜${npc.currentAct}`, line, 4);
+        }
+
+        function showDialogue(title, text, seconds = 3) {
+          state.dialogue = { title, text, until: performance.now() + seconds * 1000 };
+          dialogueEl.hidden = false;
+          dialogueTitle.textContent = title;
+          dialogueText.textContent = text;
+        }
+
+        function drawSprite(name, x, y, scale = 2, flip = false) {
+          const img = sprites[name];
+          if (!img) return;
+          ctx.save();
+          ctx.imageSmoothingEnabled = false;
+          if (flip) {
+            ctx.translate(Math.round(x + img.width * scale), Math.round(y));
+            ctx.scale(-1, 1);
+            ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
+          } else {
+            ctx.drawImage(img, Math.round(x), Math.round(y), img.width * scale, img.height * scale);
+          }
+          ctx.restore();
+        }
+
+        function drawSpriteToBox(name, x, y, w, h, flip = false) {
+          const img = sprites[name];
+          if (!img) return false;
+          ctx.save();
+          ctx.imageSmoothingEnabled = false;
+          if (flip) {
+            ctx.translate(Math.round(x + w), Math.round(y));
+            ctx.scale(-1, 1);
+            ctx.drawImage(img, 0, 0, Math.round(w), Math.round(h));
+          } else {
+            ctx.drawImage(img, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+          }
+          ctx.restore();
+          return true;
+        }
+
+        function drawSpriteGrounded(name, cx, footY, flip = false) {
+          const size = SPRITE_DRAW_SIZES[name] || { w: 32, h: 32 };
+          return drawSpriteToBox(name, cx - size.w / 2, footY - size.h, size.w, size.h, flip);
+        }
+
+        function drawTile(tx, ty, x, y) {
+          const t = terrainAt(tx, ty);
+          const n = hash(tx, ty);
+          const n2 = hash(tx, ty, 18);
+          const colors = {
+            grass: n > 0.68 ? "#85b875" : "#7dad6e",
+            hub: n > 0.5 ? "#92bb76" : "#88b16c",
+            path: n > 0.54 ? "#bd9a62" : "#b58f59",
+            forest: n > 0.62 ? "#527f49" : "#496f3d",
+            meadow: n > 0.5 ? "#95c86b" : "#8cbd62",
+            wetland: n > 0.55 ? "#6f9b68" : "#638d62",
+            coast: n > 0.55 ? "#d1bd80" : "#c6ad72",
+            water: n > 0.5 ? "#51a3b4" : "#4795a6",
+            void: "#0d1511",
+          };
+          ctx.fillStyle = colors[t] || colors.void;
+          ctx.fillRect(x, y, TILE, TILE);
+
+          if (t !== "water" && t !== "void") {
+            ctx.fillStyle = "rgba(255, 248, 198, 0.08)";
+            if (n2 > 0.54) ctx.fillRect(x, y, TILE, 2);
+            ctx.fillStyle = "rgba(36, 53, 35, 0.08)";
+            if (n2 < 0.28) ctx.fillRect(x, y + TILE - 2, TILE, 2);
+          }
+
+          if (t === "water") {
+            ctx.fillStyle = "rgba(210, 244, 236, 0.38)";
+            ctx.fillRect(x + ((tx + ty) % 3) * 7, y + 9, 15, 2);
+            ctx.fillStyle = "rgba(47, 116, 128, 0.2)";
+            ctx.fillRect(x + 3 + ((n * 12) | 0), y + 24, 13, 2);
+          } else if (t === "path") {
+            ctx.fillStyle = "rgba(97, 70, 39, 0.18)";
+            ctx.fillRect(x + 4 + ((n * 15) | 0), y + 8 + ((n2 * 14) | 0), 5, 2);
+            if (n > 0.86) {
+              ctx.fillStyle = "rgba(237, 215, 156, 0.45)";
+              ctx.fillRect(x + 19, y + 21, 4, 2);
+            }
+          } else if (t === "forest") {
+            ctx.fillStyle = "rgba(37, 83, 45, 0.24)";
+            if (n > 0.58) ctx.fillRect(x + 4, y + 22, 18, 4);
+            if (n2 > 0.76) {
+              ctx.fillStyle = "#5f8f4f";
+              ctx.fillRect(x + 18, y + 8, 5, 2);
+            }
+          } else if (t === "wetland" && n > 0.5) {
+            ctx.fillStyle = "#2f6a55";
+            ctx.fillRect(x + 7, y + 10, 2, 15);
+            ctx.fillRect(x + 17, y + 8, 2, 17);
+            ctx.fillStyle = "rgba(190, 235, 210, 0.28)";
+            ctx.fillRect(x + 4, y + 24, 20, 3);
+          } else if ((t === "grass" || t === "meadow") && n > 0.82) {
+            ctx.fillStyle = n > 0.92 ? "#f0d778" : "#5f9d55";
+            ctx.fillRect(x + 8 + (n * 9) | 0, y + 10 + (n * 7) | 0, 3, 3);
+          } else if (t === "coast" && n > 0.74) {
+            ctx.fillStyle = n > 0.9 ? "#f1dfaa" : "#9c895f";
+            ctx.fillRect(x + 8 + ((n * 15) | 0), y + 13 + ((n * 9) | 0), 4, 2);
+          } else if (t === "hub" && n > 0.88) {
+            ctx.fillStyle = "#6f9d55";
+            ctx.fillRect(x + 6 + ((n * 10) | 0), y + 20, 9, 3);
+          }
+        }
+
+        function drawTree(x, y, tall = false) {
+          if (drawSpriteToBox(tall ? "treeTall" : "tree", x, tall ? y - 18 : y - 6, tall ? 54 : 46, tall ? 74 : 56)) return;
+          ctx.fillStyle = "#5a3a22";
+          ctx.fillRect(x + 13, y + 19, 8, tall ? 25 : 18);
+          ctx.fillStyle = "#245b36";
+          ctx.fillRect(x + 4, y + 12, 26, 12);
+          ctx.fillStyle = "#2f7944";
+          ctx.fillRect(x + 8, y + 2, 18, 14);
+          ctx.fillStyle = "#3f8b55";
+          ctx.fillRect(x + 12, y - 6, 12, 10);
+        }
+
+        function drawBush(x, y, seed = 0) {
+          const n = hash(x | 0, y | 0, seed);
+          ctx.fillStyle = "rgba(0,0,0,0.13)";
+          ctx.fillRect(x + 3, y + 18, 26, 5);
+          ctx.fillStyle = n > 0.5 ? "#496f2e" : "#557f36";
+          ctx.fillRect(x + 3, y + 9, 10, 10);
+          ctx.fillRect(x + 12, y + 4, 12, 15);
+          ctx.fillRect(x + 22, y + 10, 8, 9);
+          ctx.fillStyle = "#7aa858";
+          ctx.fillRect(x + 13, y + 6, 6, 2);
+          if (n > 0.72) {
+            ctx.fillStyle = "#f0d778";
+            ctx.fillRect(x + 7, y + 13, 2, 2);
+            ctx.fillRect(x + 23, y + 14, 2, 2);
+          }
+        }
+
+        function drawRock(x, y, wide = false) {
+          ctx.fillStyle = "rgba(0,0,0,0.13)";
+          ctx.fillRect(x + 2, y + 14, wide ? 29 : 18, 4);
+          ctx.fillStyle = "#5b5a4d";
+          ctx.fillRect(x + 4, y + 7, wide ? 24 : 15, 9);
+          ctx.fillStyle = "#85877b";
+          ctx.fillRect(x + 7, y + 5, wide ? 16 : 9, 5);
+          ctx.fillStyle = "#b7b6a6";
+          ctx.fillRect(x + 9, y + 6, 6, 2);
+        }
+
+        function drawReeds(x, y) {
+          ctx.fillStyle = "rgba(0,0,0,0.12)";
+          ctx.fillRect(x + 1, y + 20, 25, 4);
+          ctx.fillStyle = "#2f6a55";
+          for (let i = 0; i < 5; i++) {
+            const sx = x + 3 + i * 5;
+            ctx.fillRect(sx, y + 5 + (i % 2) * 3, 2, 17 - (i % 2) * 3);
+            ctx.fillStyle = i % 2 ? "#9dc47c" : "#7aa868";
+            ctx.fillRect(sx - 2, y + 10 + (i % 3), 2, 6);
+            ctx.fillStyle = "#2f6a55";
+          }
+        }
+
+        function drawFlowerPatch(x, y) {
+          ctx.fillStyle = "#557f36";
+          ctx.fillRect(x + 5, y + 13, 20, 4);
+          ctx.fillStyle = "#e6c95b";
+          ctx.fillRect(x + 7, y + 9, 3, 3);
+          ctx.fillRect(x + 16, y + 7, 3, 3);
+          ctx.fillStyle = "#fff0a8";
+          ctx.fillRect(x + 22, y + 11, 2, 2);
+        }
+
+        function drawHabitatLandmarks() {
+          for (let ty = 7; ty <= 50; ty += 6) {
+            if (ty >= 31 && ty <= 37) continue;
+            const cx = riverCenterX(ty);
+            drawRock((cx - 3.7) * TILE, ty * TILE + 11, ty % 12 === 1);
+            drawReeds((cx + 2.4) * TILE, ty * TILE + 5);
+          }
+
+          for (const spot of [
+            [8, 11], [13, 10], [18, 13], [22, 18], [10, 21], [20, 22],
+          ]) {
+            drawFlowerPatch(spot[0] * TILE, spot[1] * TILE);
+          }
+
+          for (const spot of [
+            [27, 7, true], [33, 6, false], [46, 8, true], [29, 24, false], [48, 27, true],
+          ]) {
+            drawTree(spot[0] * TILE, spot[1] * TILE, spot[2]);
+          }
+
+          for (const spot of [
+            [42, 35], [47, 33], [51, 38], [44, 41], [53, 35],
+          ]) {
+            drawReeds(spot[0] * TILE, spot[1] * TILE);
+          }
+
+          for (const spot of [
+            [68, 31, true], [75, 34, false], [67, 43, false], [73, 47, true], [78, 40, false],
+          ]) {
+            drawRock(spot[0] * TILE, spot[1] * TILE, spot[2]);
+          }
+        }
+
+        function drawBuilding(x, y, w, h, roof, wall, label, spriteName = null) {
+          if (spriteName && drawSpriteToBox(spriteName, x, y, w, h)) {
+            ctx.fillStyle = "#f4eed8";
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(label, x + w / 2, y + h + 18);
+            return;
+          }
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillRect(x + 8, y + h - 4, w, 10);
+          ctx.fillStyle = wall;
+          ctx.fillRect(x, y + 20, w, h - 20);
+          ctx.fillStyle = roof;
+          ctx.fillRect(x - 8, y + 10, w + 16, 18);
+          ctx.fillRect(x + 10, y, w - 20, 14);
+          ctx.fillStyle = "#304034";
+          ctx.fillRect(x + w / 2 - 13, y + h - 28, 26, 28);
+          ctx.fillStyle = "#f4eed8";
+          ctx.font = "bold 12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(label, x + w / 2, y + h + 18);
+        }
+
+        function drawBuildingEntrance(building) {
+          const door = buildingDoorRect(building);
+          if (dist(state.player, door) < 96) drawWorldLabel(building.facility === "recycle" ? "分類" : "進入", door.x + door.w / 2, door.y - 8);
+        }
+
+        function renderWorld() {
+          const cam = state.camera;
+          const startX = Math.floor(cam.x / TILE) - 1;
+          const startY = Math.floor(cam.y / TILE) - 1;
+          const endX = Math.ceil((cam.x + canvas.width) / TILE) + 1;
+          const endY = Math.ceil((cam.y + canvas.height) / TILE) + 1;
+          for (let ty = startY; ty <= endY; ty++) {
+            for (let tx = startX; tx <= endX; tx++) drawTile(tx, ty, tx * TILE - cam.x, ty * TILE - cam.y);
+          }
+
+          ctx.save();
+          ctx.translate(-cam.x, -cam.y);
+
+          for (let tx = 0; tx < MAP_W; tx++) {
+            for (let ty = 0; ty < MAP_H; ty++) {
+              const t = terrainAt(tx, ty);
+              const n = hash(tx, ty, 7);
+              const x = tx * TILE + ((n * 9) | 0) - 3;
+              const y = ty * TILE + 3 + ((hash(tx, ty, 12) * 5) | 0);
+              if (t === "forest" && n > 0.79) {
+                drawTree(x, y, n > 0.9);
+              } else if (t === "forest" && n > 0.63 && n < 0.72) {
+                drawBush(x + 4, y + 16, 3);
+              } else if (t === "grass" && n > 0.975) {
+                drawTree(x, y + 2, false);
+              } else if (t === "hub" && n > 0.92) {
+                drawBush(x + 2, y + 14, 4);
+              } else if (t === "meadow" && n > 0.82) {
+                drawFlowerPatch(x + 2, y + 15);
+              } else if (t === "wetland" && n > 0.58) {
+                drawReeds(x + 2, y + 7);
+              } else if (t === "coast" && n > 0.84) {
+                drawRock(x + 3, y + 12, n > 0.93);
+              }
+            }
+          }
+          drawHabitatLandmarks();
+
+          const bridgeW = 6.45 * TILE;
+          const bridgeH = bridgeW * (96 / 286);
+          const bridgeX = riverCenterX(34) * TILE - bridgeW / 2;
+          const bridgeY = 33.05 * TILE;
+          if (!drawSpriteToBox("bridge", bridgeX, bridgeY, bridgeW, bridgeH)) {
+            ctx.fillStyle = "#8b6f3f";
+            ctx.fillRect(bridgeX, 33.4 * TILE, bridgeW, 0.82 * TILE);
+            ctx.fillStyle = "#d7bc75";
+            for (let i = 0; i < 6; i++) ctx.fillRect(bridgeX + i * TILE + 7, 33.55 * TILE, 24, 6);
+          }
+
+          for (const building of buildingDefs) {
+            drawBuilding(building.x, building.y, building.w, building.h, "#2e795d", "#dfc888", building.label, building.sprite);
+            drawBuildingEntrance(building);
+          }
+
+          const actors = [
+            ...state.trash.map((trash) => ({ kind: "trash", data: trash, y: trash.y + trash.h })),
+            ...state.events.map((event) => ({ kind: "event", data: event, y: event.y + event.h })),
+            ...state.monsters.map((monster) => ({ kind: "monster", data: monster, y: monster.y + monster.h })),
+            ...state.animals.map((animal) => ({ kind: "animal", data: animal, y: animal.y + animal.h })),
+            ...state.npcs.map((npc) => ({ kind: "npc", data: npc, y: npc.y + npc.h })),
+            { kind: "player", data: state.player, y: state.player.y + state.player.h },
+          ].sort((a, b) => a.y - b.y);
+
+          for (const item of actors) {
+            if (item.kind === "trash") drawTrashItem(item.data);
+            if (item.kind === "event") drawEvent(item.data);
+            if (item.kind === "monster") drawTrashMonster(item.data);
+            if (item.kind === "animal") drawAnimal(item.data);
+            if (item.kind === "npc") drawNpc(item.data);
+            if (item.kind === "player") drawPlayer();
+          }
+
+          ctx.restore();
+        }
+
+        function drawEvent(event) {
+          const def = eventDefs.find((item) => item.id === event.id);
+          const pulse = 0.5 + Math.sin(performance.now() / 260 + event.pulse) * 0.18;
+          ctx.fillStyle = `rgba(255, 243, 191, ${pulse})`;
+          ctx.fillRect(event.x - 5, event.y - 5, event.w + 10, event.h + 10);
+          drawSpriteGrounded(def.sprite, event.x + event.w / 2, event.y + event.h + 2);
+          if (dist(event, state.player) < 70) drawWorldLabel(def.prompt, event.x + event.w / 2, event.y - 18);
+        }
+
+        function drawTrashItem(trash) {
+          const def = trashDef(trash.type);
+          const pulse = 0.45 + Math.sin(performance.now() / 240 + trash.pulse) * 0.14;
+          const danger = clamp(trash.age / trash.transform, 0, 1);
+          ctx.fillStyle = `rgba(255, 243, 191, ${pulse})`;
+          ctx.fillRect(trash.x - 4, trash.y - 4, trash.w + 8, trash.h + 8);
+          drawSpriteGrounded("trash", trash.x + trash.w / 2, trash.y + trash.h + 2);
+          ctx.fillStyle = def.color;
+          ctx.fillRect(trash.x + 2, trash.y - 8, Math.max(5, trash.w * (1 - danger)), 4);
+          ctx.fillStyle = danger > 0.72 ? "#c44f45" : "#fff7d7";
+          ctx.fillRect(trash.x + trash.w - 7, trash.y - 8, 5, 4);
+          if (dist(trash, state.player) < 64) drawWorldLabel(`撿：${def.name}`, trash.x + trash.w / 2, trash.y - 20);
+        }
+
+        function drawTrashMonster(monster) {
+          const sprite = `trashMonster${monster.stage}`;
+          const bob = Math.sin(performance.now() / 360 + monster.pulse) * 2;
+          const dangerColor = monster.stage === 3 ? "#c44f45" : monster.stage === 2 ? "#d88b3d" : "#fff3bf";
+          ctx.fillStyle = monster.stage === 3 ? "rgba(196, 79, 69, 0.28)" : "rgba(255, 243, 191, 0.22)";
+          ctx.fillRect(monster.x - 8, monster.y - 8, monster.w + 16, monster.h + 16);
+          drawSpriteGrounded(sprite, monster.x + monster.w / 2, monster.y + monster.h + bob, state.player.x > monster.x);
+          ctx.fillStyle = "#1b3025";
+          ctx.fillRect(monster.x - 3, monster.y - 13, monster.w + 6, 6);
+          ctx.fillStyle = dangerColor;
+          ctx.fillRect(monster.x - 2, monster.y - 12, (monster.w + 4) * clamp(monster.hp / monsterMaxHp(monster.stage, monster.absorbed), 0, 1), 4);
+          if (dist(monster, state.player) < 84) drawWorldLabel(`第 ${monster.stage} 階垃圾怪`, monster.x + monster.w / 2, monster.y - 28, dangerColor, "#244f3c");
+        }
+
+        function drawAnimal(actor) {
+          const def = animalDefs.find((animal) => animal.id === actor.id);
+          const bob = Math.sin(performance.now() / 420 + actor.x * 0.01) * 2;
+          drawSpriteGrounded(def.sprite, actor.x + actor.w / 2, actor.y + actor.h + bob, actor.target && actor.target.x > actor.x);
+          const progress = getAnimalProgress(def.id);
+          const icon = progress.seen ? "!" : "?";
+          if (dist(actor, state.player) < 72) drawWorldLabel(progress.seen ? "記錄" : "觀察", actor.x + actor.w / 2, actor.y - 18);
+          if (actor.mood === "curious") drawWorldLabel(icon, actor.x + actor.w / 2 + 18, actor.y - 38, "#fff7d7", "#2e795d");
+        }
+
+        function drawNpc(npc) {
+          drawSpriteGrounded(npc.sprite, npc.x + npc.w / 2, npc.y + npc.h + 2, state.player.x > npc.x);
+          if (dist(npc, state.player) < 72) drawWorldLabel("聊天", npc.x + npc.w / 2, npc.y - 25);
+        }
+
+        function drawPlayer() {
+          drawSpriteGrounded("player", state.player.x + state.player.w / 2, state.player.y + state.player.h + 2, state.player.facing === "right");
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 11px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("調查員", state.player.x + state.player.w / 2, state.player.y - 32);
+        }
+
+        function drawInteriorTable(block, top, side = "#6b4d32") {
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillRect(block.x + 8, block.y + block.h - 6, block.w, 12);
+          ctx.fillStyle = side;
+          ctx.fillRect(block.x, block.y + block.h - 18, block.w, 18);
+          ctx.fillStyle = top;
+          ctx.fillRect(block.x, block.y, block.w, block.h - 14);
+          ctx.strokeStyle = "rgba(55,42,24,0.32)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(block.x + 3, block.y + 3, block.w - 6, block.h - 20);
+        }
+
+        function drawInteriorShelf(x, y, w, h, color) {
+          ctx.fillStyle = "rgba(0,0,0,0.16)";
+          ctx.fillRect(x + 6, y + h - 4, w, 9);
+          ctx.fillStyle = "#513926";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = color;
+          for (let row = 0; row < 3; row++) {
+            ctx.fillRect(x + 10, y + 10 + row * 30, w - 20, 16);
+            ctx.fillStyle = row % 2 ? "#e9ddae" : color;
+          }
+        }
+
+        function drawInteriorGrid(y, color) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          for (let x = 56; x <= canvas.width - 56; x += 32) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          }
+          for (let row = y; row <= canvas.height; row += 32) {
+            ctx.beginPath();
+            ctx.moveTo(56, row);
+            ctx.lineTo(canvas.width - 56, row);
+            ctx.stroke();
+          }
+        }
+
+        function drawEcoStationInterior() {
+          drawInteriorShelf(86, 176, 128, 48, "#7bbf75");
+          drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#7bbf75");
+          drawInteriorTable({ x: 112, y: 254, w: 192, h: 76 }, "#8dbd72");
+          drawInteriorTable({ x: 600, y: 248, w: 184, h: 86 }, "#91c989");
+          drawInteriorTable({ x: 386, y: 368, w: 188, h: 76 }, "#b6d284");
+          ctx.fillStyle = "#203d2d";
+          ctx.fillRect(338, 112, 284, 92);
+          ctx.fillStyle = "#d7ecb4";
+          ctx.font = "bold 18px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("棲地觀察板", 480, 150);
+          ctx.font = "13px sans-serif";
+          ctx.fillText("森林　溪流　濕地", 480, 178);
+          drawTree(804, 390, false);
+          drawBush(782, 446, 5);
+        }
+
+        function drawDataLabInterior() {
+          drawInteriorShelf(86, 176, 128, 48, "#9bd6e0");
+          drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#9bd6e0");
+          drawInteriorTable({ x: 108, y: 248, w: 208, h: 82 }, "#d9d2a5", "#5e7790");
+          drawInteriorTable({ x: 382, y: 250, w: 210, h: 82 }, "#d9d2a5", "#5e7790");
+          drawInteriorTable({ x: 252, y: 408, w: 160, h: 70 }, "#e5dcae", "#5e7790");
+          ctx.fillStyle = "#253b4a";
+          ctx.fillRect(680, 234, 122, 188);
+          for (let i = 0; i < 5; i++) {
+            ctx.fillStyle = i % 2 ? "#5ba9b9" : "#cfe8e9";
+            ctx.fillRect(692, 250 + i * 31, 98, 14);
+          }
+          ctx.fillStyle = "#1f3141";
+          ctx.fillRect(164, 226, 76, 42);
+          ctx.fillRect(448, 226, 76, 42);
+          ctx.fillStyle = "#b9f0ff";
+          ctx.fillRect(172, 232, 60, 26);
+          ctx.fillRect(456, 232, 60, 26);
+        }
+
+        function drawWorkshopInterior() {
+          drawInteriorShelf(86, 176, 128, 48, "#d9b26a");
+          drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#d9b26a");
+          drawInteriorTable({ x: 104, y: 250, w: 228, h: 86 }, "#b9834c", "#68442a");
+          drawInteriorTable({ x: 432, y: 236, w: 244, h: 90 }, "#c08a50", "#68442a");
+          drawInteriorTable({ x: 196, y: 410, w: 138, h: 80 }, "#ac7643", "#68442a");
+          ctx.fillStyle = "#6b4b2f";
+          ctx.fillRect(712, 370, 124, 94);
+          ctx.fillStyle = "#9a6a3e";
+          ctx.fillRect(724, 382, 100, 22);
+          ctx.fillRect(724, 418, 100, 22);
+          ctx.strokeStyle = "#ead08c";
+          ctx.lineWidth = 4;
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(396 + i * 36, 142);
+            ctx.lineTo(410 + i * 36, 190);
+            ctx.stroke();
+          }
+        }
+
+        function renderInterior() {
+          const interior = currentInteriorDef() || interiorDefs.ecoStation;
+          ctx.fillStyle = "#14251d";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = interior.wall;
+          ctx.fillRect(56, 48, canvas.width - 112, 166);
+          ctx.fillStyle = interior.floor;
+          ctx.fillRect(56, 166, canvas.width - 112, canvas.height - 166);
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillRect(56, 206, canvas.width - 112, 8);
+          drawInteriorGrid(166, "rgba(68, 76, 45, 0.22)");
+          ctx.strokeStyle = "#eadfb8";
+          ctx.lineWidth = 5;
+          ctx.strokeRect(56, 48, canvas.width - 112, canvas.height - 68);
+          ctx.fillStyle = interior.dark;
+          ctx.fillRect(74, 78, canvas.width - 148, 86);
+          ctx.fillStyle = interior.accent;
+          ctx.fillRect(88, 94, canvas.width - 176, 54);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(interior.name, canvas.width / 2, 75);
+
+          if (state.interior === "ecoStation") drawEcoStationInterior();
+          else if (state.interior === "dataLab") drawDataLabInterior();
+          else drawWorkshopInterior();
+
+          const exit = interiorExitRect();
+          ctx.fillStyle = "#614730";
+          ctx.fillRect(exit.x, exit.y + 8, exit.w, exit.h - 8);
+          ctx.fillStyle = "#e3cf8b";
+          ctx.fillRect(exit.x + 14, exit.y + 14, exit.w - 28, 12);
+          ctx.fillStyle = "rgba(255, 247, 215, 0.18)";
+          ctx.fillRect(exit.x - 16, exit.y - 10, exit.w + 32, exit.h + 18);
+
+          drawPlayer();
+          if (dist(state.player, exit) < 96) drawWorldLabel("離開", exit.x + exit.w / 2, exit.y - 12);
+        }
+
+        function drawWorldLabel(text, x, y, bg = "#fff7d7", fg = "#244f3c") {
+          ctx.font = "bold 12px sans-serif";
+          ctx.textAlign = "center";
+          const w = ctx.measureText(text).width + 14;
+          ctx.fillStyle = "rgba(0,0,0,0.22)";
+          ctx.fillRect(x - w / 2 + 2, y - 12 + 2, w, 20);
+          ctx.fillStyle = bg;
+          ctx.fillRect(x - w / 2, y - 12, w, 20);
+          ctx.fillStyle = fg;
+          ctx.fillText(text, x, y + 2);
+        }
+
+        function drawAtmosphere() {
+          const t = state.time;
+          if (t >= 1110 || t < 330) {
+            ctx.fillStyle = "rgba(12, 28, 52, 0.42)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          } else if (t >= 960 && t < 1110) {
+            ctx.fillStyle = "rgba(216, 126, 70, 0.18)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          } else if (t >= 300 && t < 460) {
+            ctx.fillStyle = "rgba(215, 235, 228, 0.18)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          if (state.weather === "細雨") {
+            ctx.strokeStyle = "rgba(225, 245, 247, 0.42)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 90; i++) {
+              const x = (i * 47 + performance.now() * 0.11) % canvas.width;
+              const y = (i * 79 + performance.now() * 0.25) % canvas.height;
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.lineTo(x - 8, y + 16);
+              ctx.stroke();
+            }
+          }
+        }
+
+        function drawMiniMap() {
+          if (!state.showMap || state.scene === "interior") return;
+          const w = 178;
+          const h = 116;
+          const x = canvas.width - w - 16;
+          const y = 16;
+          ctx.fillStyle = "rgba(28, 48, 36, 0.86)";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "#fff3bf";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, w, h);
+          for (const zone of zones) {
+            const zx = x + (zone.rect.x / WORLD_W) * w;
+            const zy = y + (zone.rect.y / WORLD_H) * h;
+            const zw = (zone.rect.w / WORLD_W) * w;
+            const zh = (zone.rect.h / WORLD_H) * h;
+            ctx.fillStyle = zone.id === "river" ? "#63b5c7" : zone.id === "coast" ? "#d8bd78" : zone.id === "forest" ? "#3f8b55" : zone.id === "wetland" ? "#6ba874" : "#8fc46f";
+            ctx.fillRect(zx, zy, zw, zh);
+          }
+          ctx.fillStyle = "#fff3bf";
+          for (const trash of state.trash) ctx.fillRect(x + (trash.x / WORLD_W) * w - 1, y + (trash.y / WORLD_H) * h - 1, 2, 2);
+          ctx.fillStyle = "#c44f45";
+          for (const monster of state.monsters) ctx.fillRect(x + (monster.x / WORLD_W) * w - 2, y + (monster.y / WORLD_H) * h - 2, 4, 4);
+          ctx.fillStyle = "#f44f45";
+          ctx.fillRect(x + (state.player.x / WORLD_W) * w - 2, y + (state.player.y / WORLD_H) * h - 2, 4, 4);
+        }
+
+        function drawFieldActionOverlay() {
+          const action = state.fieldAction;
+          if (!action) return;
+          const x = 180;
+          const y = canvas.height - 118;
+          const w = canvas.width - 360;
+          const h = 68;
+          ctx.fillStyle = "rgba(26, 45, 34, 0.95)";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "#fff3bf";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(x, y, w, h);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 15px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(`${action.def.prompt}${action.helper ? "｜夥伴協助中" : ""}`, x + 18, y + 24);
+          const bx = x + 18;
+          const by = y + 40;
+          const bw = w - 36;
+          const bh = 14;
+          ctx.fillStyle = "#594f39";
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.fillStyle = "#d8a941";
+          ctx.fillRect(bx + (action.target - action.window / 2) * bw, by, action.window * bw, bh);
+          ctx.fillStyle = "#fff7d7";
+          ctx.fillRect(bx + action.meter * bw - 3, by - 5, 6, bh + 10);
+        }
+
+        function drawBattleOverlay() {
+          const battle = state.battle;
+          const monster = battleMonster();
+          if (!battle || !monster) return;
+          const x = 112;
+          const y = 92;
+          const w = canvas.width - 224;
+          const h = 300;
+          ctx.fillStyle = "rgba(21, 34, 28, 0.96)";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "#fff3bf";
+          ctx.lineWidth = 4;
+          ctx.strokeRect(x, y, w, h);
+          ctx.fillStyle = "#f8de8f";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(`第 ${monster.stage} 階垃圾怪`, x + 24, y + 38);
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillStyle = "#fff7d7";
+          ctx.fillText(`玩家體力 ${state.health}/${state.maxHealth}`, x + 24, y + 68);
+          ctx.fillText(`怪物體力 ${monster.hp}/${monsterMaxHp(monster.stage, monster.absorbed)}｜已吸收 ${monster.absorbed} 件垃圾`, x + 24, y + 92);
+
+          const options = [
+            "1 淨化打擊",
+            `2 分類分析${state.recycleStats.played ? "" : "（未練習）"}`,
+            `3 夥伴支援${partnerCount() ? `（${partnerCount()}）` : "（未解鎖）"}`,
+            "4 防禦整理",
+          ];
+          for (let i = 0; i < options.length; i++) {
+            const ox = x + 24 + (i % 2) * (w / 2 - 18);
+            const oy = y + 122 + Math.floor(i / 2) * 48;
+            ctx.fillStyle = "#efe5bd";
+            ctx.fillRect(ox, oy, w / 2 - 42, 34);
+            ctx.fillStyle = "#244f3c";
+            ctx.font = "bold 15px sans-serif";
+            ctx.fillText(options[i], ox + 12, oy + 22);
+          }
+
+          ctx.fillStyle = "#dbe8c0";
+          ctx.font = "13px sans-serif";
+          battle.log.forEach((line, i) => ctx.fillText(line, x + 24, y + 232 + i * 21));
+        }
+
+        function drawRecycleOverlay() {
+          const game = state.recycleGame;
+          if (!game) return;
+          const itemType = trashDef(game.items[game.index]);
+          const x = 136;
+          const y = 116;
+          const w = canvas.width - 272;
+          const h = 330;
+          ctx.fillStyle = "rgba(28, 48, 36, 0.96)";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "#fff3bf";
+          ctx.lineWidth = 4;
+          ctx.strokeRect(x, y, w, h);
+          ctx.fillStyle = "#f8de8f";
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(`回收分類 ${game.index + 1}/${game.items.length}`, x + 24, y + 40);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 18px sans-serif";
+          ctx.fillText(`這個物品要丟哪一類？ ${itemType.name}`, x + 24, y + 76);
+          ctx.font = "14px sans-serif";
+          ctx.fillStyle = "#dbe8c0";
+          ctx.fillText(itemType.hint, x + 24, y + 104);
+          for (let i = 0; i < recycleCategories.length; i++) {
+            const category = recycleCategories[i];
+            const ox = x + 24 + (i % 2) * (w / 2 - 18);
+            const oy = y + 132 + Math.floor(i / 2) * 48;
+            ctx.fillStyle = "#efe5bd";
+            ctx.fillRect(ox, oy, w / 2 - 42, 34);
+            ctx.fillStyle = "#244f3c";
+            ctx.font = "bold 15px sans-serif";
+            ctx.fillText(`${i + 1} ${category.label}`, ox + 12, oy + 22);
+          }
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "13px sans-serif";
+          ctx.fillText(`目前答對 ${game.correct} 題。Esc 可暫停，背包內容不會被扣除。`, x + 24, y + h - 28);
+        }
+
+        function render() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (state.scene === "interior") {
+            renderInterior();
+          } else {
+            renderWorld();
+            drawAtmosphere();
+            drawMiniMap();
+            drawFieldActionOverlay();
+          }
+          drawBattleOverlay();
+          drawRecycleOverlay();
+          updatePrompt();
+        }
+
+        function updatePrompt() {
+          if (!state.started) {
+            promptEl.hidden = true;
+            return;
+          }
+          if (state.battle) {
+            promptEl.hidden = false;
+            promptEl.textContent = "戰鬥中：按 1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理";
+            return;
+          }
+          if (state.recycleGame) {
+            promptEl.hidden = false;
+            promptEl.textContent = "回收分類中：按 1-5 選分類，Esc 暫停";
+            return;
+          }
+          if (state.fieldAction) {
+            promptEl.hidden = false;
+            promptEl.textContent = "按 Space/E 完成判定，Esc 取消";
+            return;
+          }
+          const target = nearestInteractable();
+          if (!target) {
+            promptEl.hidden = true;
+            return;
+          }
+          promptEl.hidden = false;
+          if (target.type === "animal") {
+            const def = animalDefs.find((animal) => animal.id === target.ref.id);
+            promptEl.textContent = `Space/E ${getAnimalProgress(def.id).seen ? "記錄" : "觀察"}：${def.name}`;
+          }
+          if (target.type === "event") {
+            const def = eventDefs.find((event) => event.id === target.ref.id);
+            promptEl.textContent = `Space/E ${def.prompt}：${def.name}`;
+          }
+          if (target.type === "trash") promptEl.textContent = `Space/E 撿起：${trashDef(target.ref.type).name}`;
+          if (target.type === "npc") promptEl.textContent = `Space/E 對話：${target.ref.name}`;
+          if (target.type === "building") {
+            promptEl.textContent = target.ref.facility === "recycle" ? `Space/E 回收分類：${target.ref.label}` : `Space/E 進入：${target.ref.label}`;
+          }
+          if (target.type === "exit") {
+            const interior = currentInteriorDef();
+            promptEl.textContent = `Space/E 離開：${interior ? interior.name : "室內"}`;
+          }
+        }
+
+        function updateHud() {
+          if (!uiDirty) return;
+          uiDirty = false;
+          const zone = currentZoneAt();
+          sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜回收點數 ${state.recyclePoints}`;
+          hudPills.innerHTML = [
+            `第 ${state.day} 天`,
+            formatClock(),
+            state.weather,
+            zone.name,
+            `體力 ${state.health}/${state.maxHealth}`,
+            `背包 ${backpackTotal()}`,
+            `回收 ${state.recyclePoints}`,
+            `筆記 ${state.notes}`,
+          ].map((text) => `<span class="pill">${text}</span>`).join("");
+
+          const setMetric = (valueEl, barEl, value, invert = false) => {
+            valueEl.textContent = Math.round(value);
+            barEl.style.width = `${clamp(value, 0, 100)}%`;
+            barEl.style.background = invert
+              ? value > 65 ? "var(--bad)" : value > 35 ? "var(--warn)" : "var(--good)"
+              : value < 35 ? "var(--bad)" : value < 65 ? "var(--warn)" : "var(--good)";
+          };
+          setMetric(ui.forestValue, ui.forestBar, state.ecology.forest);
+          setMetric(ui.waterValue, ui.waterBar, state.ecology.water);
+          setMetric(ui.pollutionValue, ui.pollutionBar, state.ecology.pollution, true);
+          setMetric(ui.bioValue, ui.bioBar, state.ecology.bio);
+          speedBtn.textContent = `時間速度 x${state.speedOptions[state.speedIndex]}`;
+          renderSidePanel();
+          renderLog();
+        }
+
+        function renderSidePanel() {
+          if (activeTab === "guide") {
+            const partners = partnerCount();
+            sideBody.innerHTML = `
+              <div class="card">
+                <div class="card-title">今日巡查方針 <span class="chip">${state.trash.length} 垃圾</span></div>
+                <small>路上的垃圾會慢慢腐化；太久沒撿會變成垃圾怪。垃圾怪會追玩家，路過其他垃圾還會吸收並升階。</small>
+              </div>
+              <div class="card">
+                <div class="card-title">今日建議 <span class="chip">${state.weather}</span></div>
+                <small>${getDailyAdvice()}</small>
+              </div>
+              <div class="card">
+                <div class="card-title">養成進度 <span class="chip">${partners} 夥伴</span></div>
+                <small>已收錄 ${animalDefs.filter((a) => state.progress[a.id]?.seen).length} / ${animalDefs.length} 種動物，知識卡 ${Object.keys(state.unlockedCards).length} / ${knowledgeCards.length}。</small>
+              </div>
+              <div class="card">
+                <div class="card-title">戰鬥技能來源 <span class="chip">1-4</span></div>
+                <small>基礎技能靠巡查工具；分類分析會因回收小遊戲變強；夥伴支援來自動物信任，台灣藍鵲提升攻擊，台灣黑熊提供守護。</small>
+              </div>
+              <div class="card">
+                <div class="card-title">操作</div>
+                <small>WASD/方向鍵移動，Shift 快走，Space/E 互動，戰鬥用 1-4，回收分類用 1-5，B 查看圖鑑，M 切換小地圖。</small>
+              </div>
+            `;
+            return;
+          }
+
+          if (activeTab === "bag") {
+            const categoryRows = trashTypes.map((type) => {
+              const count = state.backpack[type.id] || 0;
+              return `
+                <div class="card">
+                  <div class="card-title">${type.name} <span class="chip">${count}</span></div>
+                  <small>${categoryDef(type.category).label}｜${type.hint}</small>
+                </div>
+              `;
+            }).join("");
+            sideBody.innerHTML = `
+              <div class="card">
+                <div class="card-title">背包暫存 <span class="chip">${backpackTotal()} 件</span></div>
+                <small>${backpackSummary()}</small>
+              </div>
+              <div class="card">
+                <div class="card-title">回收場 <span class="chip">${state.recyclePoints} 點</span></div>
+                <small>到社區南側的回收場互動，會抽最多 5 件背包垃圾做分類。完美通過可得 bonus，也會讓戰鬥的分類分析更有效。</small>
+              </div>
+              <div class="card">
+                <div class="card-title">分類成績 <span class="chip">${state.recycleStats.perfect}/${state.recycleStats.played}</span></div>
+                <small>完美次數 / 遊玩次數。回收點數達 25 後，森林有機會出現台灣黑熊線索。</small>
+              </div>
+              ${categoryRows}
+            `;
+            return;
+          }
+
+          if (activeTab === "codex") {
+            sideBody.innerHTML = animalDefs.map((animal) => {
+              const p = state.progress[animal.id] || { trust: 0, seen: false, partnered: false };
+              return `
+                <div class="card">
+                  <div class="card-title">${p.seen ? animal.name : "未發現動物"} <span class="chip">${p.partnered ? "夥伴" : animal.rarity}</span></div>
+                  <small>${p.seen ? `${animal.habitat}｜信任 ${p.trust}/${animal.trustGoal}｜技能：${animal.skill}` : `線索：${animal.habitat}，環境條件達標後可能出現。`}</small>
+                </div>
+              `;
+            }).join("") + `
+              <div class="card">
+                <div class="card-title">知識卡</div>
+                <small>${knowledgeCards.map((card) => state.unlockedCards[card.id] ? `已解鎖：${card.id}｜${card.text}` : `未解鎖：${card.id}`).join("<br>")}</small>
+              </div>
+            `;
+            return;
+          }
+
+          sideBody.innerHTML = state.npcs.map((npc) => `
+            <div class="card">
+              <div class="card-title">${npc.name} <span class="chip">${npc.role}</span></div>
+              <small>目前：${npc.currentAct}</small>
+            </div>
+          `).join("");
+        }
+
+        function getDailyAdvice() {
+          if (state.monsters.length) return `路上有 ${state.monsters.length} 隻垃圾怪。先處理低階怪，避免牠們吸收更多垃圾。`;
+          if (backpackTotal() >= 5) return "背包裡已有多件垃圾，先回社區南側回收場分類換點數。";
+          if (state.trash.length > 10) return "道路垃圾正在增加，優先巡查主路與橋邊，降低垃圾怪生成機率。";
+          if (state.ecology.water < 50) return "溪流水質偏低，先去溪流廊道處理排水口、採樣點或岸邊垃圾。";
+          if (state.ecology.pollution > 58) return "污染壓力偏高，社區站和海岸步道容易出現可處理事件。";
+          if (isNight(state.time)) return "夜間適合觀察螢火蟲、陸蟹與路燈光害，但保持距離與低亮度。";
+          if (state.ecology.forest < 62) return "森林健康還能提升，去近郊森林找外來植物、陷阱風險或動物足跡。";
+          return "環境狀態穩定，適合補完圖鑑、累積夥伴信任或尋找稀有動物。";
+        }
+
+        function renderLog() {
+          logEl.innerHTML = state.log.map((line) => `<div>${line}</div>`).join("");
+        }
+
+        function update(dt) {
+          if (!state.started) return;
+          if (!state.battle && !state.recycleGame) updateTime(dt);
+          if (state.scene === "outdoor") {
+            if (!state.battle && !state.recycleGame) {
+              updateNpcs(dt);
+              updateAnimals(dt);
+              updateEvents(dt);
+              updateTrash(dt);
+              updateMonsters(dt);
+              updateFieldAction(dt);
+            }
+          } else {
+            state.fieldAction = null;
+          }
+          updatePlayer(dt);
+          updateCamera();
+          if (state.dialogue && performance.now() > state.dialogue.until) {
+            state.dialogue = null;
+            dialogueEl.hidden = true;
+          }
+          saveTimer += dt;
+          if (saveTimer > 12) {
+            saveTimer = 0;
+            writeSave();
+          }
+        }
+
+        function loop(now) {
+          const dt = Math.min(0.05, (now - lastTime) / 1000 || 0);
+          lastTime = now;
+          update(dt);
+          render();
+          updateHud();
+          requestAnimationFrame(loop);
+        }
+
+        document.addEventListener("keydown", (event) => {
+          const key = event.key.toLowerCase();
+          keys.add(key);
+          if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright", "1", "2", "3", "4", "5"].includes(key)) event.preventDefault();
+          if (event.repeat && (state.battle || state.recycleGame)) return;
+          if (state.battle) {
+            if (["1", "2", "3", "4"].includes(key)) performBattleAction(key);
+            return;
+          }
+          if (state.recycleGame) {
+            if (key === "escape") cancelRecycleGame();
+            else if (["1", "2", "3", "4", "5"].includes(key)) handleRecycleInput(key);
+            return;
+          }
+          if (event.repeat && [" ", "e", "enter", "b", "m", "escape"].includes(key)) return;
+          if (key === " " || key === "e") interact();
+          if (key === "enter" && !state.started) resetGame();
+          if (key === "b") {
+            activeTab = activeTab === "codex" ? "guide" : "codex";
+            syncTabs();
+          }
+          if (key === "m") {
+            state.showMap = !state.showMap;
+            uiDirty = true;
+          }
+          if (key === "escape" && state.fieldAction) {
+            state.fieldAction = null;
+            addLog("已取消環境行動。");
+          }
+        });
+
+        document.addEventListener("keyup", (event) => {
+          keys.delete(event.key.toLowerCase());
+        });
+
+        function syncTabs() {
+          document.querySelectorAll(".tab").forEach((tab) => {
+            tab.classList.toggle("active", tab.dataset.tab === activeTab);
+          });
+          uiDirty = true;
+        }
+
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            activeTab = tab.dataset.tab;
+            syncTabs();
+          });
+        });
+
+        startBtn.addEventListener("click", resetGame);
+        loadBtn.addEventListener("click", () => {
+          if (!loadSave()) resetGame();
+        });
+        resetBtn.addEventListener("click", () => {
+          localStorage.removeItem(SAVE_KEY);
+          addLog("本機存檔已清除。");
+          uiDirty = true;
+        });
+        saveBtn.addEventListener("click", saveNow);
+        codexBtn.addEventListener("click", () => {
+          activeTab = activeTab === "codex" ? "guide" : "codex";
+          syncTabs();
+        });
+        mapBtn.addEventListener("click", () => {
+          state.showMap = !state.showMap;
+          uiDirty = true;
+        });
+        speedBtn.addEventListener("click", () => {
+          state.speedIndex = (state.speedIndex + 1) % state.speedOptions.length;
+          uiDirty = true;
+        });
+
+        setupSprites();
+        loadSpriteImages();
+        state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
+        state.progress = Object.fromEntries(animalDefs.map((animal) => [animal.id, { trust: 0, seen: false, partnered: false }]));
+        uiDirty = true;
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,344 @@
+[
+  {
+    "name": "player",
+    "file": "player.png",
+    "size": [
+      64,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "npcTeacher",
+    "file": "npcTeacher.png",
+    "size": [
+      64,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "npcRanger",
+    "file": "npcRanger.png",
+    "size": [
+      64,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "npcResearcher",
+    "file": "npcResearcher.png",
+    "size": [
+      64,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "npcKid",
+    "file": "npcKid.png",
+    "size": [
+      64,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "muntjac",
+    "file": "muntjac.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "pangolin",
+    "file": "pangolin.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "blackBear",
+    "file": "blackBear.svg",
+    "size": [
+      128,
+      96
+    ],
+    "source": "svg-pixel"
+  },
+  {
+    "name": "redstart",
+    "file": "redstart.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "streamfish",
+    "file": "streamfish.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "firefly",
+    "file": "firefly.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "magpie",
+    "file": "magpie.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "landcrab",
+    "file": "landcrab.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "butterfly",
+    "file": "butterfly.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "trash",
+    "file": "trash.png",
+    "size": [
+      82,
+      78
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "trashMonster1",
+    "file": "trashMonster1.svg",
+    "size": [
+      82,
+      78
+    ],
+    "source": "svg-pixel"
+  },
+  {
+    "name": "trashMonster2",
+    "file": "trashMonster2.svg",
+    "size": [
+      96,
+      92
+    ],
+    "source": "svg-pixel"
+  },
+  {
+    "name": "trashMonster3",
+    "file": "trashMonster3.svg",
+    "size": [
+      128,
+      120
+    ],
+    "source": "svg-pixel"
+  },
+  {
+    "name": "drain",
+    "file": "drain.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "sprout",
+    "file": "sprout.png",
+    "size": [
+      80,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "lamp",
+    "file": "lamp.png",
+    "size": [
+      78,
+      118
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "sample",
+    "file": "sample.png",
+    "size": [
+      74,
+      104
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "cone",
+    "file": "cone.png",
+    "size": [
+      78,
+      104
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tree",
+    "file": "tree.png",
+    "size": [
+      128,
+      152
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "treeTall",
+    "file": "treeTall.png",
+    "size": [
+      120,
+      172
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "buildingEcoStation",
+    "file": "buildingEcoStation.png",
+    "size": [
+      256,
+      192
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "buildingDataLab",
+    "file": "buildingDataLab.png",
+    "size": [
+      276,
+      194
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "buildingWorkshop",
+    "file": "buildingWorkshop.png",
+    "size": [
+      236,
+      178
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "recycleYard",
+    "file": "recycleYard.svg",
+    "size": [
+      256,
+      168
+    ],
+    "source": "svg-pixel"
+  },
+  {
+    "name": "bridge",
+    "file": "bridge.png",
+    "size": [
+      286,
+      96
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileGrass",
+    "file": "tileGrass.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileForest",
+    "file": "tileForest.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileMeadow",
+    "file": "tileMeadow.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileWetland",
+    "file": "tileWetland.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileCoast",
+    "file": "tileCoast.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileWater",
+    "file": "tileWater.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tileHub",
+    "file": "tileHub.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "tilePath",
+    "file": "tilePath.png",
+    "size": [
+      32,
+      32
+    ],
+    "source": "gpt-image-2"
+  }
+]
