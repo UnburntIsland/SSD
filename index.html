@@ -3304,15 +3304,15 @@
           }
           drawHabitatLandmarks();
 
-          const bridgeH = 3.25 * TILE;
-          const bridgeW = bridgeH * (286 / 96);
-          const bridgeX = riverCenterX(34) * TILE - bridgeW / 2;
-          const bridgeY = 32.9 * TILE;
+          const bridgeH = 5.45 * TILE;
+          const bridgeW = bridgeH * (286 / 96) * 1.12 + 0.5 * TILE;
+          const bridgeX = riverCenterX(34) * TILE - bridgeW / 2 + 1.65 * TILE;
+          const bridgeY = 31.75 * TILE;
           if (!drawSpriteToBox("bridge", bridgeX, bridgeY, bridgeW, bridgeH)) {
             ctx.fillStyle = "#8b6f3f";
-            ctx.fillRect(bridgeX, 33 * TILE, bridgeW, 3 * TILE);
+            ctx.fillRect(bridgeX, bridgeY + 1.35 * TILE, bridgeW, 4.15 * TILE);
             ctx.fillStyle = "#d7bc75";
-            for (let i = 0; i < 9; i++) ctx.fillRect(bridgeX + i * TILE + 8, 33.45 * TILE, 24, 7);
+            for (let i = 0; i < 13; i++) ctx.fillRect(bridgeX + i * TILE + 8, 33.65 * TILE, 24, 9);
           }
 
           for (const building of buildingDefs) {
