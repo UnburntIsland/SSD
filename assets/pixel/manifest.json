@@ -81,15 +81,6 @@
     "source": "gpt-image-2"
   },
   {
-    "name": "streamfish",
-    "file": "streamfish.png",
-    "size": [
-      124,
-      60
-    ],
-    "source": "gpt-image-2"
-  },
-  {
     "name": "firefly",
     "file": "firefly.png",
     "size": [
@@ -396,15 +387,6 @@
     "source": "generated-weather-icons"
   },
   {
-    "name": "worldMap",
-    "file": "worldMap.png",
-    "size": [
-      168,
-      112
-    ],
-    "source": "generated-world-map"
-  },
-  {
     "name": "itemPlastic",
     "file": "itemPlastic.png",
     "size": [
@@ -448,5 +430,617 @@
       32
     ],
     "source": "generated-inventory-icons"
+  },
+  {
+    "name": "streamfish",
+    "file": "streamfish.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "leopardCat",
+    "file": "leopardCat.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "macaque",
+    "file": "macaque.png",
+    "size": [
+      64,
+      58
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "otter",
+    "file": "otter.png",
+    "size": [
+      70,
+      34
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "treefrog",
+    "file": "treefrog.png",
+    "size": [
+      56,
+      44
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "greenTurtle",
+    "file": "greenTurtle.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "blackKite",
+    "file": "blackKite.png",
+    "size": [
+      72,
+      42
+    ],
+    "source": "generated-extra-animals"
+  },
+  {
+    "name": "muntjacWalk1",
+    "file": "muntjac_walk1.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "muntjacWalk2",
+    "file": "muntjac_walk2.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "muntjacWalk3",
+    "file": "muntjac_walk3.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "muntjacWalk4",
+    "file": "muntjac_walk4.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "pangolinWalk1",
+    "file": "pangolin_walk1.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "pangolinWalk2",
+    "file": "pangolin_walk2.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "pangolinWalk3",
+    "file": "pangolin_walk3.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "pangolinWalk4",
+    "file": "pangolin_walk4.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackBearWalk1",
+    "file": "blackBear_walk1.png",
+    "size": [
+      128,
+      128
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackBearWalk2",
+    "file": "blackBear_walk2.png",
+    "size": [
+      128,
+      128
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackBearWalk3",
+    "file": "blackBear_walk3.png",
+    "size": [
+      128,
+      128
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackBearWalk4",
+    "file": "blackBear_walk4.png",
+    "size": [
+      128,
+      128
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "redstartWalk1",
+    "file": "redstart_walk1.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "redstartWalk2",
+    "file": "redstart_walk2.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "redstartWalk3",
+    "file": "redstart_walk3.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "redstartWalk4",
+    "file": "redstart_walk4.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "streamfishWalk1",
+    "file": "streamfish_walk1.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "streamfishWalk2",
+    "file": "streamfish_walk2.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "streamfishWalk3",
+    "file": "streamfish_walk3.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "streamfishWalk4",
+    "file": "streamfish_walk4.png",
+    "size": [
+      124,
+      60
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "fireflyWalk1",
+    "file": "firefly_walk1.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "fireflyWalk2",
+    "file": "firefly_walk2.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "fireflyWalk3",
+    "file": "firefly_walk3.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "fireflyWalk4",
+    "file": "firefly_walk4.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "magpieWalk1",
+    "file": "magpie_walk1.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "magpieWalk2",
+    "file": "magpie_walk2.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "magpieWalk3",
+    "file": "magpie_walk3.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "magpieWalk4",
+    "file": "magpie_walk4.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "landcrabWalk1",
+    "file": "landcrab_walk1.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "landcrabWalk2",
+    "file": "landcrab_walk2.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "landcrabWalk3",
+    "file": "landcrab_walk3.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "landcrabWalk4",
+    "file": "landcrab_walk4.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "butterflyWalk1",
+    "file": "butterfly_walk1.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "butterflyWalk2",
+    "file": "butterfly_walk2.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "butterflyWalk3",
+    "file": "butterfly_walk3.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "butterflyWalk4",
+    "file": "butterfly_walk4.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "leopardCatWalk1",
+    "file": "leopardCat_walk1.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "leopardCatWalk2",
+    "file": "leopardCat_walk2.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "leopardCatWalk3",
+    "file": "leopardCat_walk3.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "leopardCatWalk4",
+    "file": "leopardCat_walk4.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "macaqueWalk1",
+    "file": "macaque_walk1.png",
+    "size": [
+      64,
+      58
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "macaqueWalk2",
+    "file": "macaque_walk2.png",
+    "size": [
+      64,
+      58
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "macaqueWalk3",
+    "file": "macaque_walk3.png",
+    "size": [
+      64,
+      58
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "macaqueWalk4",
+    "file": "macaque_walk4.png",
+    "size": [
+      64,
+      58
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "otterWalk1",
+    "file": "otter_walk1.png",
+    "size": [
+      70,
+      34
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "otterWalk2",
+    "file": "otter_walk2.png",
+    "size": [
+      70,
+      34
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "otterWalk3",
+    "file": "otter_walk3.png",
+    "size": [
+      70,
+      34
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "otterWalk4",
+    "file": "otter_walk4.png",
+    "size": [
+      70,
+      34
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "treefrogWalk1",
+    "file": "treefrog_walk1.png",
+    "size": [
+      56,
+      44
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "treefrogWalk2",
+    "file": "treefrog_walk2.png",
+    "size": [
+      56,
+      44
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "treefrogWalk3",
+    "file": "treefrog_walk3.png",
+    "size": [
+      56,
+      44
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "treefrogWalk4",
+    "file": "treefrog_walk4.png",
+    "size": [
+      56,
+      44
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "greenTurtleWalk1",
+    "file": "greenTurtle_walk1.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "greenTurtleWalk2",
+    "file": "greenTurtle_walk2.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "greenTurtleWalk3",
+    "file": "greenTurtle_walk3.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "greenTurtleWalk4",
+    "file": "greenTurtle_walk4.png",
+    "size": [
+      64,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackKiteWalk1",
+    "file": "blackKite_walk1.png",
+    "size": [
+      72,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackKiteWalk2",
+    "file": "blackKite_walk2.png",
+    "size": [
+      72,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackKiteWalk3",
+    "file": "blackKite_walk3.png",
+    "size": [
+      72,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "blackKiteWalk4",
+    "file": "blackKite_walk4.png",
+    "size": [
+      72,
+      42
+    ],
+    "source": "generated-animal-walk-frames"
+  },
+  {
+    "name": "worldMap",
+    "file": "worldMap.png",
+    "size": [
+      504,
+      336
+    ],
+    "source": "generated-world-map"
   }
 ]

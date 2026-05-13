@@ -13,8 +13,8 @@ MANIFEST = OUT / "manifest.json"
 SOURCE = "generated-world-map"
 
 TILE = 32
-MAP_W = 84
-MAP_H = 56
+MAP_W = 252
+MAP_H = 168
 WORLD_W = MAP_W * TILE
 WORLD_H = MAP_H * TILE
 MAP_SCALE = 2
@@ -40,8 +40,14 @@ def river_center_x(tile_y: int) -> float:
     return 57 + math.sin(tile_y * 0.32) * 3.4 + math.sin(tile_y * 0.09) * 1.2
 
 
+def east_river_center_x(tile_y: int) -> float:
+    return 156 + math.sin(tile_y * 0.22) * 4.8 + math.sin(tile_y * 0.07) * 2.2
+
+
 def is_bridge_tile(tx: int, ty: int) -> bool:
-    return 33 <= ty <= 35 and abs(tx - river_center_x(ty)) <= 4.8
+    west = abs(tx - river_center_x(ty)) <= 4.8 and ((33 <= ty <= 35) or (111 <= ty <= 113))
+    east = abs(tx - east_river_center_x(ty)) <= 5.2 and ((60 <= ty <= 62) or (111 <= ty <= 113))
+    return west or east
 
 
 def is_wetland_pool(tx: int, ty: int) -> bool:
@@ -49,36 +55,71 @@ def is_wetland_pool(tx: int, ty: int) -> bool:
     dy = (ty - 37.5) / 3.8
     small_dx = (tx - 53) / 2.4
     small_dy = (ty - 41.5) / 2.2
-    return dx * dx + dy * dy < 1 or small_dx * small_dx + small_dy * small_dy < 1
+    south_dx = (tx - 108) / 17
+    south_dy = (ty - 112) / 10
+    reed_dx = (tx - 132) / 10
+    reed_dy = (ty - 129) / 6
+    return (
+        dx * dx + dy * dy < 1
+        or small_dx * small_dx + small_dy * small_dy < 1
+        or south_dx * south_dx + south_dy * south_dy < 1
+        or reed_dx * reed_dx + reed_dy * reed_dy < 1
+    )
 
 
 def is_path_tile(tx: int, ty: int) -> bool:
-    east_west = 33 <= ty <= 35 and 5 <= tx <= 75
+    east_west = 33 <= ty <= 35 and 5 <= tx <= 150
     hub_vertical = 11 <= tx <= 13 and 12 <= ty <= 43
     meadow_loop = 15 <= ty <= 17 and 11 <= tx <= 47
-    forest_fork = 35 <= tx <= 37 and 10 <= ty <= 31
-    coast_spine = 70 <= tx <= 72 and 29 <= ty <= 49
-    coast_shore = 43 <= ty <= 45 and 66 <= tx <= 80
-    return east_west or hub_vertical or meadow_loop or forest_fork or coast_spine or coast_shore or is_bridge_tile(tx, ty)
+    forest_fork = 35 <= tx <= 37 and 10 <= ty <= 88
+    ridge_trail = 100 <= tx <= 102 and 13 <= ty <= 84
+    east_valley = 145 <= tx <= 147 and 36 <= ty <= 118
+    south_road = 111 <= ty <= 113 and 18 <= tx <= 196
+    wetland_loop = 126 <= ty <= 128 and 83 <= tx <= 147
+    coast_spine = 211 <= tx <= 213 and 74 <= ty <= 148
+    coast_shore = 139 <= ty <= 141 and 166 <= tx <= 236
+    east_road = 60 <= ty <= 62 and 94 <= tx <= 216
+    return (
+        east_west
+        or hub_vertical
+        or meadow_loop
+        or forest_fork
+        or ridge_trail
+        or east_valley
+        or south_road
+        or wetland_loop
+        or coast_spine
+        or coast_shore
+        or east_road
+        or is_bridge_tile(tx, ty)
+    )
 
 
 def terrain_at(tx: int, ty: int) -> str:
     if tx < 0 or ty < 0 or tx >= MAP_W or ty >= MAP_H:
         return "void"
-    cx = river_center_x(ty)
-    in_river = 3 <= ty <= 53 and abs(tx - cx) <= 2.35
-    in_shore_water = tx >= 79 and ty >= 39 + math.sin(ty * 0.65) * 2
+    west_river = 3 <= ty <= 154 and abs(tx - river_center_x(ty)) <= 2.35
+    east_river = 28 <= ty <= 134 and abs(tx - east_river_center_x(ty)) <= 2.85
+    in_shore_water = (tx >= 238 and ty >= 72 + math.sin(ty * 0.65) * 2) or ty >= 157
+    east_bay = ((tx - 236) / 21) ** 2 + ((ty - 128) / 24) ** 2 < 1
+    in_river = west_river or east_river
     if is_path_tile(tx, ty) and (not in_river or is_bridge_tile(tx, ty)):
         return "path"
-    if (in_river and not is_bridge_tile(tx, ty)) or is_wetland_pool(tx, ty) or in_shore_water:
+    if (in_river and not is_bridge_tile(tx, ty)) or is_wetland_pool(tx, ty) or in_shore_water or east_bay:
         return "water"
-    if tx >= 66 and ty >= 27:
+    if (tx >= 196 and ty >= 68) or (tx >= 156 and ty >= 132) or ty >= 146:
         return "coast"
-    if 41 <= tx <= 55 and 31 <= ty <= 44:
+    if (41 <= tx <= 55 and 31 <= ty <= 44) or (84 <= tx <= 148 and 98 <= ty <= 136):
         return "wetland"
-    if 24 <= tx <= 53 and 4 <= ty <= 34:
+    if (
+        (24 <= tx <= 95 and 4 <= ty <= 44)
+        or (86 <= tx <= 170 and 8 <= ty <= 82)
+        or (172 <= tx <= 232 and 10 <= ty <= 66)
+        or (32 <= tx <= 120 and 72 <= ty <= 112)
+        or (150 <= tx <= 194 and 88 <= ty <= 130)
+    ):
         return "forest"
-    if 6 <= tx <= 26 and 8 <= ty <= 24:
+    if (6 <= tx <= 26 and 8 <= ty <= 24) or (22 <= tx <= 92 and 76 <= ty <= 122):
         return "meadow"
     if 2 <= tx <= 26 and 27 <= ty <= 45:
         return "hub"
@@ -155,22 +196,52 @@ def draw_landmarks(d: ImageDraw.ImageDraw) -> None:
         (14.2 * TILE, 24.5 * TILE, 8.82 * TILE, 6.2 * TILE, "#8c5a88", "#e2d39b"),
         (3.65 * TILE, 36.1 * TILE, 6.25 * TILE, 5.25 * TILE, "#c5684b", "#e0c88d"),
         (16 * TILE, 35.8 * TILE, 12 * TILE, 5.5 * TILE, "#5f8f4f", "#caa66d"),
+        (96 * TILE, 39.4 * TILE, 8.2 * TILE, 6.15 * TILE, "#3f8a70", "#d7bc75"),
+        (116 * TILE, 102.3 * TILE, 8.82 * TILE, 6.2 * TILE, "#8c5a88", "#e2d39b"),
+        (204 * TILE, 112.5 * TILE, 6.25 * TILE, 5.25 * TILE, "#c5684b", "#e0c88d"),
+        (72 * TILE, 116.4 * TILE, 12 * TILE, 5.5 * TILE, "#5f8f4f", "#caa66d"),
     ]
     for building in buildings:
         draw_building(d, *building)
 
-    bridge_x, bridge_y, bridge_w, bridge_h = rect_world_to_map((river_center_x(34) - 4.7) * TILE, 32.6 * TILE, 9.4 * TILE, 3.2 * TILE)
-    px(d, bridge_x, bridge_y, bridge_w, bridge_h, "#3b2118")
-    px(d, bridge_x + 1, bridge_y + 1, bridge_w - 2, bridge_h - 2, "#8b6f3f")
-    for offset in range(2, max(2, bridge_w - 2), 4):
-        px(d, bridge_x + offset, bridge_y + 1, 1, bridge_h - 2, "#d7bc75", 180)
+    bridge_specs = [
+        ((river_center_x(34) - 4.7) * TILE, 32.48 * TILE, 9.4 * TILE, 3.2 * TILE),
+        ((river_center_x(112) - 4.7) * TILE, 110.48 * TILE, 9.4 * TILE, 3.2 * TILE),
+        ((east_river_center_x(61) - 5.0) * TILE, 59.48 * TILE, 10.0 * TILE, 3.2 * TILE),
+        ((east_river_center_x(112) - 5.0) * TILE, 110.48 * TILE, 10.0 * TILE, 3.2 * TILE),
+    ]
+    for bridge in bridge_specs:
+        bridge_x, bridge_y, bridge_w, bridge_h = rect_world_to_map(*bridge)
+        px(d, bridge_x, bridge_y, bridge_w, bridge_h, "#3b2118")
+        px(d, bridge_x + 1, bridge_y + 1, bridge_w - 2, bridge_h - 2, "#8b6f3f")
+        for offset in range(2, max(2, bridge_w - 2), 4):
+            px(d, bridge_x + offset, bridge_y + 1, 1, bridge_h - 2, "#d7bc75", 180)
 
     # A few larger tree clusters and wetland reeds keep the map recognizable at 2px-per-tile scale.
-    for tx, ty in [(30, 9), (41, 11), (47, 23), (28, 28), (51, 30)]:
+    for tx, ty in [
+        (30, 9),
+        (41, 11),
+        (47, 23),
+        (28, 28),
+        (51, 30),
+        (96, 16),
+        (118, 24),
+        (152, 38),
+        (88, 78),
+        (114, 92),
+        (182, 14),
+        (196, 20),
+        (216, 28),
+        (185, 48),
+        (224, 56),
+        (158, 96),
+        (176, 108),
+        (190, 122),
+    ]:
         mx, my = tx * MAP_SCALE, ty * MAP_SCALE
         px(d, mx, my, 3, 3, "#2f5c31")
         px(d, mx + 1, my, 2, 2, "#5f8f4f")
-    for tx, ty in [(46, 35), (50, 39), (53, 42)]:
+    for tx, ty in [(46, 35), (50, 39), (53, 42), (92, 108), (106, 118), (128, 126), (139, 116)]:
         mx, my = tx * MAP_SCALE, ty * MAP_SCALE
         px(d, mx, my, 1, 5, "#2f6a55")
         px(d, mx + 2, my + 1, 1, 4, "#9dc47c")
