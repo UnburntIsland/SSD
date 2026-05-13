@@ -237,7 +237,7 @@
       .toast-stack {
         position: absolute;
         right: 18px;
-        top: 150px;
+        top: 92px;
         z-index: 8;
         display: grid;
         gap: 6px;
@@ -1159,7 +1159,7 @@
 
         .toast-stack {
           right: 10px;
-          top: 132px;
+          top: 86px;
           width: min(280px, calc(100% - 20px));
         }
 
@@ -1351,6 +1351,7 @@
         const DAY_MINUTES = 24 * 60;
         const BASE_PLAYER_HEALTH = 42;
         const HEALTH_PER_LEVEL = 6;
+        const FIELD_ACTION_HEALTH_COST = 5;
         const MAX_PLAYER_LEVEL = 20;
         const ANIMAL_START_COUNT = 16;
         const ANIMAL_TARGET_COUNT = 28;
@@ -3875,8 +3876,15 @@
 
         function startFieldAction(event) {
           const def = eventDefs.find((item) => item.id === event.id);
+          if (state.health < FIELD_ACTION_HEALTH_COST) {
+            addToast(`體力不足：需要 ${FIELD_ACTION_HEALTH_COST} 體力`, "bad", 2.4);
+            showDialogue("體力不足", `至少需要 ${FIELD_ACTION_HEALTH_COST} 體力才能進行「${def.name}」。等到新的一天會恢復全部體力。`, 3.2);
+            return;
+          }
           const helper = eventHasHelper(def);
           const toolBonus = state.completedMissions["field-care"] ? 0.04 : 0;
+          state.health = Math.max(0, state.health - FIELD_ACTION_HEALTH_COST);
+          addToast(`體力 -${FIELD_ACTION_HEALTH_COST}`, "warn", 1.8);
           state.fieldAction = {
             uid: event.uid,
             def,
