@@ -347,9 +347,10 @@ def update_manifest(entries: list[dict[str, object]]) -> None:
 
 
 def main() -> None:
-    entries = make_frames()
-    update_manifest(entries)
-    print(f"generated {len(entries)} animal animation frames in {OUT}")
+    raise SystemExit(
+        "Deprecated: animal walk frames now come from ChatGPT Images sheets. "
+        "Run scripts/slice_chatgpt_animal_assets.py instead."
+    )
 
 
 if __name__ == "__main__":

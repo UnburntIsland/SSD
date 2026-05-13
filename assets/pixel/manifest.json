@@ -45,78 +45,6 @@
     "source": "gpt-image-2"
   },
   {
-    "name": "muntjac",
-    "file": "muntjac.png",
-    "size": [
-      128,
-      96
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "pangolin",
-    "file": "pangolin.png",
-    "size": [
-      132,
-      80
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "blackBear",
-    "file": "blackBear.png",
-    "size": [
-      128,
-      128
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "redstart",
-    "file": "redstart.png",
-    "size": [
-      96,
-      76
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "firefly",
-    "file": "firefly.png",
-    "size": [
-      88,
-      88
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "magpie",
-    "file": "magpie.png",
-    "size": [
-      132,
-      84
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "landcrab",
-    "file": "landcrab.png",
-    "size": [
-      112,
-      86
-    ],
-    "source": "gpt-image-2"
-  },
-  {
-    "name": "butterfly",
-    "file": "butterfly.png",
-    "size": [
-      96,
-      86
-    ],
-    "source": "gpt-image-2"
-  },
-  {
     "name": "trash",
     "file": "trash.png",
     "size": [
@@ -441,22 +369,94 @@
     "source": "generated-world-map"
   },
   {
+    "name": "muntjac",
+    "file": "muntjac.png",
+    "size": [
+      128,
+      96
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "pangolin",
+    "file": "pangolin.png",
+    "size": [
+      132,
+      80
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "blackBear",
+    "file": "blackBear.png",
+    "size": [
+      128,
+      128
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "redstart",
+    "file": "redstart.png",
+    "size": [
+      96,
+      76
+    ],
+    "source": "gpt-image-2"
+  },
+  {
     "name": "streamfish",
     "file": "streamfish.png",
     "size": [
       124,
       60
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "firefly",
+    "file": "firefly.png",
+    "size": [
+      88,
+      88
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "magpie",
+    "file": "magpie.png",
+    "size": [
+      132,
+      84
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "landcrab",
+    "file": "landcrab.png",
+    "size": [
+      112,
+      86
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "butterfly",
+    "file": "butterfly.png",
+    "size": [
+      96,
+      86
+    ],
+    "source": "gpt-image-2"
   },
   {
     "name": "leopardCat",
     "file": "leopardCat.png",
     "size": [
-      84,
-      48
+      96,
+      52
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "macaque",
@@ -465,7 +465,7 @@
       68,
       60
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "otter",
@@ -474,7 +474,7 @@
       70,
       34
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "treefrog",
@@ -483,7 +483,7 @@
       78,
       50
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "greenTurtle",
@@ -492,7 +492,7 @@
       64,
       42
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackKite",
@@ -501,7 +501,7 @@
       72,
       42
     ],
-    "source": "generated-extra-animals"
+    "source": "gpt-image-2"
   },
   {
     "name": "muntjacWalk1",
@@ -510,7 +510,7 @@
       128,
       96
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "muntjacWalk2",
@@ -519,7 +519,7 @@
       128,
       96
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "muntjacWalk3",
@@ -528,7 +528,7 @@
       128,
       96
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "muntjacWalk4",
@@ -537,7 +537,7 @@
       128,
       96
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "pangolinWalk1",
@@ -546,7 +546,7 @@
       132,
       80
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "pangolinWalk2",
@@ -555,7 +555,7 @@
       132,
       80
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "pangolinWalk3",
@@ -564,7 +564,7 @@
       132,
       80
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "pangolinWalk4",
@@ -573,7 +573,7 @@
       132,
       80
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackBearWalk1",
@@ -582,7 +582,7 @@
       128,
       128
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackBearWalk2",
@@ -591,7 +591,7 @@
       128,
       128
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackBearWalk3",
@@ -600,7 +600,7 @@
       128,
       128
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackBearWalk4",
@@ -609,7 +609,7 @@
       128,
       128
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "redstartWalk1",
@@ -618,7 +618,7 @@
       96,
       76
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "redstartWalk2",
@@ -627,7 +627,7 @@
       96,
       76
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "redstartWalk3",
@@ -636,7 +636,7 @@
       96,
       76
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "redstartWalk4",
@@ -645,7 +645,7 @@
       96,
       76
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "streamfishWalk1",
@@ -654,7 +654,7 @@
       124,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "streamfishWalk2",
@@ -663,7 +663,7 @@
       124,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "streamfishWalk3",
@@ -672,7 +672,7 @@
       124,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "streamfishWalk4",
@@ -681,7 +681,7 @@
       124,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "fireflyWalk1",
@@ -690,7 +690,7 @@
       88,
       88
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "fireflyWalk2",
@@ -699,7 +699,7 @@
       88,
       88
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "fireflyWalk3",
@@ -708,7 +708,7 @@
       88,
       88
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "fireflyWalk4",
@@ -717,7 +717,7 @@
       88,
       88
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "magpieWalk1",
@@ -726,7 +726,7 @@
       132,
       84
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "magpieWalk2",
@@ -735,7 +735,7 @@
       132,
       84
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "magpieWalk3",
@@ -744,7 +744,7 @@
       132,
       84
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "magpieWalk4",
@@ -753,7 +753,7 @@
       132,
       84
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "landcrabWalk1",
@@ -762,7 +762,7 @@
       112,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "landcrabWalk2",
@@ -771,7 +771,7 @@
       112,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "landcrabWalk3",
@@ -780,7 +780,7 @@
       112,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "landcrabWalk4",
@@ -789,7 +789,7 @@
       112,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "butterflyWalk1",
@@ -798,7 +798,7 @@
       96,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "butterflyWalk2",
@@ -807,7 +807,7 @@
       96,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "butterflyWalk3",
@@ -816,7 +816,7 @@
       96,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "butterflyWalk4",
@@ -825,43 +825,43 @@
       96,
       86
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "leopardCatWalk1",
     "file": "leopardCat_walk1.png",
     "size": [
-      84,
-      48
+      96,
+      52
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "leopardCatWalk2",
     "file": "leopardCat_walk2.png",
     "size": [
-      84,
-      48
+      96,
+      52
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "leopardCatWalk3",
     "file": "leopardCat_walk3.png",
     "size": [
-      84,
-      48
+      96,
+      52
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "leopardCatWalk4",
     "file": "leopardCat_walk4.png",
     "size": [
-      84,
-      48
+      96,
+      52
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "macaqueWalk1",
@@ -870,7 +870,7 @@
       68,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "macaqueWalk2",
@@ -879,7 +879,7 @@
       68,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "macaqueWalk3",
@@ -888,7 +888,7 @@
       68,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "macaqueWalk4",
@@ -897,7 +897,7 @@
       68,
       60
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "otterWalk1",
@@ -906,7 +906,7 @@
       70,
       34
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "otterWalk2",
@@ -915,7 +915,7 @@
       70,
       34
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "otterWalk3",
@@ -924,7 +924,7 @@
       70,
       34
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "otterWalk4",
@@ -933,7 +933,7 @@
       70,
       34
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "treefrogWalk1",
@@ -942,7 +942,7 @@
       78,
       50
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "treefrogWalk2",
@@ -951,7 +951,7 @@
       78,
       50
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "treefrogWalk3",
@@ -960,7 +960,7 @@
       78,
       50
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "treefrogWalk4",
@@ -969,7 +969,7 @@
       78,
       50
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "greenTurtleWalk1",
@@ -978,7 +978,7 @@
       64,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "greenTurtleWalk2",
@@ -987,7 +987,7 @@
       64,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "greenTurtleWalk3",
@@ -996,7 +996,7 @@
       64,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "greenTurtleWalk4",
@@ -1005,7 +1005,7 @@
       64,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackKiteWalk1",
@@ -1014,7 +1014,7 @@
       72,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackKiteWalk2",
@@ -1023,7 +1023,7 @@
       72,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackKiteWalk3",
@@ -1032,7 +1032,7 @@
       72,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   },
   {
     "name": "blackKiteWalk4",
@@ -1041,6 +1041,6 @@
       72,
       42
     ],
-    "source": "generated-animal-walk-frames"
+    "source": "gpt-image-2"
   }
 ]
