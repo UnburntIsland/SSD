@@ -2140,6 +2140,89 @@
           },
         };
 
+        const INDOOR_ACTION_HEALTH_COST = 5;
+        const interiorActionDefs = {
+          ecoStation: [
+            {
+              id: "seedlingBench",
+              label: "育苗台",
+              prompt: "照護育苗",
+              rect: { x: 112, y: 254, w: 192, h: 76 },
+              marker: { x: 208, y: 344, w: 108, h: 40 },
+              effect: "seedlingBench",
+            },
+            {
+              id: "habitatBoard",
+              label: "棲地觀察板",
+              prompt: "整理紀錄",
+              rect: { x: 338, y: 112, w: 284, h: 92 },
+              marker: { x: 480, y: 222, w: 116, h: 40 },
+              effect: "habitatBoard",
+            },
+            {
+              id: "seedArchive",
+              label: "種子樣本櫃",
+              prompt: "盤點樣本",
+              rect: { x: 600, y: 248, w: 184, h: 86 },
+              marker: { x: 692, y: 350, w: 108, h: 40 },
+              effect: "seedArchive",
+            },
+          ],
+          dataLab: [
+            {
+              id: "waterAnalyzer",
+              label: "水質分析儀",
+              prompt: "分析水樣",
+              rect: { x: 108, y: 248, w: 208, h: 82 },
+              marker: { x: 212, y: 346, w: 112, h: 40 },
+              effect: "waterAnalyzer",
+            },
+            {
+              id: "weatherConsole",
+              label: "氣象雷達",
+              prompt: "讀取預報",
+              rect: { x: 382, y: 250, w: 210, h: 82 },
+              marker: { x: 488, y: 348, w: 112, h: 40 },
+              effect: "weatherConsole",
+            },
+            {
+              id: "speciesDatabase",
+              label: "物種資料庫",
+              prompt: "校對資料",
+              rect: { x: 680, y: 234, w: 122, h: 188 },
+              marker: { x: 742, y: 438, w: 92, h: 42 },
+              effect: "speciesDatabase",
+            },
+          ],
+          workshop: [
+            {
+              id: "toolBench",
+              label: "工具工作台",
+              prompt: "整備工具",
+              rect: { x: 104, y: 250, w: 228, h: 86 },
+              marker: { x: 218, y: 354, w: 118, h: 42 },
+              effect: "toolBench",
+            },
+            {
+              id: "sortingCart",
+              label: "分類推車",
+              prompt: "整理標籤",
+              rect: { x: 432, y: 236, w: 244, h: 90 },
+              marker: { x: 554, y: 342, w: 118, h: 42 },
+              effect: "sortingCart",
+            },
+            {
+              id: "supplyLocker",
+              label: "補給櫃",
+              prompt: "補充體力",
+              rect: { x: 712, y: 370, w: 124, h: 94 },
+              marker: { x: 774, y: 478, w: 92, h: 42 },
+              effect: "supplyLocker",
+              cost: 0,
+            },
+          ],
+        };
+
         const sprites = {};
         let activeTab = "guide";
         const TAB_HOTKEYS = { g: "guide", i: "bag", b: "codex", r: "people" };
@@ -2212,6 +2295,8 @@
           npcs: [],
           backpack: Object.fromEntries(trashTypes.map((type) => [type.id, 0])),
           recycleStats: { played: 0, perfect: 0 },
+          indoorActions: {},
+          stationPrep: { day: 1, fieldBonus: 0, animalTrustBonus: 0, recycleBonus: 0 },
           stats: { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 },
           completedMissions: {},
           progress: {},
@@ -2466,17 +2551,65 @@
           return interiorDefs[state.interior] || null;
         }
 
+        function currentInteriorKind(id = state.interior) {
+          if (id === "dataLab" || id === "wetlandStation") return "dataLab";
+          if (id === "workshop" || id === "coastStation") return "workshop";
+          return "ecoStation";
+        }
+
+        function currentInteriorActions() {
+          return interiorActionDefs[currentInteriorKind()] || [];
+        }
+
+        function interiorActionMarkerRect(action) {
+          const marker = action.marker || action.rect;
+          if (!marker) return { x: 0, y: 0, w: 1, h: 1 };
+          if (action.marker) return { x: marker.x - marker.w / 2, y: marker.y - marker.h / 2, w: marker.w, h: marker.h };
+          return { x: marker.x + marker.w / 2 - 42, y: marker.y - 18, w: 84, h: 36 };
+        }
+
+        function indoorActionKey(action) {
+          return `${state.interior || currentInteriorKind()}:${action.id}`;
+        }
+
+        function indoorActionUsed(action) {
+          return Boolean(state.indoorActions[indoorActionKey(action)]);
+        }
+
+        function defaultStationPrep(day = state.day) {
+          return { day, fieldBonus: 0, animalTrustBonus: 0, recycleBonus: 0 };
+        }
+
+        function resetStationPrep() {
+          state.stationPrep = defaultStationPrep(state.day);
+        }
+
+        function ensureStationPrepDay() {
+          if (!state.stationPrep || state.stationPrep.day !== state.day) resetStationPrep();
+          return state.stationPrep;
+        }
+
+        function stationPrepValue(key) {
+          return Number(ensureStationPrepDay()[key]) || 0;
+        }
+
+        function setStationPrep(key, value) {
+          const prep = ensureStationPrepDay();
+          prep[key] = Math.max(Number(prep[key]) || 0, value);
+        }
+
         function interiorExitRect() {
           return { x: canvas.width / 2 - 58, y: canvas.height - 58, w: 116, h: 42 };
         }
 
         function interiorBlocks() {
+          const kind = currentInteriorKind();
           const common = [
             { x: 74, y: 112, w: canvas.width - 148, h: 52 },
             { x: 86, y: 176, w: 128, h: 48 },
             { x: canvas.width - 214, y: 176, w: 128, h: 48 },
           ];
-          if (state.interior === "ecoStation") {
+          if (kind === "ecoStation") {
             return [
               ...common,
               { x: 112, y: 254, w: 192, h: 76 },
@@ -2485,7 +2618,7 @@
               { x: 794, y: 392, w: 58, h: 84 },
             ];
           }
-          if (state.interior === "dataLab") {
+          if (kind === "dataLab") {
             return [
               ...common,
               { x: 108, y: 248, w: 208, h: 82 },
@@ -2953,6 +3086,8 @@
           state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
           state.backpack = Object.fromEntries(trashTypes.map((type) => [type.id, 0]));
           state.recycleStats = { played: 0, perfect: 0 };
+          state.indoorActions = {};
+          resetStationPrep();
           state.stats = defaultStats();
           state.completedMissions = {};
           state.progress = Object.fromEntries(animalDefs.map((animal) => [animal.id, { trust: 0, seen: false, partnered: false }]));
@@ -3001,6 +3136,8 @@
             ecology: state.ecology,
             backpack: state.backpack,
             recycleStats: state.recycleStats,
+            indoorActions: state.indoorActions,
+            stationPrep: state.stationPrep,
             stats: state.stats,
             completedMissions: state.completedMissions,
             trash: state.trash,
@@ -3063,6 +3200,10 @@
             state.ecology = { ...state.ecology, ...(data.ecology || {}) };
             state.backpack = { ...Object.fromEntries(trashTypes.map((type) => [type.id, 0])), ...(data.backpack || {}) };
             state.recycleStats = { ...state.recycleStats, ...(data.recycleStats || {}) };
+            state.indoorActions = data.indoorActions && typeof data.indoorActions === "object" ? data.indoorActions : {};
+            state.stationPrep = { ...defaultStationPrep(state.day), ...(data.stationPrep || {}) };
+            state.stationPrep.day = Number(state.stationPrep.day) || state.day;
+            ensureStationPrepDay();
             state.stats = { ...defaultStats(), ...(data.stats || {}) };
             state.completedMissions = data.completedMissions || {};
             syncMissionPerks();
@@ -3579,6 +3720,8 @@
           if (state.time >= DAY_MINUTES) {
             state.time -= DAY_MINUTES;
             state.day += 1;
+            state.indoorActions = {};
+            resetStationPrep();
             state.weather = pickNextWeather();
             const weatherLog = applyDailyWeatherEffect(state.weather);
             const restoredHealth = state.health < state.maxHealth;
@@ -3786,7 +3929,16 @@
           if (state.scene === "interior") {
             const exit = interiorExitRect();
             const d = dist(state.player, exit);
-            return d < 72 ? { type: "exit", ref: exit, distance: d } : null;
+            if (d < 72) candidates.push({ type: "exit", ref: exit, distance: d, priority: 3 });
+            for (const action of currentInteriorActions()) {
+              const marker = interiorActionMarkerRect(action);
+              const actionDistance = dist(state.player, marker);
+              if (actionDistance < (action.range || 86)) {
+                candidates.push({ type: "interiorAction", ref: action, distance: actionDistance, priority: 1 });
+              }
+            }
+            candidates.sort((a, b) => a.priority - b.priority || a.distance - b.distance);
+            return candidates[0] || null;
           }
           for (const building of buildingDefs) {
             const door = buildingDoorRect(building);
@@ -3836,7 +3988,105 @@
             if (target.ref.facility === "recycle") startRecycleGame();
             else enterInterior(target.ref);
           }
+          if (target.type === "interiorAction") useInteriorAction(target.ref);
           if (target.type === "exit") exitInterior();
+        }
+
+        function addIndoorReward(points = 0) {
+          const gained = Math.max(0, Math.round(points));
+          if (!gained) return;
+          state.recyclePoints += gained;
+          addToast(`回收點數 +${gained}`, "good", 2.4);
+        }
+
+        function applyIndoorActionEffect(action) {
+          const partners = partnerCount();
+          if (action.effect === "seedlingBench") {
+            adjustEco({ forest: 3, bio: 2, pollution: -1 });
+            addIndoorReward(3);
+            addNotes(8, "育苗紀錄");
+            return "你整理苗盤、補水並挑出枯葉，原生苗準備送往戶外復育點。";
+          }
+          if (action.effect === "habitatBoard") {
+            setStationPrep("animalTrustBonus", 1);
+            addIndoorReward(2 + partners);
+            addNotes(6 + partners * 2, "棲地觀察");
+            return "你把夥伴與棲地線索貼上觀察板。今天觀察動物時，信任額外 +1。";
+          }
+          if (action.effect === "seedArchive") {
+            adjustEco({ forest: 2, bio: 3 });
+            addIndoorReward(4);
+            addNotes(7, "種子盤點");
+            return "你盤點種子與標本罐，補上採集日期，讓後續復育更穩定。";
+          }
+          if (action.effect === "waterAnalyzer") {
+            adjustEco({ water: 4, pollution: -4, bio: 1 });
+            addIndoorReward(4);
+            addNotes(10, "水質分析");
+            return "你完成水樣分析，找到污染來源的變化，水域狀態變好了。";
+          }
+          if (action.effect === "weatherConsole") {
+            const forecast = pickNextWeather();
+            setStationPrep("fieldBonus", 0.03);
+            addIndoorReward(2);
+            addNotes(6, "氣象讀值");
+            addToast(`預報：${forecast}`, "warn", 3);
+            return `你讀取氣象雷達，下一段天氣可能是「${forecast}」。今天的現地行動判定稍微變寬。`;
+          }
+          if (action.effect === "speciesDatabase") {
+            setStationPrep("animalTrustBonus", 1);
+            addIndoorReward(3 + partners);
+            addNotes(9 + partners, "物種資料庫");
+            return "你校對物種資料與足跡照片。今天觀察動物時，信任額外 +1。";
+          }
+          if (action.effect === "toolBench") {
+            setStationPrep("fieldBonus", 0.06);
+            addIndoorReward(5);
+            addNotes(7, "工具整備");
+            return "你重新整理夾子、採樣瓶與手套。今天的現地行動判定更寬。";
+          }
+          if (action.effect === "sortingCart") {
+            setStationPrep("recycleBonus", 0.08);
+            addIndoorReward(3);
+            addNotes(6, "分類標籤");
+            return "你替分類推車貼上新標籤。今天完成回收分類時，點數獎勵 +8%。";
+          }
+          if (action.effect === "supplyLocker") {
+            const heal = Math.min(state.maxHealth - state.health, Math.ceil(state.maxHealth * 0.28));
+            if (heal > 0) {
+              state.health = clamp(state.health + heal, 0, state.maxHealth);
+              addToast(`體力 +${heal}`, "good", 2.4);
+            }
+            addExperience(4, "補給整備");
+            return heal > 0 ? "你補充水壺、簡易糧食與乾淨手套，體力恢復了一些。" : "你重新整理補給櫃。體力已經很充足，明天再來補給會更有幫助。";
+          }
+          addExperience(4, action.label);
+          return "你完成站內整理，讓室內運作更順。";
+        }
+
+        function useInteriorAction(action) {
+          if (!action) return;
+          if (indoorActionUsed(action)) {
+            showDialogue(action.label, "今天已經處理過這個設備了，明天會有新的整理項目。", 2.8);
+            addToast("今日已完成", "warn", 2);
+            return;
+          }
+          const cost = action.cost ?? INDOOR_ACTION_HEALTH_COST;
+          if (cost > 0 && state.health < cost) {
+            showDialogue("體力不足", `至少需要 ${cost} 體力才能使用「${action.label}」。等到新的一天會恢復全部體力。`, 3.2);
+            addToast(`體力不足：需要 ${cost}`, "bad", 2.4);
+            return;
+          }
+          if (cost > 0) {
+            state.health = Math.max(0, state.health - cost);
+            addToast(`體力 -${cost}`, "warn", 1.8);
+          }
+          state.indoorActions[indoorActionKey(action)] = true;
+          const text = applyIndoorActionEffect(action);
+          addLog(`${action.label}：${text}`);
+          showDialogue(action.label, text, 4.2);
+          evaluateMissions();
+          uiDirty = true;
         }
 
         function observeAnimal(actor) {
@@ -3853,7 +4103,7 @@
           actor.observed = true;
           state.stats.animalsObserved += 1;
           progress.seen = true;
-          const trustGain = state.completedMissions["wildlife-log"] ? 2 : 1;
+          const trustGain = (state.completedMissions["wildlife-log"] ? 2 : 1) + stationPrepValue("animalTrustBonus");
           progress.trust = clamp(progress.trust + trustGain, 0, def.trustGoal);
           actor.mood = "curious";
           actor.wait = 180;
@@ -3882,7 +4132,7 @@
             return;
           }
           const helper = eventHasHelper(def);
-          const toolBonus = state.completedMissions["field-care"] ? 0.04 : 0;
+          const toolBonus = (state.completedMissions["field-care"] ? 0.04 : 0) + stationPrepValue("fieldBonus");
           state.health = Math.max(0, state.health - FIELD_ACTION_HEALTH_COST);
           addToast(`體力 -${FIELD_ACTION_HEALTH_COST}`, "warn", 1.8);
           state.fieldAction = {
@@ -4378,7 +4628,7 @@
           const perfect = game.correct === total;
           const baseReward = game.items.reduce((sum, typeId) => sum + trashDef(typeId).reward, 0);
           const accuracy = game.correct / total;
-          const sortingBonus = state.completedMissions["first-recycle"] ? 1.1 : 1;
+          const sortingBonus = (state.completedMissions["first-recycle"] ? 1.1 : 1) + stationPrepValue("recycleBonus");
           const reward = Math.round((baseReward * (0.55 + accuracy * 0.45) + (perfect ? 18 + total * 2 : 0)) * sortingBonus);
           for (const typeId of game.items) removeTrashFromBackpack(typeId);
           state.recyclePoints += reward;
@@ -4846,6 +5096,108 @@
           }
         }
 
+        function drawWallPanel(x, y, w, h, title, line, color = "#244734") {
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillRect(x + 4, y + 4, w, h);
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "rgba(255,247,215,0.16)";
+          ctx.fillRect(x + 8, y + 8, w - 16, h - 16);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 13px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(title, x + w / 2, y + 24);
+          ctx.font = "11px sans-serif";
+          ctx.fillText(line, x + w / 2, y + h - 18);
+        }
+
+        function drawSeedTray(x, y, w, h, rows = 2) {
+          ctx.fillStyle = "#56412a";
+          ctx.fillRect(x, y, w, h);
+          const cellW = (w - 12) / 6;
+          const cellH = (h - 10) / rows;
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < 6; col++) {
+              const cx = x + 6 + col * cellW;
+              const cy = y + 5 + row * cellH;
+              ctx.fillStyle = "#3f2f20";
+              ctx.fillRect(cx, cy, cellW - 4, cellH - 4);
+              ctx.fillStyle = col % 2 ? "#7fcb70" : "#5cad5d";
+              ctx.fillRect(cx + cellW / 2 - 3, cy + 3, 6, 10);
+              ctx.fillRect(cx + cellW / 2 - 8, cy + 8, 16, 4);
+            }
+          }
+        }
+
+        function drawSampleJars(x, y, count, color = "#b6e7ea") {
+          for (let i = 0; i < count; i++) {
+            const jarX = x + i * 18;
+            ctx.fillStyle = "#fff7d7";
+            ctx.fillRect(jarX + 4, y, 10, 4);
+            ctx.fillStyle = color;
+            ctx.fillRect(jarX + 2, y + 4, 14, 22);
+            ctx.fillStyle = "rgba(255,255,255,0.45)";
+            ctx.fillRect(jarX + 4, y + 7, 4, 14);
+          }
+        }
+
+        function drawToolPegboard(x, y, w, h) {
+          ctx.fillStyle = "#8d5f36";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "rgba(255,247,215,0.24)";
+          for (let py = y + 10; py < y + h - 6; py += 14) {
+            for (let px = x + 12; px < x + w - 8; px += 18) ctx.fillRect(px, py, 3, 3);
+          }
+          ctx.strokeStyle = "#ead08c";
+          ctx.lineWidth = 4;
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(x + 30 + i * 34, y + 16);
+            ctx.lineTo(x + 18 + i * 34, y + 48);
+            ctx.stroke();
+          }
+          ctx.fillStyle = "#d9b26a";
+          ctx.fillRect(x + 18, y + h - 22, w - 36, 8);
+        }
+
+        function drawSupplyCrates(x, y, count = 3) {
+          for (let i = 0; i < count; i++) {
+            const crateX = x + i * 42;
+            ctx.fillStyle = "rgba(0,0,0,0.16)";
+            ctx.fillRect(crateX + 4, y + 30, 34, 8);
+            ctx.fillStyle = i % 2 ? "#8dbd72" : "#d9b26a";
+            ctx.fillRect(crateX, y, 36, 34);
+            ctx.strokeStyle = "rgba(55,42,24,0.34)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(crateX + 4, y + 5, 28, 22);
+            ctx.beginPath();
+            ctx.moveTo(crateX + 4, y + 5);
+            ctx.lineTo(crateX + 32, y + 27);
+            ctx.stroke();
+          }
+        }
+
+        function drawInteriorActionHotspots() {
+          const target = nearestInteractable();
+          for (const action of currentInteriorActions()) {
+            const marker = interiorActionMarkerRect(action);
+            const used = indoorActionUsed(action);
+            const active = target?.type === "interiorAction" && target.ref.id === action.id;
+            ctx.save();
+            ctx.fillStyle = active ? "rgba(247,211,111,0.28)" : used ? "rgba(255,247,215,0.10)" : "rgba(255,247,215,0.16)";
+            ctx.fillRect(marker.x, marker.y, marker.w, marker.h);
+            ctx.strokeStyle = active ? "#f7d36f" : used ? "rgba(255,247,215,0.35)" : "rgba(255,247,215,0.48)";
+            ctx.lineWidth = active ? 3 : 2;
+            ctx.strokeRect(marker.x, marker.y, marker.w, marker.h);
+            ctx.fillStyle = used ? "#88cfa0" : "#fff7d7";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(used ? "完成" : action.label, marker.x + marker.w / 2, marker.y + marker.h / 2 + 4);
+            ctx.restore();
+            if (active) drawWorldLabel(action.label, marker.x + marker.w / 2, marker.y - 8);
+          }
+        }
+
         function drawEcoStationInterior() {
           drawInteriorShelf(86, 176, 128, 48, "#7bbf75");
           drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#7bbf75");
@@ -4860,6 +5212,17 @@
           ctx.fillText("棲地觀察板", 480, 150);
           ctx.font = "13px sans-serif";
           ctx.fillText("森林　溪流　濕地", 480, 178);
+          drawWallPanel(338, 112, 284, 92, "棲地觀察板", "森林・溪流・濕地", "#203d2d");
+          drawSeedTray(136, 270, 144, 42, 2);
+          drawSeedTray(622, 266, 136, 44, 2);
+          drawSampleJars(410, 386, 6, "#cfe9b3");
+          drawSampleJars(508, 386, 4, "#f3dda0");
+          ctx.fillStyle = "#513926";
+          ctx.fillRect(360, 240, 98, 28);
+          ctx.fillStyle = "#e8d29b";
+          ctx.fillRect(368, 247, 82, 8);
+          ctx.fillRect(368, 259, 54, 5);
+          drawSupplyCrates(612, 342, 3);
           drawTree(804, 390, false);
           drawBush(782, 446, 5);
         }
@@ -4882,6 +5245,24 @@
           ctx.fillStyle = "#b9f0ff";
           ctx.fillRect(172, 232, 60, 26);
           ctx.fillRect(456, 232, 60, 26);
+          drawWallPanel(320, 112, 138, 78, "水位曲線", "濕地樣區", "#24485b");
+          drawWallPanel(500, 112, 138, 78, "物種熱點", "夜間記錄", "#24485b");
+          drawSampleJars(142, 282, 7, "#9bd6e0");
+          drawSampleJars(424, 286, 6, "#d2f1ff");
+          ctx.strokeStyle = "#5ba9b9";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(332, 166);
+          ctx.lineTo(356, 154);
+          ctx.lineTo(382, 160);
+          ctx.lineTo(410, 136);
+          ctx.lineTo(438, 150);
+          ctx.stroke();
+          ctx.fillStyle = "#1f3141";
+          ctx.fillRect(270, 418, 124, 34);
+          ctx.fillStyle = "#b9f0ff";
+          ctx.fillRect(282, 426, 86, 9);
+          ctx.fillRect(282, 441, 52, 6);
         }
 
         function drawWorkshopInterior() {
@@ -4903,6 +5284,17 @@
             ctx.lineTo(410 + i * 36, 190);
             ctx.stroke();
           }
+          drawToolPegboard(360, 112, 210, 92);
+          drawSupplyCrates(226, 424, 3);
+          ctx.fillStyle = "#513926";
+          ctx.fillRect(466, 252, 168, 44);
+          ctx.fillStyle = "#f0d98d";
+          for (let i = 0; i < 5; i++) ctx.fillRect(480 + i * 28, 262, 18, 24);
+          ctx.fillStyle = "#2f5b47";
+          ctx.fillRect(742, 386, 60, 44);
+          ctx.fillStyle = "#fff7d7";
+          ctx.fillRect(752, 398, 40, 8);
+          ctx.fillRect(752, 414, 26, 7);
         }
 
         function renderInterior() {
@@ -4928,9 +5320,11 @@
           ctx.textAlign = "center";
           ctx.fillText(interior.name, canvas.width / 2, 75);
 
-          if (state.interior === "ecoStation") drawEcoStationInterior();
-          else if (state.interior === "dataLab") drawDataLabInterior();
+          const kind = currentInteriorKind();
+          if (kind === "ecoStation") drawEcoStationInterior();
+          else if (kind === "dataLab") drawDataLabInterior();
           else drawWorkshopInterior();
+          drawInteriorActionHotspots();
 
           const exit = interiorExitRect();
           ctx.fillStyle = "#614730";
@@ -4965,6 +5359,10 @@
           }
           if (target.type === "exit") {
             return { x: target.ref.x + target.ref.w / 2, y: target.ref.y + 3, w: target.ref.w, h: target.ref.h };
+          }
+          if (target.type === "interiorAction") {
+            const marker = interiorActionMarkerRect(target.ref);
+            return { x: marker.x + marker.w / 2, y: marker.y + 3, w: marker.w, h: marker.h };
           }
           return {
             x: target.ref.x + (target.ref.w || 0) / 2,
@@ -5545,6 +5943,11 @@
           if (target.type === "npc") promptEl.textContent = `Space/E 對話：${target.ref.name}`;
           if (target.type === "building") {
             promptEl.textContent = target.ref.facility === "recycle" ? `Space/E 回收分類：${target.ref.label}` : `Space/E 進入：${target.ref.label}`;
+          }
+          if (target.type === "interiorAction") {
+            const cost = target.ref.cost ?? INDOOR_ACTION_HEALTH_COST;
+            const costText = cost > 0 ? `｜體力 -${cost}` : "";
+            promptEl.textContent = `Space/E ${target.ref.prompt}：${target.ref.label}${costText}`;
           }
           if (target.type === "exit") {
             const interior = currentInteriorDef();
