@@ -432,6 +432,15 @@
     "source": "generated-inventory-icons"
   },
   {
+    "name": "worldMap",
+    "file": "worldMap.png",
+    "size": [
+      504,
+      336
+    ],
+    "source": "generated-world-map"
+  },
+  {
     "name": "streamfish",
     "file": "streamfish.png",
     "size": [
@@ -444,8 +453,8 @@
     "name": "leopardCat",
     "file": "leopardCat.png",
     "size": [
-      64,
-      42
+      84,
+      48
     ],
     "source": "generated-extra-animals"
   },
@@ -453,8 +462,8 @@
     "name": "macaque",
     "file": "macaque.png",
     "size": [
-      64,
-      58
+      68,
+      60
     ],
     "source": "generated-extra-animals"
   },
@@ -471,8 +480,8 @@
     "name": "treefrog",
     "file": "treefrog.png",
     "size": [
-      56,
-      44
+      78,
+      50
     ],
     "source": "generated-extra-animals"
   },
@@ -822,8 +831,8 @@
     "name": "leopardCatWalk1",
     "file": "leopardCat_walk1.png",
     "size": [
-      64,
-      42
+      84,
+      48
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -831,8 +840,8 @@
     "name": "leopardCatWalk2",
     "file": "leopardCat_walk2.png",
     "size": [
-      64,
-      42
+      84,
+      48
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -840,8 +849,8 @@
     "name": "leopardCatWalk3",
     "file": "leopardCat_walk3.png",
     "size": [
-      64,
-      42
+      84,
+      48
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -849,8 +858,8 @@
     "name": "leopardCatWalk4",
     "file": "leopardCat_walk4.png",
     "size": [
-      64,
-      42
+      84,
+      48
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -858,8 +867,8 @@
     "name": "macaqueWalk1",
     "file": "macaque_walk1.png",
     "size": [
-      64,
-      58
+      68,
+      60
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -867,8 +876,8 @@
     "name": "macaqueWalk2",
     "file": "macaque_walk2.png",
     "size": [
-      64,
-      58
+      68,
+      60
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -876,8 +885,8 @@
     "name": "macaqueWalk3",
     "file": "macaque_walk3.png",
     "size": [
-      64,
-      58
+      68,
+      60
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -885,8 +894,8 @@
     "name": "macaqueWalk4",
     "file": "macaque_walk4.png",
     "size": [
-      64,
-      58
+      68,
+      60
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -930,8 +939,8 @@
     "name": "treefrogWalk1",
     "file": "treefrog_walk1.png",
     "size": [
-      56,
-      44
+      78,
+      50
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -939,8 +948,8 @@
     "name": "treefrogWalk2",
     "file": "treefrog_walk2.png",
     "size": [
-      56,
-      44
+      78,
+      50
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -948,8 +957,8 @@
     "name": "treefrogWalk3",
     "file": "treefrog_walk3.png",
     "size": [
-      56,
-      44
+      78,
+      50
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -957,8 +966,8 @@
     "name": "treefrogWalk4",
     "file": "treefrog_walk4.png",
     "size": [
-      56,
-      44
+      78,
+      50
     ],
     "source": "generated-animal-walk-frames"
   },
@@ -1033,14 +1042,5 @@
       42
     ],
     "source": "generated-animal-walk-frames"
-  },
-  {
-    "name": "worldMap",
-    "file": "worldMap.png",
-    "size": [
-      504,
-      336
-    ],
-    "source": "generated-world-map"
   }
 ]

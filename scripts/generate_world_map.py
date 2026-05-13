@@ -205,10 +205,10 @@ def draw_landmarks(d: ImageDraw.ImageDraw) -> None:
         draw_building(d, *building)
 
     bridge_specs = [
-        ((river_center_x(34) - 4.7) * TILE, 32.48 * TILE, 9.4 * TILE, 3.2 * TILE),
-        ((river_center_x(112) - 4.7) * TILE, 110.48 * TILE, 9.4 * TILE, 3.2 * TILE),
-        ((east_river_center_x(61) - 5.0) * TILE, 59.48 * TILE, 10.0 * TILE, 3.2 * TILE),
-        ((east_river_center_x(112) - 5.0) * TILE, 110.48 * TILE, 10.0 * TILE, 3.2 * TILE),
+        ((river_center_x(34) - 4.7) * TILE, 32.47 * TILE, 9.4 * TILE, 3.2 * TILE),
+        ((river_center_x(112) - 4.7) * TILE, 110.47 * TILE, 9.4 * TILE, 3.2 * TILE),
+        ((east_river_center_x(61) - 5.0) * TILE, 59.47 * TILE, 10.0 * TILE, 3.2 * TILE),
+        ((east_river_center_x(112) - 5.0) * TILE, 110.47 * TILE, 10.0 * TILE, 3.2 * TILE),
     ]
     for bridge in bridge_specs:
         bridge_x, bridge_y, bridge_w, bridge_h = rect_world_to_map(*bridge)

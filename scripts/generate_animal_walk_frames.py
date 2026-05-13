@@ -24,7 +24,7 @@ ANIMALS: dict[str, str] = {
     "landcrab": "crab",
     "butterfly": "butterfly",
     "leopardCat": "quadruped",
-    "macaque": "climber",
+    "macaque": "macaque",
     "otter": "otter",
     "treefrog": "hopper",
     "greenTurtle": "turtle",
@@ -83,6 +83,12 @@ MOTIONS: dict[str, tuple[Motion, ...]] = {
         Motion(-1, -3, 0.982, 1.030, 18),
         Motion(0, -1, 1.024, 0.992, 23),
         Motion(1, -2, 0.990, 1.020, 19),
+    ),
+    "macaque": (
+        Motion(0, 0, 1.00, 1.00, 24),
+        Motion(-1, -1, 1.00, 1.00, 20),
+        Motion(0, 0, 1.00, 1.00, 26),
+        Motion(1, -1, 1.00, 1.00, 20),
     ),
     "hopper": (
         Motion(0, 1, 1.045, 0.955, 30),
@@ -296,7 +302,7 @@ def make_frame(img: Image.Image, mode: str, frame: int) -> Image.Image:
             scale_x=(1.03, 0.99, 1.03, 0.99)[frame],
             scale_y=(0.99, 1.02, 0.99, 1.02)[frame],
         )
-    elif mode in {"quadruped", "crab", "climber", "hopper"}:
+    elif mode in {"quadruped", "crab", "climber", "hopper", "macaque"}:
         left, top, right, bottom = alpha_bbox(img)
         h = bottom - top
         add_region_motion(
@@ -305,8 +311,8 @@ def make_frame(img: Image.Image, mode: str, frame: int) -> Image.Image:
             (left, top + round(h * 0.58), right, bottom),
             dx=(-1, 1, 1, -1)[frame],
             dy=(0, -1, 0, -1)[frame],
-            scale_x=(1.02, 0.99, 1.02, 0.99)[frame],
-            scale_y=(0.99, 1.02, 0.99, 1.02)[frame],
+            scale_x=(1.01, 1.00, 1.01, 1.00)[frame] if mode == "macaque" else (1.02, 0.99, 1.02, 0.99)[frame],
+            scale_y=(1.00, 1.01, 1.00, 1.01)[frame] if mode == "macaque" else (0.99, 1.02, 0.99, 1.02)[frame],
         )
 
     return out
