@@ -131,6 +131,54 @@
         display: none;
       }
 
+      .player-status {
+        position: absolute;
+        left: 16px;
+        bottom: 16px;
+        z-index: 4;
+        width: 258px;
+        padding: 8px 10px;
+        border: 2px solid rgba(255, 247, 214, 0.68);
+        border-radius: 8px;
+        background: rgba(25, 55, 42, 0.9);
+        color: #fff5cf;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
+        pointer-events: none;
+      }
+
+      .player-status[hidden] {
+        display: none;
+      }
+
+      .status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .status-row span {
+        white-space: nowrap;
+      }
+
+      .status-xp {
+        height: 7px;
+        margin-top: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(220, 207, 168, 0.48);
+      }
+
+      .status-xp i {
+        display: block;
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: #f7d36f;
+      }
+
       .start {
         position: absolute;
         inset: 0;
@@ -837,6 +885,7 @@
       <main class="stage" aria-label="森循島遊戲畫面">
         <canvas id="game" width="960" height="640"></canvas>
         <div class="hud-pill" id="hudPills"></div>
+        <div class="player-status" id="playerStatus" hidden></div>
         <div class="prompt" id="prompt" hidden></div>
         <div class="dialogue" id="dialogue" hidden>
           <b id="dialogueTitle"></b>
@@ -933,6 +982,7 @@
         const loadBtn = document.getElementById("loadBtn");
         const resetBtn = document.getElementById("resetBtn");
         const hudPills = document.getElementById("hudPills");
+        const playerStatus = document.getElementById("playerStatus");
         const promptEl = document.getElementById("prompt");
         const dialogueEl = document.getElementById("dialogue");
         const dialogueTitle = document.getElementById("dialogueTitle");
@@ -963,6 +1013,16 @@
         const WORLD_H = MAP_H * TILE;
         const SAVE_KEY = "senxunIslandPixelSandboxV2";
         const DAY_MINUTES = 24 * 60;
+        const BASE_PLAYER_HEALTH = 42;
+        const HEALTH_PER_LEVEL = 6;
+        const MAX_PLAYER_LEVEL = 20;
+        const ANIMAL_START_COUNT = 8;
+        const ANIMAL_TARGET_COUNT = 10;
+        const ANIMAL_MAX_COUNT = 14;
+        const ANIMAL_SPAWN_DELAY = { min: 18, max: 36 };
+        const ANIMAL_RETRY_DELAY = { min: 6, max: 12 };
+        const ANIMAL_LIFE = { min: 260, max: 520 };
+        const ANIMAL_SCREEN_MARGIN = 92;
         const TRASH_START_COUNT = 3;
         const TRASH_MAX_ACTIVE = 10;
         const TRASH_MAX_PRESSURE = 14;
@@ -1433,6 +1493,8 @@
           weather: "晴朗",
           notes: 0,
           recyclePoints: 0,
+          level: 1,
+          exp: 0,
           health: 42,
           maxHealth: 42,
           scene: "outdoor",
@@ -1442,6 +1504,7 @@
           camera: { x: 0, y: 0 },
           ecology: { forest: 44, water: 36, pollution: 72, bio: 24 },
           animals: [],
+          animalSpawnTimer: 0,
           events: [],
           trash: [],
           trashSpawnTimer: 0,
@@ -1509,6 +1572,45 @@
 
         function hasPartnerSkill(tag) {
           return animalDefs.some((animal) => state.progress[animal.id]?.partnered && animal.skillTag === tag);
+        }
+
+        function maxHealthForLevel(level) {
+          return BASE_PLAYER_HEALTH + (clamp(Math.floor(level) || 1, 1, MAX_PLAYER_LEVEL) - 1) * HEALTH_PER_LEVEL;
+        }
+
+        function expToNextLevel(level) {
+          const safeLevel = clamp(Math.floor(level) || 1, 1, MAX_PLAYER_LEVEL);
+          return 40 + (safeLevel - 1) * 18 + Math.floor((safeLevel - 1) * (safeLevel - 1) * 2.5);
+        }
+
+        function normalizePlayerLevel() {
+          state.level = clamp(Math.floor(Number(state.level)) || 1, 1, MAX_PLAYER_LEVEL);
+          state.exp = Math.max(0, Math.floor(Number(state.exp)) || 0);
+          while (state.level < MAX_PLAYER_LEVEL && state.exp >= expToNextLevel(state.level)) {
+            state.exp -= expToNextLevel(state.level);
+            state.level += 1;
+          }
+          if (state.level >= MAX_PLAYER_LEVEL) state.exp = 0;
+          state.maxHealth = maxHealthForLevel(state.level);
+          state.health = clamp(Number(state.health) || state.maxHealth, 1, state.maxHealth);
+        }
+
+        function addExperience(amount, label = "經驗") {
+          const gained = Math.max(0, Math.round(amount));
+          if (!gained) return;
+          state.exp += gained;
+          let leveled = false;
+          while (state.level < MAX_PLAYER_LEVEL && state.exp >= expToNextLevel(state.level)) {
+            state.exp -= expToNextLevel(state.level);
+            const previousMax = state.maxHealth;
+            state.level += 1;
+            state.maxHealth = maxHealthForLevel(state.level);
+            state.health = clamp(state.health + (state.maxHealth - previousMax), 1, state.maxHealth);
+            leveled = true;
+          }
+          if (state.level >= MAX_PLAYER_LEVEL) state.exp = 0;
+          if (leveled) addLog(`等級提升至 Lv ${state.level}，最大體力提高到 ${state.maxHealth}。`);
+          uiDirty = true;
         }
 
         function addTrashToBackpack(typeId, amount = 1, label = "撿起垃圾") {
@@ -1700,6 +1802,7 @@
         function addNotes(amount, label = "自然筆記") {
           state.notes += amount;
           addLog(`${label} +${amount}`);
+          addExperience(amount, label);
         }
 
         function adjustEco(delta, multiplier = 1) {
@@ -1974,6 +2077,9 @@
           state.weather = "晴朗";
           state.notes = 0;
           state.recyclePoints = 0;
+          state.level = 1;
+          state.exp = 0;
+          state.maxHealth = maxHealthForLevel(state.level);
           state.health = state.maxHealth;
           state.scene = "outdoor";
           state.interior = null;
@@ -1982,6 +2088,7 @@
           state.camera = { x: 0, y: 0 };
           state.ecology = { forest: 44, water: 36, pollution: 72, bio: 24 };
           state.animals = [];
+          state.animalSpawnTimer = 0;
           state.events = [];
           state.trash = [];
           state.trashSpawnTimer = 0;
@@ -1998,7 +2105,9 @@
           state.recycleGame = null;
           addLog("抵達森循島：撿垃圾、阻止垃圾怪、把資源帶回回收場。");
           addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
-          for (let i = 0; i < 11; i++) spawnAnimal();
+          updateCamera();
+          for (let i = 0; i < ANIMAL_START_COUNT; i++) spawnAnimal({ offscreen: true });
+          scheduleNextAnimalSpawn(ANIMAL_SPAWN_DELAY);
           for (let i = 0; i < 7; i++) spawnEvent();
           for (let i = 0; i < TRASH_START_COUNT; i++) spawnRoadTrash();
           scheduleNextTrashSpawn(TRASH_START_SPAWN_DELAY);
@@ -2018,6 +2127,8 @@
             weather: state.weather,
             notes: state.notes,
             recyclePoints: state.recyclePoints,
+            level: state.level,
+            exp: state.exp,
             health: state.health,
             player: savedPlayer,
             ecology: state.ecology,
@@ -2058,6 +2169,9 @@
             state.weather = WEATHER.includes(data.weather) ? data.weather : "晴朗";
             state.notes = Math.max(0, data.notes || 0);
             state.recyclePoints = Math.max(0, data.recyclePoints || 0);
+            state.level = clamp(Math.floor(Number(data.level)) || 1, 1, MAX_PLAYER_LEVEL);
+            state.exp = Math.max(0, Math.floor(Number(data.exp)) || 0);
+            normalizePlayerLevel();
             state.health = clamp(Number(data.health) || state.maxHealth, 1, state.maxHealth);
             const savedX = Number(data.player?.x);
             const savedY = Number(data.player?.y);
@@ -2185,15 +2299,53 @@
           return null;
         }
 
-        function spawnAnimal() {
-          const candidates = animalDefs.filter((def) => def.condition(state));
-          if (!candidates.length || state.animals.length > 28) return;
+        function cameraWorldRect(margin = 0) {
+          return { x: state.camera.x - margin, y: state.camera.y - margin, w: canvas.width + margin * 2, h: canvas.height + margin * 2 };
+        }
+
+        function isOnCamera(entity, margin = 0) {
+          return rectsOverlap({ x: entity.x, y: entity.y, w: entity.w || 1, h: entity.h || 1 }, cameraWorldRect(margin));
+        }
+
+        function animalSpeciesLimit(def) {
+          if (def.rarity === "傳說" || def.rarity === "稀有") return 1;
+          if (def.rarity === "普通") return 2;
+          return 3;
+        }
+
+        function animalCountFor(id) {
+          return state.animals.filter((animal) => animal.id === id && !animal.leaving).length;
+        }
+
+        function randomAnimalPoint(def, w, h, options = {}) {
+          const aquatic = def.id === "streamfish";
+          for (let i = 0; i < 70; i++) {
+            const point = {
+              x: def.area.x + randRange(10, Math.max(11, def.area.w - 10)),
+              y: def.area.y + randRange(10, Math.max(11, def.area.h - 10)),
+            };
+            if (!canSpawnAt(point, { allowWater: aquatic, w, h, sprite: def.sprite })) continue;
+            const candidate = { x: point.x, y: point.y, w, h };
+            if (options.offscreen && isOnCamera(candidate, ANIMAL_SCREEN_MARGIN)) continue;
+            if (options.awayFromPlayer !== false && dist(candidate, state.player) < 220) continue;
+            return point;
+          }
+          return null;
+        }
+
+        function scheduleNextAnimalSpawn(range = ANIMAL_SPAWN_DELAY) {
+          state.animalSpawnTimer = randRange(range.min, range.max);
+        }
+
+        function spawnAnimal(options = {}) {
+          const candidates = animalDefs.filter((def) => def.condition(state) && animalCountFor(def.id) < animalSpeciesLimit(def));
+          if (!candidates.length || state.animals.length >= ANIMAL_MAX_COUNT) return false;
           const def = pick(candidates);
           const aquatic = def.id === "streamfish";
           const w = aquatic ? 34 : 30;
           const h = aquatic ? 20 : 28;
-          const p = randomPointIn(def.area, { allowWater: aquatic, w, h, sprite: def.sprite });
-          if (!p) return;
+          const p = randomAnimalPoint(def, w, h, { offscreen: options.offscreen !== false, awayFromPlayer: options.awayFromPlayer });
+          if (!p) return false;
           state.animals.push({
             uid: crypto.randomUUID ? crypto.randomUUID() : `a_${Date.now()}_${Math.random()}`,
             id: def.id,
@@ -2201,11 +2353,15 @@
             y: p.y,
             w,
             h,
-            target: randomPointIn(def.area, { allowWater: aquatic, w, h, sprite: def.sprite }) || { x: p.x, y: p.y },
+            target: randomAnimalPoint(def, w, h, { offscreen: false, awayFromPlayer: false }) || { x: p.x, y: p.y },
             wait: randRange(20, 160),
-            life: randRange(260, 520),
+            life: randRange(ANIMAL_LIFE.min, ANIMAL_LIFE.max),
             mood: "wander",
+            observed: false,
+            leaving: false,
           });
+          uiDirty = true;
+          return true;
         }
 
         function spawnEvent() {
@@ -2411,6 +2567,7 @@
         function collectTrash(trash) {
           state.trash = state.trash.filter((item) => item.uid !== trash.uid);
           addTrashToBackpack(trash.type);
+          addExperience(3, "撿起垃圾");
           adjustEco({ pollution: -1, bio: 0.4 });
           showDialogue("撿起垃圾", `${trashDef(trash.type).name}已放入背包。帶到回收場分類，可以換回收點數。`, 2.6);
         }
@@ -2471,17 +2628,36 @@
           for (const animal of state.animals) {
             const def = animalDefs.find((item) => item.id === animal.id);
             animal.life -= dt;
+            if (animal.life <= 0 && !animal.leaving) {
+              animal.leaving = true;
+              animal.wait = 0;
+              animal.mood = "leaving";
+              animal.target = randomAnimalPoint(def, animal.w, animal.h, { offscreen: true, awayFromPlayer: false }) || animal.target;
+            }
+            if (animal.leaving) {
+              if (!animal.target || moveToward(animal, animal.target, 34, dt, { collide: def.id !== "streamfish" })) {
+                animal.target = randomAnimalPoint(def, animal.w, animal.h, { offscreen: true, awayFromPlayer: false }) || animal.target;
+              }
+              continue;
+            }
             if (animal.wait > 0) {
               animal.wait -= dt * 60;
               continue;
             }
             if (!animal.target || moveToward(animal, animal.target, 18 + hash(animal.x | 0, animal.y | 0) * 26, dt, { collide: def.id !== "streamfish" })) {
-              animal.target = randomPointIn(def.area, { allowWater: def.id === "streamfish", w: animal.w, h: animal.h, sprite: def.sprite }) || { x: animal.x, y: animal.y };
+              animal.target = randomAnimalPoint(def, animal.w, animal.h, { offscreen: false, awayFromPlayer: false }) || { x: animal.x, y: animal.y };
               animal.wait = randRange(40, 170);
             }
           }
-          state.animals = state.animals.filter((animal) => animal.life > 0 || dist(animal, state.player) < 190);
-          if (state.animals.length < 13 && Math.random() < dt * 0.48) spawnAnimal();
+          const before = state.animals.length;
+          state.animals = state.animals.filter((animal) => animal.life > 0 || isOnCamera(animal, ANIMAL_SCREEN_MARGIN));
+          if (state.animals.length !== before) uiDirty = true;
+          if (!Number.isFinite(state.animalSpawnTimer) || state.animalSpawnTimer <= 0) scheduleNextAnimalSpawn();
+          state.animalSpawnTimer -= dt;
+          if (state.animalSpawnTimer > 0) return;
+          const wantsMore = state.animals.filter((animal) => !animal.leaving).length < ANIMAL_TARGET_COUNT;
+          const spawned = wantsMore && spawnAnimal({ offscreen: true });
+          scheduleNextAnimalSpawn(spawned ? ANIMAL_SPAWN_DELAY : ANIMAL_RETRY_DELAY);
         }
 
         function updateEvents(dt) {
@@ -2606,7 +2782,15 @@
         function observeAnimal(actor) {
           const def = animalDefs.find((animal) => animal.id === actor.id);
           const progress = getAnimalProgress(def.id);
+          if (actor.observed) {
+            actor.mood = "curious";
+            actor.wait = Math.max(actor.wait || 0, 90);
+            const trustText = progress.partnered ? "已是你的生態夥伴" : `信任 ${progress.trust} / ${def.trustGoal}`;
+            showDialogue(`${def.name}｜已記錄`, `這隻${def.name}已經記錄過了。${trustText}；想累積經驗和信任，需要去找其他個體或新的觀察事件。`, 3.2);
+            return;
+          }
           const firstSeen = !progress.seen;
+          actor.observed = true;
           progress.seen = true;
           progress.trust = clamp(progress.trust + 1, 0, def.trustGoal);
           actor.mood = "curious";
@@ -3203,7 +3387,7 @@
           drawSpriteGrounded(def.sprite, actor.x + actor.w / 2, actor.y + actor.h + bob, actor.target && actor.target.x > actor.x);
           const progress = getAnimalProgress(def.id);
           const icon = progress.seen ? "!" : "?";
-          if (dist(actor, state.player) < 72) drawWorldLabel(progress.seen ? "記錄" : "觀察", actor.x + actor.w / 2, actor.y - 18);
+          if (dist(actor, state.player) < 72) drawWorldLabel(actor.observed ? "已記錄" : progress.seen ? "記錄" : "觀察", actor.x + actor.w / 2, actor.y - 18);
           if (actor.mood === "curious") drawWorldLabel(icon, actor.x + actor.w / 2 + 18, actor.y - 38, "#fff7d7", "#2e795d");
         }
 
@@ -3662,6 +3846,7 @@
           drawBattleOverlay();
           drawRecycleOverlay();
           updatePrompt();
+          renderPlayerStatus();
         }
 
         function updatePrompt() {
@@ -3691,7 +3876,7 @@
           promptEl.hidden = false;
           if (target.type === "animal") {
             const def = animalDefs.find((animal) => animal.id === target.ref.id);
-            promptEl.textContent = `Space/E ${getAnimalProgress(def.id).seen ? "記錄" : "觀察"}：${def.name}`;
+            promptEl.textContent = `Space/E ${target.ref.observed ? "已記錄" : getAnimalProgress(def.id).seen ? "記錄" : "觀察"}：${def.name}`;
           }
           if (target.type === "event") {
             const def = eventDefs.find((event) => event.id === target.ref.id);
@@ -3708,6 +3893,24 @@
           }
         }
 
+        function renderPlayerStatus() {
+          const hidden = !state.started || Boolean(state.battle) || Boolean(state.recycleGame) || Boolean(state.fieldAction);
+          playerStatus.hidden = hidden;
+          if (hidden) return;
+          const needed = expToNextLevel(state.level);
+          const isMax = state.level >= MAX_PLAYER_LEVEL;
+          const expText = isMax ? "MAX" : `${state.exp}/${needed}`;
+          const expRate = isMax ? 100 : clamp((state.exp / needed) * 100, 0, 100);
+          playerStatus.innerHTML = `
+            <div class="status-row">
+              <span>Lv ${state.level}</span>
+              <span>EXP ${expText}</span>
+              <span>體力 ${state.health}/${state.maxHealth}</span>
+            </div>
+            <div class="status-xp"><i style="width:${expRate}%"></i></div>
+          `;
+        }
+
         function updateHud() {
           if (!uiDirty) return;
           uiDirty = false;
@@ -3718,7 +3921,6 @@
             `第 ${state.day} 天`,
             formatClock(),
             state.weather,
-            `體力 ${state.health}/${state.maxHealth}`,
           ].join("｜");
           hudPills.innerHTML = `<span class="pill hud-strip">${hudText}</span>`;
 
