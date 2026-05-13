@@ -963,6 +963,13 @@
         const WORLD_H = MAP_H * TILE;
         const SAVE_KEY = "senxunIslandPixelSandboxV2";
         const DAY_MINUTES = 24 * 60;
+        const TRASH_START_COUNT = 3;
+        const TRASH_MAX_ACTIVE = 10;
+        const TRASH_MAX_PRESSURE = 14;
+        const TRASH_SPAWN_DELAY = { min: 26, max: 52 };
+        const TRASH_START_SPAWN_DELAY = { min: 16, max: 34 };
+        const TRASH_RETRY_DELAY = { min: 10, max: 18 };
+        const TRASH_TRANSFORM_DELAY = { min: 170, max: 300 };
         const WEATHER = ["晴朗", "多雲", "細雨", "薄霧"];
         const keys = new Set();
 
@@ -1437,6 +1444,7 @@
           animals: [],
           events: [],
           trash: [],
+          trashSpawnTimer: 0,
           monsters: [],
           npcs: [],
           backpack: Object.fromEntries(trashTypes.map((type) => [type.id, 0])),
@@ -1976,6 +1984,7 @@
           state.animals = [];
           state.events = [];
           state.trash = [];
+          state.trashSpawnTimer = 0;
           state.monsters = [];
           state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
           state.backpack = Object.fromEntries(trashTypes.map((type) => [type.id, 0]));
@@ -1991,7 +2000,8 @@
           addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
           for (let i = 0; i < 11; i++) spawnAnimal();
           for (let i = 0; i < 7; i++) spawnEvent();
-          for (let i = 0; i < 9; i++) spawnRoadTrash();
+          for (let i = 0; i < TRASH_START_COUNT; i++) spawnRoadTrash();
+          scheduleNextTrashSpawn(TRASH_START_SPAWN_DELAY);
           startOverlay.hidden = true;
           uiDirty = true;
           if (persist) saveNow();
@@ -2014,6 +2024,7 @@
             backpack: state.backpack,
             recycleStats: state.recycleStats,
             trash: state.trash,
+            trashSpawnTimer: state.trashSpawnTimer,
             monsters: state.monsters,
             progress: state.progress,
             unlockedCards: state.unlockedCards,
@@ -2062,7 +2073,12 @@
             state.ecology = { ...state.ecology, ...(data.ecology || {}) };
             state.backpack = { ...Object.fromEntries(trashTypes.map((type) => [type.id, 0])), ...(data.backpack || {}) };
             state.recycleStats = { ...state.recycleStats, ...(data.recycleStats || {}) };
-            state.trash = Array.isArray(data.trash) ? data.trash : state.trash;
+            state.trash = Array.isArray(data.trash)
+              ? data.trash.map(normalizeTrash).filter(Boolean).slice(0, TRASH_MAX_ACTIVE)
+              : state.trash;
+            state.trashSpawnTimer = Number.isFinite(data.trashSpawnTimer)
+              ? clamp(data.trashSpawnTimer, TRASH_RETRY_DELAY.min, TRASH_SPAWN_DELAY.max)
+              : randRange(TRASH_START_SPAWN_DELAY.min, TRASH_START_SPAWN_DELAY.max);
             state.monsters = Array.isArray(data.monsters) ? data.monsters : state.monsters;
             state.progress = { ...state.progress, ...(data.progress || {}) };
             state.unlockedCards = data.unlockedCards || {};
@@ -2224,10 +2240,37 @@
           return randomPointIn(zones[0].rect, { w: 26, h: 24, sprite: "trash", buildingMargin: 20 });
         }
 
+        function randomTrashTransformTime() {
+          return randRange(TRASH_TRANSFORM_DELAY.min, TRASH_TRANSFORM_DELAY.max);
+        }
+
+        function scheduleNextTrashSpawn(range = TRASH_SPAWN_DELAY) {
+          state.trashSpawnTimer = randRange(range.min, range.max);
+        }
+
+        function normalizeTrash(trash) {
+          if (!trash || !trashTypes.some((type) => type.id === trash.type)) return null;
+          const transform = clamp(
+            Number(trash.transform) || randomTrashTransformTime(),
+            TRASH_TRANSFORM_DELAY.min,
+            TRASH_TRANSFORM_DELAY.max
+          );
+          return {
+            ...trash,
+            uid: trash.uid || makeUid("trash"),
+            w: Number(trash.w) || 26,
+            h: Number(trash.h) || 24,
+            age: clamp(Number(trash.age) || 0, 0, Math.max(0, transform - 18)),
+            transform,
+            pulse: Number.isFinite(trash.pulse) ? trash.pulse : Math.random() * Math.PI * 2,
+          };
+        }
+
         function spawnRoadTrash() {
-          if (state.trash.length > 20) return;
+          if (state.trash.length >= TRASH_MAX_ACTIVE) return false;
+          if (state.trash.length + state.monsters.length >= TRASH_MAX_PRESSURE) return false;
           const p = randomRoadPoint();
-          if (!p) return;
+          if (!p) return false;
           const type = pick(trashTypes);
           state.trash.push({
             uid: makeUid("trash"),
@@ -2237,9 +2280,11 @@
             w: 26,
             h: 24,
             age: 0,
-            transform: randRange(70, 125),
+            transform: randomTrashTransformTime(),
             pulse: Math.random() * Math.PI * 2,
           });
+          uiDirty = true;
+          return true;
         }
 
         function monsterStageFor(absorbed) {
@@ -2312,7 +2357,11 @@
             trash.age += dt;
             if (trash.age >= trash.transform) transformTrashToMonster(trash);
           }
-          if (state.trash.length < 8 && Math.random() < dt * 0.34) spawnRoadTrash();
+          if (!Number.isFinite(state.trashSpawnTimer) || state.trashSpawnTimer <= 0) scheduleNextTrashSpawn();
+          state.trashSpawnTimer -= dt;
+          if (state.trashSpawnTimer > 0) return;
+          const spawned = spawnRoadTrash();
+          scheduleNextTrashSpawn(spawned ? TRASH_SPAWN_DELAY : TRASH_RETRY_DELAY);
         }
 
         function absorbNearbyTrash(monster) {
@@ -2640,6 +2689,7 @@
             log: [`第 ${monster.stage} 階垃圾怪靠近了。`],
           };
           state.dialogue = null;
+          hudPills.hidden = true;
           dialogueEl.hidden = true;
           uiDirty = true;
         }
@@ -3484,33 +3534,33 @@
           ctx.fillStyle = "rgba(11, 45, 49, 0.25)";
           ctx.fillRect(0, 450, canvas.width, 38);
 
-          drawTechPanel(328, 24, 304, 44, "rgba(18, 61, 83, 0.88)", "#8fd3ff");
+          drawTechPanel(336, 22, 288, 42, "rgba(18, 61, 83, 0.88)", "#8fd3ff");
           ctx.fillStyle = "#e8f7ff";
           ctx.font = "bold 18px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("垃圾淨化戰", 480, 53);
+          ctx.fillText("垃圾淨化戰", 480, 50);
 
-          drawHpPanel(568, 82, 340, 90, `第 ${monster.stage} 階垃圾怪`, monster.hp, enemyMax, `吸收 ${monster.absorbed} 件垃圾`, "right");
-          drawHpPanel(52, 342, 334, 90, "回收調查員", state.health, state.maxHealth, `夥伴 ${partnerCount()}｜回收 ${state.recyclePoints}`, "left");
+          drawHpPanel(52, 84, 328, 84, "回收調查員", state.health, state.maxHealth, `夥伴 ${partnerCount()}｜回收 ${state.recyclePoints}`, "left");
+          drawHpPanel(580, 84, 328, 84, `第 ${monster.stage} 階垃圾怪`, monster.hp, enemyMax, `吸收 ${monster.absorbed} 件垃圾`, "right");
 
-          drawPlatform(238, 396, 280, 58, "#d9c678", "#9b7a40");
-          drawPlatform(724, 266, 244, 48, "#d8cf8d", "#907b47");
+          drawPlatform(238, 394, 282, 58, "#d9c678", "#9b7a40");
+          drawPlatform(724, 342, 256, 52, "#d8cf8d", "#907b47");
 
           ctx.strokeStyle = "rgba(255, 244, 176, 0.72)";
           ctx.lineWidth = 3;
-          ctx.strokeRect(630, 176, 190, 118);
+          ctx.strokeRect(626, 184, 196, 154);
           ctx.strokeStyle = "rgba(255, 244, 176, 0.32)";
-          ctx.strokeRect(640, 186, 170, 98);
+          ctx.strokeRect(638, 196, 172, 130);
 
-          drawSpriteToBox("player", 184, 254, 104, 144, false);
-          if (state.progress.blackBear?.partnered) drawSpriteToBox("blackBear", 118, 322, 74, 74, false);
+          drawSpriteToBox("player", 182, 248, 108, 150, false);
+          if (state.progress.blackBear?.partnered) drawSpriteToBox("blackBear", 112, 318, 74, 74, false);
 
           const monsterSprite = `trashMonster${monster.stage}`;
           const monsterSize = SPRITE_DRAW_SIZES[monsterSprite] || { w: 54, h: 52 };
           const scale = monster.stage === 3 ? 2.35 : monster.stage === 2 ? 2.08 : 1.9;
           const mw = monsterSize.w * scale;
           const mh = monsterSize.h * scale;
-          drawSpriteToBox(monsterSprite, 724 - mw / 2, 265 - mh + 8, mw, mh, true);
+          drawSpriteToBox(monsterSprite, 724 - mw / 2, 342 - mh + 8, mw, mh, true);
 
           drawTechPanel(44, 444, 872, 48, "rgba(236, 247, 255, 0.98)", "#1b5f88");
           ctx.fillStyle = "#16384e";
@@ -3600,6 +3650,7 @@
 
         function render() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (state.battle) hudPills.hidden = true;
           if (state.scene === "interior") {
             renderInterior();
           } else {
@@ -3692,7 +3743,7 @@
             const partners = partnerCount();
             const seenAnimals = animalDefs.filter((animal) => state.progress[animal.id]?.seen).length;
             const unlocked = Object.keys(state.unlockedCards).length;
-            const threatClass = state.monsters.length ? "bad" : state.trash.length > 10 ? "warn" : "";
+            const threatClass = state.monsters.length ? "bad" : state.trash.length >= 7 ? "warn" : "";
             const threatTitle = state.monsters.length ? "垃圾怪活動中" : state.trash.length ? "道路垃圾待清理" : "巡查狀態穩定";
             const threatChip = state.monsters.length ? `${state.monsters.length} 隻` : `${state.trash.length} 件`;
             const threatText = state.monsters.length
@@ -3908,7 +3959,7 @@
         function getDailyAdvice() {
           if (state.monsters.length) return `路上有 ${state.monsters.length} 隻垃圾怪。先處理低階怪，避免牠們吸收更多垃圾。`;
           if (backpackTotal() >= 5) return "背包裡已有多件垃圾，先回社區南側回收場分類換點數。";
-          if (state.trash.length > 10) return "道路垃圾正在增加，優先巡查主路與橋邊，降低垃圾怪生成機率。";
+          if (state.trash.length >= 7) return "道路垃圾正在增加，優先巡查主路與橋邊，降低垃圾怪生成機率。";
           if (state.ecology.water < 50) return "溪流水質偏低，先去溪流廊道處理排水口、採樣點或岸邊垃圾。";
           if (state.ecology.pollution > 58) return "污染壓力偏高，社區站和海岸步道容易出現可處理事件。";
           if (isNight(state.time)) return "夜間適合觀察螢火蟲、陸蟹與路燈光害，但保持距離與低亮度。";
