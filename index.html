@@ -863,16 +863,17 @@
 
       .animal-card {
         display: grid;
-        grid-template-columns: 46px 1fr;
+        grid-template-columns: 50px minmax(0, 1fr);
         gap: 8px;
         align-items: center;
+        overflow: hidden;
       }
 
       .animal-icon-frame {
         display: grid;
         place-items: center;
-        width: 46px;
-        height: 42px;
+        width: 50px;
+        height: 50px;
         flex: 0 0 auto;
         overflow: hidden;
         border: 1px solid rgba(36, 79, 60, 0.22);
@@ -881,9 +882,11 @@
       }
 
       .animal-icon {
-        max-width: 42px;
-        max-height: 38px;
+        display: block;
+        width: 42px;
+        height: 42px;
         object-fit: contain;
+        object-position: center;
       }
 
       .animal-icon.locked {
@@ -1073,6 +1076,245 @@
         line-height: 1.6;
       }
 
+      .craft-modal {
+        position: absolute;
+        inset: 0;
+        z-index: 14;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        background: rgba(10, 22, 17, 0.5);
+        backdrop-filter: blur(2px);
+      }
+
+      .craft-modal[hidden] {
+        display: none;
+      }
+
+      .craft-card {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        width: min(820px, 100%);
+        max-height: min(560px, 100%);
+        overflow: hidden;
+        border: 4px solid #fff3bf;
+        border-radius: 8px;
+        background: #243a2d;
+        color: #fff7d7;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+      }
+
+      .craft-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px 10px;
+        border-bottom: 2px solid rgba(255, 243, 191, 0.28);
+      }
+
+      .craft-header h2 {
+        margin: 0;
+        color: #f8de8f;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      .craft-header p {
+        margin: 5px 0 0;
+        color: #dbe8c0;
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.45;
+      }
+
+      .craft-close {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border: 2px solid rgba(255, 243, 191, 0.58);
+        border-radius: 7px;
+        background: rgba(255, 247, 215, 0.12);
+        color: #fff7d7;
+        cursor: pointer;
+        font-size: 22px;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .craft-material-summary {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        border-bottom: 2px solid rgba(255, 243, 191, 0.2);
+      }
+
+      .craft-material-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 30px;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 243, 191, 0.32);
+        border-radius: 7px;
+        background: rgba(255, 247, 215, 0.1);
+        color: #fff7d7;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .craft-material-chip img,
+      .craft-mat-icon,
+      .craft-output-icon {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .craft-material-chip img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+
+      .craft-list {
+        display: grid;
+        gap: 8px;
+        padding: 12px 16px 16px;
+        overflow: auto;
+      }
+
+      .craft-row {
+        display: grid;
+        grid-template-columns: minmax(210px, 1fr) 34px minmax(190px, 0.9fr) auto;
+        gap: 10px;
+        align-items: stretch;
+        padding: 9px;
+        border: 2px solid rgba(255, 243, 191, 0.28);
+        border-radius: 8px;
+        background: rgba(255, 247, 215, 0.08);
+      }
+
+      .craft-row.locked {
+        border-color: rgba(255, 243, 191, 0.18);
+        background: rgba(255, 247, 215, 0.05);
+      }
+
+      .craft-materials,
+      .craft-output {
+        min-width: 0;
+        padding: 8px;
+        border: 1px solid rgba(255, 243, 191, 0.2);
+        border-radius: 7px;
+        background: rgba(10, 22, 17, 0.2);
+      }
+
+      .craft-label {
+        margin-bottom: 7px;
+        color: #f8de8f;
+        font-size: 11px;
+        font-weight: 950;
+      }
+
+      .craft-material-line {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        gap: 7px;
+        align-items: center;
+        min-height: 32px;
+      }
+
+      .craft-material-line + .craft-material-line {
+        margin-top: 6px;
+      }
+
+      .craft-mat-icon,
+      .craft-output-icon {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        border-radius: 5px;
+        background: rgba(255, 248, 218, 0.16);
+      }
+
+      .craft-mat-name,
+      .craft-output-name {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .craft-count {
+        min-width: 50px;
+        padding: 3px 6px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .craft-count.good {
+        color: #fff;
+        background: rgba(46, 121, 93, 0.86);
+      }
+
+      .craft-count.bad {
+        color: #ff7068;
+        background: rgba(74, 28, 25, 0.88);
+      }
+
+      .craft-arrow {
+        display: grid;
+        place-items: center;
+        color: #f8de8f;
+        font-size: 23px;
+        font-weight: 950;
+      }
+
+      .craft-output {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 8px;
+        align-items: center;
+      }
+
+      .craft-output-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .craft-output small {
+        display: block;
+        margin-top: 3px;
+        color: #dbe8c0;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.35;
+      }
+
+      .craft-exchange {
+        align-self: center;
+        min-width: 82px;
+        min-height: 40px;
+        padding: 0 12px;
+        border: 2px solid #fff3bf;
+        border-radius: 7px;
+        background: #2e795d;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 950;
+      }
+
+      .craft-exchange:disabled {
+        border-color: rgba(255, 243, 191, 0.22);
+        background: #70776f;
+        color: #cfc8ac;
+        cursor: not-allowed;
+      }
+
       @media (max-width: 1100px) {
         body {
           overflow: auto;
@@ -1176,6 +1418,22 @@
         .prompt {
           min-width: min(360px, calc(100% - 32px));
         }
+
+        .craft-modal {
+          padding: 10px;
+        }
+
+        .craft-card {
+          max-height: calc(100% - 8px);
+        }
+
+        .craft-row {
+          grid-template-columns: 1fr;
+        }
+
+        .craft-arrow {
+          min-height: 22px;
+        }
       }
     </style>
   </head>
@@ -1192,6 +1450,19 @@
           <b id="dialogueTitle"></b>
           <span id="dialogueText"></span>
         </div>
+        <section class="craft-modal" id="craftModal" hidden aria-label="裝備工作台兌換">
+          <div class="craft-card" role="dialog" aria-modal="true" aria-labelledby="craftTitle">
+            <div class="craft-header">
+              <div>
+                <h2 id="craftTitle">裝備工作台</h2>
+                <p>左邊確認需要的再生材料，右邊選擇要兌換的塑膠裝備或修補項目。</p>
+              </div>
+              <button class="craft-close" id="craftClose" type="button" aria-label="關閉工作台">×</button>
+            </div>
+            <div class="craft-material-summary" id="craftMaterialSummary"></div>
+            <div class="craft-list" id="craftRecipeList"></div>
+          </div>
+        </section>
         <section class="start" id="startOverlay">
           <div class="start-card">
             <div class="brand-row">
@@ -1323,6 +1594,10 @@
         const dialogueEl = document.getElementById("dialogue");
         const dialogueTitle = document.getElementById("dialogueTitle");
         const dialogueText = document.getElementById("dialogueText");
+        const craftModal = document.getElementById("craftModal");
+        const craftClose = document.getElementById("craftClose");
+        const craftMaterialSummary = document.getElementById("craftMaterialSummary");
+        const craftRecipeList = document.getElementById("craftRecipeList");
         const sceneLine = document.getElementById("sceneLine");
         const sideBody = document.getElementById("sideBody");
         const logEl = document.getElementById("log");
@@ -1452,6 +1727,191 @@
           { id: "metal", label: "金屬" },
           { id: "glass", label: "玻璃" },
           { id: "general", label: "不可回收/一般" },
+        ];
+
+        const materialDefs = [
+          { id: "plasticFiber", name: "再生聚酯纖維", from: "plastic", yield: 2, hint: "寶特瓶可清洗、切片、抽絲，作為衣料與修補布料。" },
+          { id: "paperPulp", name: "再生紙漿板", from: "paper", yield: 2, hint: "乾淨紙類可打漿壓板，製作紀錄板與包裝緩衝材。" },
+          { id: "metalParts", name: "鋁合金扣件", from: "metal", yield: 2, hint: "鋁罐回收熔製後，可做成輕量扣件與工具零件。" },
+          { id: "glassLens", name: "玻璃觀察鏡片", from: "glass", yield: 2, hint: "玻璃瓶可再製成觀察鏡片、水樣片與耐磨飾片。" },
+          { id: "safeResidue", name: "安全封存殘渣", from: "general", yield: 1, hint: "髒污袋、菸蒂不適合做裝備材料，只能安全封存與減量。" },
+        ];
+
+        const equipmentSlotDefs = [
+          { slot: "head", label: "帽子/頭盔", noun: "頭盔", key: "Helmet", baseCost: 4 },
+          { slot: "chest", label: "衣服/胸甲", noun: "胸甲", key: "Chest", baseCost: 8 },
+          { slot: "legs", label: "褲子", noun: "護腿", key: "Pants", baseCost: 7 },
+          { slot: "feet", label: "鞋子", noun: "靴", key: "Boots", baseCost: 4 },
+        ];
+
+        const plasticEquipmentVariants = [
+          { id: "clear", label: "透明 PET", tier: 1, costMult: 1, iconPrefix: "equipPlasticClear", extra: {} },
+          { id: "ocean", label: "海洋藍塑", tier: 2, costMult: 1.45, iconPrefix: "equipPlasticOcean", extra: { glassLens: 1 } },
+          { id: "green", label: "綠瓶再生", tier: 3, costMult: 1.85, iconPrefix: "equipPlasticGreen", extra: { paperPulp: 2 } },
+          { id: "reinforced", label: "強化黑塑", tier: 4, costMult: 2.35, iconPrefix: "equipPlasticReinforced", extra: { metalParts: 2 } },
+        ];
+
+        function equipmentStatsFor(slot, tier) {
+          if (slot === "head") return { questionDamage: tier * 2, trust: tier >= 3 ? 1 : 0, questNotes: tier >= 4 ? 4 : tier >= 2 ? 2 : 0 };
+          if (slot === "chest") return { maxHealth: 4 + tier * 4, damageReduction: tier * 0.04 };
+          if (slot === "legs") return { comboDamage: tier, wrongAnswerDamage: Math.max(1, Math.floor(tier / 2)) };
+          if (slot === "feet") return { speed: 0.04 + tier * 0.02 };
+          return {};
+        }
+
+        function equipmentRecipeFor(slotDef, variant) {
+          const recipe = { plasticFiber: Math.max(1, Math.ceil(slotDef.baseCost * variant.costMult)) };
+          for (const [id, count] of Object.entries(variant.extra || {})) recipe[id] = (recipe[id] || 0) + count;
+          return recipe;
+        }
+
+        function equipmentEffectText(slot, stats) {
+          const parts = [];
+          if (stats.questionDamage) parts.push(`問答正確傷害 +${stats.questionDamage}`);
+          if (stats.trust) parts.push(`觀察信任 +${stats.trust}`);
+          if (stats.questNotes) parts.push(`謠言線索筆記 +${stats.questNotes}`);
+          if (stats.maxHealth) parts.push(`最大體力 +${stats.maxHealth}`);
+          if (stats.damageReduction) parts.push(`受到傷害 -${Math.round(stats.damageReduction * 100)}%`);
+          if (stats.comboDamage) parts.push(`連答加成 +${stats.comboDamage}`);
+          if (stats.wrongAnswerDamage) parts.push(`答錯保底傷害 +${stats.wrongAnswerDamage}`);
+          if (stats.speed) parts.push(`跑速 +${Math.round(stats.speed * 100)}%`);
+          return `${slot.label}裝備。${parts.join("、")}。`;
+        }
+
+        const equipmentDefs = plasticEquipmentVariants.flatMap((variant) =>
+          equipmentSlotDefs.map((slotDef) => {
+            const stats = equipmentStatsFor(slotDef.slot, variant.tier);
+            return {
+              id: `${variant.id}${slotDef.key}`,
+              name: `${variant.label}${slotDef.noun}`,
+              slot: slotDef.slot,
+              slotLabel: slotDef.label,
+              variant: variant.id,
+              tier: variant.tier,
+              icon: `${variant.iconPrefix}${slotDef.key}`,
+              recipe: equipmentRecipeFor(slotDef, variant),
+              stats,
+              effect: equipmentEffectText(slotDef, stats),
+            };
+          }),
+        );
+
+        const trueFalseQuestionSeeds = [
+          { tag: "paper", fact: "乾淨、乾燥的紙類通常比沾滿油污的紙類更適合回收。", myth: "只要是紙做的餐盒，沾油也一定能直接回收。", explain: "油污會降低紙類再製品質，乾淨與乾燥是回收前的重要條件。" },
+          { tag: "plastic", fact: "寶特瓶清洗後可以再製成再生聚酯纖維。", myth: "寶特瓶回收後只能再做成寶特瓶，不能做成衣物材料。", explain: "PET 寶特瓶可再製成纖維、布料或其他再生塑膠產品。" },
+          { tag: "plastic", fact: "生分解塑膠需要合適條件處理，不代表可以丟進自然環境。", myth: "標示生分解的塑膠丟到山林或海邊就會自己無害消失。", explain: "分解需要溫度、濕度、微生物與時間條件，亂丟仍會造成污染。" },
+          { tag: "metal", fact: "鋁罐沖洗後回收，可降低異味與污染其他回收物。", myth: "金屬罐不能重複回收，所以丟一般垃圾比較好。", explain: "金屬是高價值回收材料，清潔後能提升再利用品質。" },
+          { tag: "glass", fact: "玻璃可回收，但重複使用或在地回充常常更能減少資源消耗。", myth: "玻璃瓶無論運輸多遠，都一定比其他包材更低碳。", explain: "玻璃很重，運輸和清洗成本也要納入生命週期判斷。" },
+          { tag: "general", fact: "菸蒂和髒污塑膠袋通常不適合丟入一般資源回收。", myth: "只要是塑膠袋，髒污或混雜內容物也都能直接回收。", explain: "髒污與混雜會污染回收流，減量和正確丟棄很重要。" },
+          { tag: "wildlife", fact: "觀察野生動物時保持距離，通常比餵食更能保護牠們。", myth: "餵食野生動物能幫助牠們親近人類，是友善生態行為。", explain: "餵食會改變動物行為，增加疾病、衝突和誤食風險。" },
+          { tag: "climate", fact: "天氣是短期狀態，氣候是長期趨勢。", myth: "某一天很冷，就能證明全球暖化不存在。", explain: "單日天氣不能代表長期氣候趨勢，需看多年資料。" },
+          { tag: "energy", fact: "太陽能板含玻璃、鋁框與部分金屬，設計良好時可以回收。", myth: "太陽能板完全不能回收，所以一定不算永續能源。", explain: "再生能源仍需要回收制度，但不能用單一缺點否定整體減碳效益。" },
+          { tag: "energy", fact: "電動車沒有排氣管廢氣，但仍要考量電力來源與電池回收。", myth: "電動車完全沒有任何環境影響。", explain: "永續要看生命週期，包含製造、使用能源與回收。" },
+          { tag: "plastic", fact: "回收標誌或塑膠號碼不等於當地一定收。", myth: "只要看到回收三角標誌，任何地方都一定能回收。", explain: "實際可回收項目取決於地方制度、處理設備與市場需求。" },
+          { tag: "general", fact: "電池應進入專門回收管道，不適合丟一般垃圾。", myth: "小電池體積很小，丟一般垃圾不會造成環境風險。", explain: "電池可能含金屬與電解液，錯誤丟棄會提高污染與火災風險。" },
+          { tag: "policy", fact: "碳中和宣稱需要看範圍、減量方法與第三方驗證。", myth: "產品寫著環保或碳中和，就一定已經完整減碳。", explain: "清楚邊界、數據與驗證比模糊標語更可信。" },
+          { tag: "gear", fact: "維修、再使用與延長壽命，通常比直接淘汰更節省資源。", myth: "只要能回收，東西用壞就立刻丟掉換新也很永續。", explain: "回收仍需能源與處理，減量與維修通常排在更前面。" },
+          { tag: "water", fact: "濕地能滯洪、過濾部分污染物，也提供許多物種棲地。", myth: "濕地只是沒用的荒地，填掉開發一定比較有價值。", explain: "濕地具有水文調節、生物多樣性與環境教育價值。" },
+          { tag: "wildlife", fact: "都市樹木能降溫、截留雨水，也提供鳥類與昆蟲棲地。", myth: "把城市裡的植被全部修到很低，對生物和人都一定更安全。", explain: "植被管理要兼顧視線、安全、遮蔭與棲地功能。" },
+          { tag: "wildlife", fact: "原生植物通常更能支持在地昆蟲、鳥類與其他生物。", myth: "所有外來植物都一定有害，所有原生植物都不需要管理。", explain: "重點是是否入侵、是否適地適種，以及後續管理。" },
+          { tag: "energy", fact: "LED 省電，但夜間照明仍要控制方向、亮度和時間。", myth: "路燈越亮越好，對夜行生物完全沒有影響。", explain: "光害會干擾昆蟲、鳥類、兩棲類與夜行動物。" },
+          { tag: "water", fact: "標示可沖散的濕紙巾仍可能堵塞管線，不適合隨意沖入馬桶。", myth: "濕紙巾寫可沖散，就代表對下水道和水域完全無害。", explain: "許多濕紙巾分解速度慢，會增加污水系統負擔。" },
+          { tag: "water", fact: "合成纖維衣物洗滌時可能釋放微纖維。", myth: "衣服不是垃圾，所以洗衣排水不可能和海洋微塑膠有關。", explain: "微纖維可經排水進入環境，洗衣濾網與耐穿衣物能降低影響。" },
+          { tag: "climate", fact: "在地食材有時能減少運輸，但生產方式也很重要。", myth: "只要是本地產品，碳足跡一定比所有進口品低。", explain: "溫室、冷藏、肥料、運輸方式都會影響總足跡。" },
+          { tag: "water", fact: "即使常下雨，節水仍能降低抽水、淨水與熱水能源消耗。", myth: "下雨多的地方不需要節約用水。", explain: "水的取得、處理與加熱都需要能源與基礎設施。" },
+          { tag: "plastic", fact: "減少過度包裝通常比事後回收更能降低資源消耗。", myth: "只要包裝能回收，包很多層也不會增加環境負擔。", explain: "源頭減量能直接減少材料、運輸與處理成本。" },
+          { tag: "gear", fact: "可重複用品需要使用足夠次數，才容易攤平製造成本。", myth: "買了可重複杯袋，即使只用一次也一定比較環保。", explain: "耐用、常用、好清洗，才是重複用品發揮效益的關鍵。" },
+          { tag: "paper", fact: "回收污染會讓整批材料降級或被退回。", myth: "廚餘和回收物混在一起，處理廠一定能全部分開。", explain: "分類越乾淨，後端回收越有效率，品質也越高。" },
+          { tag: "energy", fact: "電子廢棄物含可回收金屬，也可能含有害物質。", myth: "舊手機、充電線和耳機都可以直接丟一般垃圾。", explain: "電子廢棄物應走專門回收，能回收資源並降低污染。" },
+          { tag: "policy", fact: "竹、木、紙等天然材料也要看來源、加工與使用壽命。", myth: "只要材料天然，就一定比所有人造材料永續。", explain: "永續不是只看材料名稱，也要看來源、壽命與處理方式。" },
+          { tag: "water", fact: "陸地垃圾可能經排水溝、河川進入海洋。", myth: "內陸城市的路邊垃圾不可能影響海洋。", explain: "雨水會把垃圾帶入排水系統，再流向河川與海岸。" },
+          { tag: "wildlife", fact: "生物多樣性越高，生態系通常越能面對擾動。", myth: "只種一種長很快的樹，就一定能修復完整生態系。", explain: "單一物種造林可能脆弱，復育要重視多樣性和棲地結構。" },
+          { tag: "policy", fact: "可維修、可拆解和材料透明能提高產品永續性。", myth: "品牌說自己很綠，就比維修零件、耐用設計和透明資料更重要。", explain: "可驗證的設計和資料，比單純口號更可靠。" },
+        ];
+
+        const choiceQuestionSeeds = [
+          { tag: "paper", question: "油污很重的紙餐盒最適合怎麼處理？", options: ["直接進紙類回收", "先判斷能否清潔，嚴重油污改一般垃圾", "丟進溪流讓它分解", "混進金屬回收"], answer: 1, explain: "油污會影響紙類再製，嚴重污染時應避免污染整批回收物。" },
+          { tag: "plastic", question: "寶特瓶要再利用成衣物材料，最關鍵的前處理是什麼？", options: ["清洗並去除明顯污染", "裝滿水再丟", "和廚餘一起壓縮", "打碎後灑在土裡"], answer: 0, explain: "乾淨 PET 才容易再製成纖維，污染會降低品質。" },
+          { tag: "policy", question: "下列哪一種環保宣稱最值得相信？", options: ["只寫天然", "只寫友善地球", "有清楚範圍、數據與第三方驗證", "包裝是綠色"], answer: 2, explain: "可驗證的邊界、數據與認證能降低漂綠風險。" },
+          { tag: "water", question: "暴雨前最能降低垃圾入河風險的行動是？", options: ["把路邊垃圾和排水口周邊先清掉", "把垃圾推到草叢裡", "等雨水把垃圾沖走", "只整理室內桌面"], answer: 0, explain: "暴雨逕流會把垃圾帶進排水系統，源頭攔截最有效。" },
+          { tag: "general", question: "廢電池應該怎麼處理？", options: ["丟一般垃圾", "丟溪流", "交給電池回收或指定回收點", "剪開取出粉末"], answer: 2, explain: "電池有資源價值也有污染風險，需要專門回收。" },
+          { tag: "glass", question: "破玻璃最安全的處理原則是？", options: ["直接混入紙類", "包好並依地方規則交給指定回收或清運", "丟到沙灘", "放進廚餘桶"], answer: 1, explain: "破玻璃會割傷人員，也可能污染其他回收物流。" },
+          { tag: "gear", question: "裝備破損時，最符合永續精神的第一步是？", options: ["直接丟掉買新的", "評估能否修補再使用", "丟到河邊自然分解", "把它燒掉"], answer: 1, explain: "維修能延長壽命，通常比立刻淘汰更省資源。" },
+          { tag: "climate", question: "哪一個最能說明天氣與氣候的差異？", options: ["天氣看短期，氣候看長期趨勢", "天氣和氣候完全一樣", "氣候只看今天溫度", "下雨就代表沒有暖化"], answer: 0, explain: "氣候需要多年資料，單日天氣不能代表長期趨勢。" },
+          { tag: "plastic", question: "看到生分解塑膠杯，最正確的態度是？", options: ["可以丟山林", "可以丟海邊", "查明地方處理方式，不亂丟自然環境", "一定能進紙類回收"], answer: 2, explain: "生分解材料需要適當處理條件，亂丟仍是污染。" },
+          { tag: "gear", question: "可重複杯最需要什麼條件才能真的降低負擔？", options: ["只買不使用", "長期重複使用並妥善清洗", "每次都買新的", "用一次就丟"], answer: 1, explain: "重複用品要透過多次使用攤平製造成本。" },
+          { tag: "water", question: "濕地對社區最直接的生態服務之一是？", options: ["滯洪與提供棲地", "製造更多塑膠", "讓動物無法生活", "讓水完全消失"], answer: 0, explain: "濕地能緩衝洪水、過濾污染並支持多樣生物。" },
+          { tag: "wildlife", question: "遇到野生動物時，最好的互動方式是？", options: ["靠近自拍", "餵食吸引牠", "保持距離觀察並記錄", "追逐讓牠運動"], answer: 2, explain: "保持距離能降低壓力，也避免動物依賴人類食物。" },
+          { tag: "energy", question: "改善夜間光害時，路燈應優先調整什麼？", options: ["越亮越好", "方向、亮度與開啟時間", "照向樹冠和水面", "全部閃爍"], answer: 1, explain: "遮光、定時與降低不必要亮度能兼顧安全和生態。" },
+          { tag: "energy", question: "舊手機和充電線最好怎麼處理？", options: ["交給電子廢棄物回收", "丟進廚餘桶", "埋在土裡", "丟進紙類回收"], answer: 0, explain: "電子廢棄物含可回收金屬，也可能有有害物質。" },
+          { tag: "metal", question: "鋁罐通常屬於哪一類回收？", options: ["紙類", "金屬", "玻璃", "廚餘"], answer: 1, explain: "鋁罐是金屬回收，清潔後回收價值更高。" },
+          { tag: "paper", question: "紙類回收最怕混入什麼？", options: ["乾淨紙板", "油污和廚餘殘渣", "乾燥書頁", "未使用紙袋"], answer: 1, explain: "食物與油污會讓紙漿品質下降，甚至污染整批材料。" },
+          { tag: "policy", question: "看到產品標示 100% 可回收，下一步最應該確認什麼？", options: ["當地是否真的有收與處理方式", "包裝是不是綠色", "價格是不是更高", "字體是不是很大"], answer: 0, explain: "可回收性要搭配地方制度和後端處理能力才成立。" },
+          { tag: "water", question: "內陸路邊垃圾可能如何進入海洋？", options: ["經排水溝和河川流向海岸", "自己瞬間消失", "變成雲", "只會停在原地"], answer: 0, explain: "雨水逕流會把垃圾帶進排水系統與河川。" },
+          { tag: "energy", question: "評估電動車是否更永續，不能忽略哪一項？", options: ["電力來源與電池回收", "車身顏色", "廣告音樂", "車牌字體"], answer: 0, explain: "使用端排放、電力來源、製造與回收都屬於生命週期。" },
+          { tag: "energy", question: "太陽能板退役時，下列哪一項最合理？", options: ["完全不處理", "建立回收流程回收玻璃、鋁框與金屬", "丟到海裡", "燒掉取得能量"], answer: 1, explain: "再生能源設備也需要負責任的退役和回收制度。" },
+          { tag: "water", question: "水樣濁度突然升高時，巡查員應先做什麼？", options: ["紀錄位置並查找上游擾動或排水來源", "直接喝一口", "把水倒進回收桶", "假裝沒看到"], answer: 0, explain: "水質變化需要紀錄與追蹤來源，才能有效改善。" },
+          { tag: "wildlife", question: "移除外來入侵植物時，最好的做法是？", options: ["辨識後有計畫移除並補植適合植物", "把所有植物拔光", "只看花色決定", "把種子撒到濕地"], answer: 0, explain: "入侵種管理要精準，並搭配棲地復育。" },
+          { tag: "wildlife", question: "靠近動物觀察時，哪個動作最友善？", options: ["快速衝刺", "降低速度和音量", "丟食物", "開強光照射"], answer: 1, explain: "低干擾觀察能增加信任，也減少動物壓力。" },
+          { tag: "wildlife", question: "想讓島上動物變多，最直接的基礎行動是？", options: ["累積更多路邊垃圾", "降低污染並維持棲地品質", "增加噪音", "餵食所有動物"], answer: 1, explain: "乾淨棲地和低污染會提高動物出現機率。" },
+          { tag: "policy", question: "下列哪一個最像漂綠警訊？", options: ["有完整數據", "有第三方驗證", "只有模糊的自然、純淨、友善字眼", "說明可維修年限"], answer: 2, explain: "模糊形容詞若缺乏證據，常無法證明實際環境效益。" },
+          { tag: "gear", question: "選購新工具時，哪個特性最有助於永續？", options: ["可維修且有零件", "只能用一次", "外殼很亮但不可拆", "沒有任何材料資訊"], answer: 0, explain: "可維修設計能延長壽命，也方便材料回收。" },
+          { tag: "glass", question: "玻璃瓶在哪種情境下特別有優勢？", options: ["可在地重複回充使用", "每次長距離單程運輸", "破碎混入紙類", "丟進一般垃圾"], answer: 0, explain: "玻璃耐用，若能在地重複使用，效益會提高。" },
+          { tag: "water", question: "降低合成衣物微纖維排放的方法之一是？", options: ["使用洗衣濾網或減少不必要洗滌", "把衣服剪碎沖掉", "每次洗衣都加更多塑膠", "把洗衣水倒進溪流"], answer: 0, explain: "濾網、耐穿衣物與合理洗滌能減少微纖維進入水域。" },
+          { tag: "gear", question: "永續行動的優先順序通常最前面是？", options: ["源頭減量與再使用", "先製造大量垃圾再回收", "只靠焚化", "完全不分類"], answer: 0, explain: "減量、再使用、維修通常比末端回收更優先。" },
+          { tag: "water", question: "雨水沖刷道路後形成的污染稱為什麼概念？", options: ["暴雨逕流污染", "紙漿回收", "生物發光", "電池充電"], answer: 0, explain: "暴雨逕流會把油污、泥沙與垃圾帶入水域。" },
+          { tag: "plastic", question: "塑膠分類時，哪個觀念最正確？", options: ["每種塑膠都一樣好回收", "先看地方規則與清潔狀態", "髒污越多越好", "混越多類越方便"], answer: 1, explain: "材質、污染程度和地方制度都會影響可回收性。" },
+          { tag: "paper", question: "飲料紙盒和吸管的處理，最合理的思考方式是？", options: ["依地方規則分開或清潔後處理", "全部丟水溝", "和電池混在一起", "越濕越好回收"], answer: 0, explain: "複合包材與附件要依地方回收規則處理，並避免污染。" },
+          { tag: "plastic", question: "沒有工業堆肥管道時，堆肥性餐具通常應怎麼判斷？", options: ["查地方規則，不能自行丟自然環境", "丟進森林", "丟進海邊", "直接混進玻璃"], answer: 0, explain: "堆肥性材料需要適當設施，缺乏管道時不能當作自然可消失。" },
+          { tag: "gear", question: "社區修理活動最能達成什麼？", options: ["延長物品壽命並分享維修知識", "增加一次性垃圾", "讓所有東西更快壞", "讓回收分類失效"], answer: 0, explain: "修理活動能減少淘汰，讓知識和工具被更多人使用。" },
+          { tag: "wildlife", question: "復育林地時，哪個選擇更穩健？", options: ["多樣原生樹種與分層棲地", "只種單一快速樹種", "完全不管水土", "把垃圾埋進樹穴"], answer: 0, explain: "多樣、適地適種的復育較能支持完整生態系。" },
+          { tag: "climate", question: "日常飲食減碳常見做法之一是？", options: ["減少高排放食材浪費並增加植物性選擇", "把食物浪費當作堆肥就好", "只看包裝顏色", "每餐都丟掉一半"], answer: 0, explain: "減少浪費和調整飲食結構都能降低足跡。" },
+          { tag: "water", question: "家中最直接的節水行動之一是？", options: ["修漏水並使用省水設備", "讓水龍頭整天開著", "把乾淨水倒掉", "只在下雨天浪費水"], answer: 0, explain: "修漏水和省水設備能直接減少水與能源消耗。" },
+          { tag: "policy", question: "天然兩個字最能代表什麼？", options: ["一種宣稱，仍需看來源和生命週期", "一定零污染", "一定可回收", "一定沒有土地影響"], answer: 0, explain: "天然不等於永續，仍要看生產、加工、運輸和處理。" },
+          { tag: "paper", question: "把回收物清潔乾燥的主要理由是？", options: ["提高回收品質並降低污染", "讓垃圾怪更強", "增加異味", "讓動物誤食"], answer: 0, explain: "清潔乾燥能避免污染整批回收物流。" },
+          { tag: "gear", question: "同類產品中，哪個通常較永續？", options: ["耐用、可修、零件容易取得", "便宜但一天就壞", "無法拆解且無材料資訊", "只能一次性使用"], answer: 0, explain: "耐用與可修性會延長使用壽命，降低替換頻率。" },
+          { tag: "climate", question: "城市熱島可透過哪種方式緩解？", options: ["增加遮蔭、透水鋪面與植栽", "移除所有樹木", "只鋪深色硬鋪面", "增加廢熱"], answer: 0, explain: "綠蔭和透水設計能降低地表溫度並改善雨水管理。" },
+          { tag: "metal", question: "鋁罐回收再製常見用途是？", options: ["輕量金屬零件或新鋁材", "土壤肥料", "野生動物食物", "紙漿纖維"], answer: 0, explain: "鋁材可回收再製為新鋁材、扣件或工具零件。" },
+          { tag: "glass", question: "玻璃回收前最需要注意什麼？", options: ["避免破裂並依規則分流", "混入廚餘提高重量", "丟到馬路上壓碎", "和電池一起裝袋"], answer: 0, explain: "玻璃破碎有安全風險，也會影響其他回收物處理。" },
+          { tag: "wildlife", question: "螢火蟲出現變少，可能與哪一項有關？", options: ["光害、水質與棲地變化", "回收點數太多", "紙張太乾淨", "鋁罐太輕"], answer: 0, explain: "螢火蟲受光害、水質與棲地條件影響明顯。" },
+          { tag: "water", question: "河岸垃圾若放太久，最可能造成什麼？", options: ["被雨水帶入水域並影響生物", "自動變成森林", "讓水質必定變好", "讓玻璃變成魚食"], answer: 0, explain: "垃圾會破碎、漂移或被誤食，應及早清理。" },
+          { tag: "energy", question: "節能設備之外，還能靠什麼降低用電？", options: ["調整使用習慣與避免待機浪費", "開著不用的燈", "讓冷氣門窗全開", "越耗電越環保"], answer: 0, explain: "設備效率和行為改變都能減少能源消耗。" },
+          { tag: "policy", question: "永續採購最應避免哪種判斷？", options: ["只看單一標語就相信", "查證耐用度", "看維修性", "看材料來源"], answer: 0, explain: "單一標語不足以證明永續，需要多面向確認。" },
+          { tag: "plastic", question: "回收塑膠再製成衣料時，仍應注意什麼？", options: ["耐用度與洗滌微纖維管理", "讓衣服一次性使用", "洗衣水直接排入溪流", "完全不用清潔"], answer: 0, explain: "再生材料也要搭配耐用設計與使用階段管理。" },
+          { tag: "gear", question: "使用再生材料製作裝備時，最適合的觀念是？", options: ["讓材料回到長壽命用途", "做成很快丟棄的一次性物品", "只追求外觀", "忽略維修"], answer: 0, explain: "再生材料用在耐用、可修的產品上，效益更穩定。" },
+          { tag: "wildlife", question: "保護生物多樣性時，圖鑑紀錄有什麼價值？", options: ["幫助追蹤物種與棲地變化", "只是裝飾，沒有用途", "會讓動物一定消失", "能取代所有棲地管理"], answer: 0, explain: "長期紀錄能協助辨識變化和安排保育行動。" },
+        ];
+
+        const battleQuestionBank = [
+          ...trueFalseQuestionSeeds.flatMap((item, index) => [
+            {
+              id: `tf-${index + 1}-fact`,
+              type: "是非題",
+              prompt: item.fact,
+              options: ["是", "否"],
+              answer: 0,
+              tag: item.tag,
+              explain: item.explain,
+            },
+            {
+              id: `tf-${index + 1}-myth`,
+              type: "是非題",
+              prompt: item.myth,
+              options: ["是", "否"],
+              answer: 1,
+              tag: item.tag,
+              explain: item.explain,
+            },
+          ]),
+          ...choiceQuestionSeeds.map((item, index) => ({
+            id: `choice-${index + 1}`,
+            type: "選擇題",
+            prompt: item.question,
+            options: item.options,
+            answer: item.answer,
+            tag: item.tag,
+            explain: item.explain,
+          })),
         ];
 
         const animalDefs = [
@@ -1765,6 +2225,12 @@
           { id: "樹蛙濕地", text: "樹蛙聲景會反映濕地水分、植被與夜間光害，是小型濕地健康的線索。" },
           { id: "海龜沙洲", text: "海漂塑膠與夜間強光會干擾海龜靠岸；沙洲巡查要保持距離與低亮度。" },
           { id: "黑鳶空域", text: "黑鳶會利用河口與海岸上升氣流，乾淨覓食地與安全電線能降低風險。" },
+          { id: "bioplastic", text: "生分解塑膠需要特定處理條件；丟進野外仍是污染。" },
+          { id: "recycling", text: "乾淨分類能提高再利用率，污染混雜才會讓材料降級或退回。" },
+          { id: "wildfeeding", text: "餵食野生動物會增加誤食、疾病與人獸衝突，低干擾觀察更友善。" },
+          { id: "climateWeather", text: "天氣是短期，氣候是長期趨勢，不能用一天冷熱判斷暖化。" },
+          { id: "solarEv", text: "新能源也需要回收制度，但應用完整生命週期評估效益。" },
+          { id: "greenwash", text: "永續宣稱要看來源、壽命、數據和驗證，不能只看漂亮詞語。" },
         ];
 
         const MISSION_DEFS = [
@@ -1821,6 +2287,81 @@
             goal: 160,
             reward: { exp: 30, points: 40 },
             perk: "森循島守護者：主循環完成",
+          },
+        ];
+
+        const RUMOR_QUESTS = [
+          {
+            id: "bioplastic",
+            title: "迷思：生分解塑膠可以丟野外",
+            rumor: "有人說生分解塑膠丟到山林和海邊會自己消失。",
+            conclusion: "破解：生分解塑膠需要合適處理條件，亂丟自然環境仍是垃圾。",
+            reward: { exp: 18, points: 22 },
+            evidence: [
+              { zone: "coast", sprite: "sample", label: "裂解外帶杯", prompt: "檢查杯身標示", text: "杯身寫著可分解，但旁邊仍有碎片和動物啄痕，表示它沒有在海岸環境快速消失。" },
+              { zone: "hub", sprite: "cone", label: "處理條件表", prompt: "閱讀條件表", text: "資料表寫著分解需要溫度、濕度與微生物條件，不是丟到戶外就完成。" },
+              { zone: "forest", sprite: "trash", label: "林下碎片", prompt: "採集碎片", text: "碎片卡在落葉層中，提醒你：材料名稱不能取代正確處理。" },
+            ],
+          },
+          {
+            id: "recycling",
+            title: "迷思：回收都只是做樣子",
+            rumor: "社區流傳資源回收最後都會混在一起，分類沒有用。",
+            conclusion: "破解：乾淨分類能提高再利用率，污染和混雜才會讓材料降級。",
+            reward: { exp: 20, points: 24 },
+            evidence: [
+              { zone: "hub", sprite: "recycleYard", label: "分類磅單", prompt: "查看磅單", text: "回收場記錄了紙、塑膠、金屬和玻璃的不同重量，乾淨分類會分流處理。" },
+              { zone: "river", sprite: "drain", label: "污染退貨單", prompt: "讀取退貨原因", text: "退貨單寫著油污紙餐盒混入紙類，導致整包紙材降級。" },
+              { zone: "southMeadow", sprite: "itemMetal", label: "鋁材樣本", prompt: "確認再製樣本", text: "鋁罐已被壓成再製金屬料，分類正確時資源真的能回到材料循環。" },
+            ],
+          },
+          {
+            id: "wildfeeding",
+            title: "迷思：餵食野生動物是善意",
+            rumor: "有人說餵動物能讓牠們活得更好，也能更親近人。",
+            conclusion: "破解：餵食會改變行為、增加衝突與誤食風險，低干擾觀察才是友善。",
+            reward: { exp: 20, points: 20 },
+            evidence: [
+              { zone: "meadow", sprite: "itemGeneral", label: "零食包裝", prompt: "檢查包裝", text: "包裝旁有動物咬痕。人類食物和包裝都可能讓動物生病或誤食。" },
+              { zone: "wetland", sprite: "sample", label: "行為紀錄本", prompt: "翻閱紀錄", text: "紀錄顯示被餵食的動物更常靠近人和道路，危險反而提高。" },
+              { zone: "ridge", sprite: "blackBear", label: "遠距觀察點", prompt: "校準望遠鏡", text: "保持距離也能完成觀察，動物不用靠近人就能被理解與保護。" },
+            ],
+          },
+          {
+            id: "climateWeather",
+            title: "迷思：今天冷就沒有暖化",
+            rumor: "今天山區偏冷，居民說這代表氣候變遷不存在。",
+            conclusion: "破解：天氣是短期，氣候是多年趨勢，不能用一天溫度否定長期變化。",
+            reward: { exp: 22, points: 20 },
+            evidence: [
+              { zone: "hub", sprite: "weatherOvercast", label: "十年溫度圖", prompt: "讀取資料", text: "折線圖有上下波動，但長期平均仍逐步上升。" },
+              { zone: "ridge", sprite: "weatherFog", label: "山區日誌", prompt: "比對日誌", text: "同一個月也會有冷暖差異，單日天氣不能代表氣候。" },
+              { zone: "wetland", sprite: "sample", label: "物候紀錄", prompt: "查看開花日期", text: "開花與昆蟲出現時間改變，這些長期生態線索比單日體感更可靠。" },
+            ],
+          },
+          {
+            id: "solarEv",
+            title: "迷思：新能源設備都不永續",
+            rumor: "有人說太陽能板和電池會產生廢棄物，所以一定比化石能源更糟。",
+            conclusion: "破解：新能源也要回收制度，但應看完整生命週期、減碳效益和退役管理。",
+            reward: { exp: 24, points: 26 },
+            evidence: [
+              { zone: "hub", sprite: "buildingDataLab", label: "生命週期卡", prompt: "閱讀卡片", text: "卡片把製造、使用、維修與回收放在同一張圖，比單一缺點更完整。" },
+              { zone: "coast", sprite: "itemGlass", label: "太陽能玻璃片", prompt: "檢查材料", text: "退役模組中有玻璃、鋁框與金屬，建立回收流程能回收部分資源。" },
+              { zone: "southMeadow", sprite: "itemMetal", label: "電池回收箱", prompt: "確認標籤", text: "電池需要專門回收，負責任的回收制度是新能源永續的一部分。" },
+            ],
+          },
+          {
+            id: "greenwash",
+            title: "迷思：寫天然就一定環保",
+            rumor: "商店新品只寫天然、友善、純淨，大家就以為一定永續。",
+            conclusion: "破解：永續宣稱要看來源、壽命、維修、數據與驗證，不是只看漂亮詞語。",
+            reward: { exp: 26, points: 30 },
+            evidence: [
+              { zone: "hub", sprite: "sample", label: "模糊標語牌", prompt: "檢查標語", text: "標語只有天然和友善，沒有材料來源、減量數據或回收方式。" },
+              { zone: "hub", sprite: "itemPaper", label: "維修零件表", prompt: "比對零件表", text: "有零件、可拆解、能修補，比只寫口號更能延長產品壽命。" },
+              { zone: "hub", sprite: "sample", label: "第三方驗證章", prompt: "核對驗證", text: "有效宣稱會說清楚範圍、方法和驗證來源，才能避免漂綠。" },
+            ],
           },
         ];
 
@@ -1940,6 +2481,22 @@
           itemMetal: "itemMetal.png",
           itemGlass: "itemGlass.png",
           itemGeneral: "itemGeneral.png",
+          equipPlasticClearHelmet: "equipPlasticClearHelmet.png",
+          equipPlasticClearChest: "equipPlasticClearChest.png",
+          equipPlasticClearPants: "equipPlasticClearPants.png",
+          equipPlasticClearBoots: "equipPlasticClearBoots.png",
+          equipPlasticOceanHelmet: "equipPlasticOceanHelmet.png",
+          equipPlasticOceanChest: "equipPlasticOceanChest.png",
+          equipPlasticOceanPants: "equipPlasticOceanPants.png",
+          equipPlasticOceanBoots: "equipPlasticOceanBoots.png",
+          equipPlasticGreenHelmet: "equipPlasticGreenHelmet.png",
+          equipPlasticGreenChest: "equipPlasticGreenChest.png",
+          equipPlasticGreenPants: "equipPlasticGreenPants.png",
+          equipPlasticGreenBoots: "equipPlasticGreenBoots.png",
+          equipPlasticReinforcedHelmet: "equipPlasticReinforcedHelmet.png",
+          equipPlasticReinforcedChest: "equipPlasticReinforcedChest.png",
+          equipPlasticReinforcedPants: "equipPlasticReinforcedPants.png",
+          equipPlasticReinforcedBoots: "equipPlasticReinforcedBoots.png",
           weatherSunny: "weatherSunny.png",
           weatherCloudy: "weatherCloudy.png",
           weatherRain: "weatherRain.png",
@@ -2197,19 +2754,23 @@
           workshop: [
             {
               id: "toolBench",
-              label: "工具工作台",
-              prompt: "整備工具",
+              label: "再生材料機",
+              prompt: "拆解回收物",
               rect: { x: 104, y: 250, w: 228, h: 86 },
               marker: { x: 218, y: 354, w: 118, h: 42 },
-              effect: "toolBench",
+              effect: "materialRecycler",
+              cost: 0,
+              repeatable: true,
             },
             {
               id: "sortingCart",
-              label: "分類推車",
-              prompt: "整理標籤",
+              label: "裝備工作台",
+              prompt: "製作/修補",
               rect: { x: 432, y: 236, w: 244, h: 90 },
               marker: { x: 554, y: 342, w: 118, h: 42 },
-              effect: "sortingCart",
+              effect: "equipmentBench",
+              cost: 0,
+              repeatable: true,
             },
             {
               id: "supplyLocker",
@@ -2294,10 +2855,15 @@
           monsters: [],
           npcs: [],
           backpack: Object.fromEntries(trashTypes.map((type) => [type.id, 0])),
+          materials: Object.fromEntries(materialDefs.map((material) => [material.id, 0])),
+          equipment: Object.fromEntries(equipmentDefs.map((gear) => [gear.id, { crafted: false, durability: 0 }])),
           recycleStats: { played: 0, perfect: 0 },
           indoorActions: {},
           stationPrep: { day: 1, fieldBonus: 0, animalTrustBonus: 0, recycleBonus: 0 },
           stats: { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 },
+          questionStats: { answered: 0, correct: 0 },
+          mainQuest: { index: 0, step: 0, completed: 0 },
+          questItems: [],
           completedMissions: {},
           progress: {},
           unlockedCards: {},
@@ -2307,6 +2873,7 @@
           fieldAction: null,
           battle: null,
           recycleGame: null,
+          crafting: null,
         };
 
         function assetUrl(name, fallback = "trash") {
@@ -2414,7 +2981,7 @@
             state.level += 1;
           }
           if (state.level >= MAX_PLAYER_LEVEL) state.exp = 0;
-          state.maxHealth = maxHealthForLevel(state.level);
+          applyEquipmentStats();
           state.health = clamp(Number(state.health) || state.maxHealth, 1, state.maxHealth);
         }
 
@@ -2427,7 +2994,7 @@
             state.exp -= expToNextLevel(state.level);
             const previousMax = state.maxHealth;
             state.level += 1;
-            state.maxHealth = maxHealthForLevel(state.level);
+            applyEquipmentStats();
             state.health = clamp(state.health + (state.maxHealth - previousMax), 1, state.maxHealth);
             leveled = true;
           }
@@ -2459,7 +3026,7 @@
           }
           state.level = level;
           state.exp = level >= MAX_PLAYER_LEVEL ? 0 : remaining;
-          state.maxHealth = maxHealthForLevel(state.level);
+          applyEquipmentStats();
           state.health = clamp(Number(state.health) || 0, 0, state.maxHealth);
         }
 
@@ -2513,6 +3080,111 @@
             for (let i = 0; i < count && items.length < limit; i++) items.push(type.id);
           }
           return items.sort(() => Math.random() - 0.5);
+        }
+
+        function materialDef(id) {
+          return materialDefs.find((material) => material.id === id) || materialDefs[0];
+        }
+
+        function materialIconName(id) {
+          const material = materialDef(id);
+          const source = trashTypes.find((type) => type.id === material.from);
+          return source?.icon || "itemPlastic";
+        }
+
+        function equipmentDef(id) {
+          return equipmentDefs.find((gear) => gear.id === id) || equipmentDefs[0];
+        }
+
+        function materialSummary() {
+          const parts = materialDefs
+            .map((material) => ({ material, count: state.materials[material.id] || 0 }))
+            .filter((item) => item.count > 0)
+            .map((item) => `${item.material.name} ${item.count}`);
+          return parts.length ? parts.join("、") : "尚未拆解回收材料。";
+        }
+
+        function hasMaterials(recipe) {
+          return Object.entries(recipe || {}).every(([id, count]) => (state.materials[id] || 0) >= count);
+        }
+
+        function spendMaterials(recipe) {
+          if (!hasMaterials(recipe)) return false;
+          for (const [id, count] of Object.entries(recipe || {})) {
+            state.materials[id] = Math.max(0, (state.materials[id] || 0) - count);
+          }
+          uiDirty = true;
+          return true;
+        }
+
+        function recipeText(recipe) {
+          return Object.entries(recipe || {})
+            .map(([id, count]) => `${materialDef(id).name} ${count}`)
+            .join("、");
+        }
+
+        function gearState(id) {
+          if (!state.equipment[id]) state.equipment[id] = { crafted: false, durability: 0 };
+          return state.equipment[id];
+        }
+
+        function gearActive(id) {
+          const gear = gearState(id);
+          return gear.crafted && gear.durability > 0;
+        }
+
+        function equippedGearBySlot() {
+          const equipped = {};
+          for (const gear of equipmentDefs) {
+            if (!gearActive(gear.id)) continue;
+            const current = equipped[gear.slot];
+            if (!current || gear.tier > current.tier || (gear.tier === current.tier && gearState(gear.id).durability > gearState(current.id).durability)) {
+              equipped[gear.slot] = gear;
+            }
+          }
+          return equipped;
+        }
+
+        function equippedGearList() {
+          const bySlot = equippedGearBySlot();
+          return equipmentSlotDefs.map((slot) => bySlot[slot.slot]).filter(Boolean);
+        }
+
+        function equipmentBonus(stat) {
+          return equippedGearList().reduce((sum, gear) => sum + (gear.stats?.[stat] || 0), 0);
+        }
+
+        function equippedGearLabel(slot) {
+          const gear = equippedGearBySlot()[slot.slot];
+          return gear ? `${gear.name} ${gearState(gear.id).durability}%` : `${slot.label}未裝備`;
+        }
+
+        function activeGearCount() {
+          return equipmentDefs.filter((gear) => gearActive(gear.id)).length;
+        }
+
+        function gearSummary() {
+          const rows = equipmentDefs
+            .filter((gear) => gearState(gear.id).crafted)
+            .map((gear) => `${gear.name} ${gearState(gear.id).durability}%`);
+          return rows.length ? rows.join("、") : "尚未製作裝備。";
+        }
+
+        function degradeGear(amount = 1) {
+          for (const gear of equipmentDefs) {
+            const item = gearState(gear.id);
+            if (!item.crafted || item.durability <= 0) continue;
+            item.durability = clamp(item.durability - amount, 0, 100);
+          }
+          applyEquipmentStats();
+          uiDirty = true;
+        }
+
+        function applyEquipmentStats() {
+          const levelMax = maxHealthForLevel(state.level);
+          const gearMax = equipmentBonus("maxHealth");
+          state.maxHealth = levelMax + gearMax;
+          state.health = clamp(state.health, 1, state.maxHealth);
         }
 
         function rectsOverlap(a, b) {
@@ -2573,6 +3245,7 @@
         }
 
         function indoorActionUsed(action) {
+          if (action.repeatable) return false;
           return Boolean(state.indoorActions[indoorActionKey(action)]);
         }
 
@@ -2646,6 +3319,7 @@
         function enterInterior(building) {
           const interior = interiorDefs[building.id];
           if (!interior) return;
+          closeCraftingModal({ silent: true });
           state.outdoorPlayer = { ...state.player };
           state.scene = "interior";
           state.interior = building.id;
@@ -2664,6 +3338,7 @@
         }
 
         function exitInterior() {
+          closeCraftingModal({ silent: true });
           const building = buildingDefs.find((item) => item.id === state.interior);
           const interior = currentInteriorDef();
           const basePlayer = state.outdoorPlayer || state.player;
@@ -2718,6 +3393,22 @@
 
         function defaultStats() {
           return { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 };
+        }
+
+        function defaultMaterials() {
+          return Object.fromEntries(materialDefs.map((material) => [material.id, 0]));
+        }
+
+        function defaultEquipment() {
+          return Object.fromEntries(equipmentDefs.map((gear) => [gear.id, { crafted: false, durability: 0 }]));
+        }
+
+        function defaultQuestionStats() {
+          return { answered: 0, correct: 0 };
+        }
+
+        function defaultMainQuest() {
+          return { index: 0, step: 0, completed: 0 };
         }
 
         function addToast(text, type = "good", seconds = 2.8) {
@@ -2775,6 +3466,132 @@
 
         function syncMissionPerks() {
           if (state.completedMissions["first-cleanup"]) state.player.speed = Math.max(state.player.speed, 152);
+        }
+
+        function activeRumorQuest() {
+          return RUMOR_QUESTS[state.mainQuest.index] || null;
+        }
+
+        function activeRumorEvidence() {
+          const quest = activeRumorQuest();
+          return quest ? quest.evidence[state.mainQuest.step] : null;
+        }
+
+        function mainQuestGoal() {
+          const quest = activeRumorQuest();
+          return quest ? quest.evidence.length : 1;
+        }
+
+        function mainQuestProgress() {
+          return activeRumorQuest() ? clamp(state.mainQuest.step, 0, mainQuestGoal()) : mainQuestGoal();
+        }
+
+        function activeQuestItem() {
+          return state.questItems[0] || null;
+        }
+
+        function zoneById(id) {
+          return zones.find((zone) => zone.id === id) || zones[0];
+        }
+
+        function compassDirection(dx, dy) {
+          const vertical = dy < -TILE ? "北" : dy > TILE ? "南" : "";
+          const horizontal = dx < -TILE ? "西" : dx > TILE ? "東" : "";
+          return `${vertical}${horizontal}` || "附近";
+        }
+
+        function questRadarText() {
+          const quest = activeRumorQuest();
+          if (!quest) return "所有謠言已破解";
+          const evidence = activeRumorEvidence();
+          const item = activeQuestItem();
+          if (!evidence) return "線索整理中";
+          if (!item) return `前往「${zoneById(evidence.zone).name}」尋找${evidence.label}`;
+          const dx = item.x + item.w / 2 - (state.player.x + state.player.w / 2);
+          const dy = item.y + item.h / 2 - (state.player.y + state.player.h / 2);
+          const steps = Math.max(1, Math.round(Math.hypot(dx, dy) / TILE));
+          return `${zoneById(evidence.zone).name}｜${compassDirection(dx, dy)}約 ${steps} 格`;
+        }
+
+        function normalizeQuestItem(item) {
+          if (!item || !RUMOR_QUESTS.some((quest) => quest.id === item.questId)) return null;
+          return {
+            ...item,
+            uid: item.uid || makeUid("quest"),
+            x: Number(item.x) || state.player.x + 96,
+            y: Number(item.y) || state.player.y,
+            w: Number(item.w) || 30,
+            h: Number(item.h) || 30,
+            pulse: Number.isFinite(item.pulse) ? item.pulse : Math.random() * Math.PI * 2,
+          };
+        }
+
+        function createQuestItem(quest, evidence, step) {
+          const zone = zoneById(evidence.zone);
+          const p = randomPointIn(zone.rect, { w: 30, h: 30, sprite: evidence.sprite || "sample", buildingMargin: 12 })
+            || { x: zone.rect.x + zone.rect.w / 2, y: zone.rect.y + zone.rect.h / 2 };
+          return {
+            uid: makeUid("quest"),
+            questId: quest.id,
+            step,
+            label: evidence.label,
+            prompt: evidence.prompt,
+            text: evidence.text,
+            sprite: evidence.sprite || "sample",
+            zone: evidence.zone,
+            x: p.x,
+            y: p.y,
+            w: 30,
+            h: 30,
+            pulse: Math.random() * Math.PI * 2,
+          };
+        }
+
+        function ensureQuestItem() {
+          const quest = activeRumorQuest();
+          const evidence = activeRumorEvidence();
+          if (!quest || !evidence) {
+            state.questItems = [];
+            return;
+          }
+          const current = state.questItems.find((item) => item.questId === quest.id && item.step === state.mainQuest.step);
+          if (current) return;
+          state.questItems = [createQuestItem(quest, evidence, state.mainQuest.step)];
+          addLog(`主線謠言：${quest.title}。前往「${zoneById(evidence.zone).name}」尋找${evidence.label}。`);
+          uiDirty = true;
+        }
+
+        function collectQuestItem(item) {
+          const quest = activeRumorQuest();
+          if (!quest || item.questId !== quest.id || item.step !== state.mainQuest.step) {
+            state.questItems = state.questItems.filter((entry) => entry.uid !== item.uid);
+            ensureQuestItem();
+            return;
+          }
+          const evidence = quest.evidence[state.mainQuest.step];
+          state.questItems = state.questItems.filter((entry) => entry.uid !== item.uid);
+          state.mainQuest.step += 1;
+          const noteGain = 10 + equipmentBonus("questNotes");
+          addNotes(noteGain, "謠言線索");
+          unlockCard(quest.id);
+          addLog(`取得線索：${evidence.label}。${evidence.text}`);
+          addToast(`線索 ${state.mainQuest.step}/${quest.evidence.length}`, "good", 3);
+          if (state.mainQuest.step >= quest.evidence.length) {
+            const reward = quest.reward || {};
+            state.recyclePoints += reward.points || 0;
+            addExperience(reward.exp || 0, "破解謠言");
+            state.mainQuest.completed += 1;
+            state.mainQuest.index += 1;
+            state.mainQuest.step = 0;
+            showDialogue("迷思破解", `${quest.rumor} ${quest.conclusion} 獎勵：回收點數 +${reward.points || 0}。`, 6);
+            addLog(`破解謠言：${quest.title}。${quest.conclusion}`);
+          } else {
+            const next = activeRumorEvidence();
+            showDialogue(evidence.label, `${evidence.text} 下一個線索在「${zoneById(next.zone).name}」。`, 5);
+          }
+          ensureQuestItem();
+          evaluateMissions();
+          uiDirty = true;
         }
 
         function unlockCard(id) {
@@ -3085,10 +3902,15 @@
           state.monsters = [];
           state.npcs = npcDefs.map((npc) => ({ ...npc, x: npc.schedule[0].x, y: npc.schedule[0].y, w: 24, h: 30, currentAct: npc.schedule[0].act }));
           state.backpack = Object.fromEntries(trashTypes.map((type) => [type.id, 0]));
+          state.materials = defaultMaterials();
+          state.equipment = defaultEquipment();
           state.recycleStats = { played: 0, perfect: 0 };
           state.indoorActions = {};
           resetStationPrep();
           state.stats = defaultStats();
+          state.questionStats = defaultQuestionStats();
+          state.mainQuest = defaultMainQuest();
+          state.questItems = [];
           state.completedMissions = {};
           state.progress = Object.fromEntries(animalDefs.map((animal) => [animal.id, { trust: 0, seen: false, partnered: false }]));
           state.unlockedCards = {};
@@ -3098,6 +3920,8 @@
           state.fieldAction = null;
           state.battle = null;
           state.recycleGame = null;
+          state.crafting = null;
+          closeCraftingModal({ silent: true });
           addLog("抵達森循島：撿垃圾、阻止垃圾怪、把資源帶回回收場。");
           addLog("任務路線已開啟：先清出第一條安全步道。");
           addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
@@ -3108,6 +3932,7 @@
           scheduleLocalAnimalSpawn({ min: 1, max: 2.5 });
           for (let i = 0; i < 7; i++) spawnEvent();
           for (let i = 0; i < TRASH_START_COUNT; i++) spawnRoadTrash();
+          ensureQuestItem();
           scheduleNextTrashSpawn(TRASH_START_SPAWN_DELAY);
           startOverlay.hidden = true;
           syncSettingsOverlay();
@@ -3135,10 +3960,15 @@
             player: savedPlayer,
             ecology: state.ecology,
             backpack: state.backpack,
+            materials: state.materials,
+            equipment: state.equipment,
             recycleStats: state.recycleStats,
             indoorActions: state.indoorActions,
             stationPrep: state.stationPrep,
             stats: state.stats,
+            questionStats: state.questionStats,
+            mainQuest: state.mainQuest,
+            questItems: state.questItems,
             completedMissions: state.completedMissions,
             trash: state.trash,
             trashSpawnTimer: state.trashSpawnTimer,
@@ -3199,12 +4029,26 @@
             ensurePlayerOnWalkable("讀檔位置");
             state.ecology = { ...state.ecology, ...(data.ecology || {}) };
             state.backpack = { ...Object.fromEntries(trashTypes.map((type) => [type.id, 0])), ...(data.backpack || {}) };
+            state.materials = { ...defaultMaterials(), ...(data.materials || {}) };
+            state.equipment = { ...defaultEquipment(), ...(data.equipment || {}) };
+            for (const gear of equipmentDefs) {
+              const item = gearState(gear.id);
+              item.crafted = Boolean(item.crafted);
+              item.durability = clamp(Number(item.durability) || 0, 0, 100);
+            }
+            applyEquipmentStats();
             state.recycleStats = { ...state.recycleStats, ...(data.recycleStats || {}) };
             state.indoorActions = data.indoorActions && typeof data.indoorActions === "object" ? data.indoorActions : {};
             state.stationPrep = { ...defaultStationPrep(state.day), ...(data.stationPrep || {}) };
             state.stationPrep.day = Number(state.stationPrep.day) || state.day;
             ensureStationPrepDay();
             state.stats = { ...defaultStats(), ...(data.stats || {}) };
+            state.questionStats = { ...defaultQuestionStats(), ...(data.questionStats || {}) };
+            state.mainQuest = { ...defaultMainQuest(), ...(data.mainQuest || {}) };
+            state.mainQuest.index = clamp(Math.floor(Number(state.mainQuest.index)) || 0, 0, RUMOR_QUESTS.length);
+            state.mainQuest.step = Math.max(0, Math.floor(Number(state.mainQuest.step)) || 0);
+            state.mainQuest.completed = Math.max(0, Math.floor(Number(state.mainQuest.completed)) || 0);
+            state.questItems = Array.isArray(data.questItems) ? data.questItems.map(normalizeQuestItem).filter(Boolean).slice(0, 1) : [];
             state.completedMissions = data.completedMissions || {};
             syncMissionPerks();
             state.trash = Array.isArray(data.trash)
@@ -3217,6 +4061,7 @@
             state.progress = { ...state.progress, ...(data.progress || {}) };
             state.unlockedCards = data.unlockedCards || {};
             state.log = Array.isArray(data.log) ? data.log.slice(0, 8) : state.log;
+            ensureQuestItem();
             startOverlay.hidden = true;
             syncSettingsOverlay();
             startBackgroundMusic();
@@ -3433,6 +4278,34 @@
           return 5;
         }
 
+        function ecosystemPressure() {
+          const trashPressure = clamp((state.trash.length / TRASH_MAX_ACTIVE) * 34, 0, 34);
+          const monsterPressure = clamp(state.monsters.length * 12, 0, 28);
+          const pollutionPressure = clamp((state.ecology.pollution - 35) * 0.55, 0, 34);
+          const waterStress = clamp((48 - state.ecology.water) * 0.35, 0, 14);
+          return clamp(trashPressure + monsterPressure + pollutionPressure + waterStress, 0, 100);
+        }
+
+        function ecosystemHealth() {
+          return clamp(100 - ecosystemPressure() + (state.ecology.bio - 50) * 0.18 + (state.ecology.forest - 50) * 0.12, 0, 100);
+        }
+
+        function dynamicAnimalTarget() {
+          const health = ecosystemHealth();
+          const target = Math.round(8 + (ANIMAL_TARGET_COUNT - 8) * (health / 100));
+          return clamp(target, 6, ANIMAL_TARGET_COUNT);
+        }
+
+        function dynamicAnimalCapacity() {
+          const health = ecosystemHealth();
+          const cap = Math.round(12 + (ANIMAL_MAX_COUNT - 12) * (health / 100));
+          return clamp(cap, 8, ANIMAL_MAX_COUNT);
+        }
+
+        function animalSpawnChance() {
+          return clamp(0.18 + ecosystemHealth() / 112, 0.12, 1);
+        }
+
         function animalCountFor(id) {
           return state.animals.filter((animal) => animal.id === id && !animal.leaving).length;
         }
@@ -3469,13 +4342,14 @@
         }
 
         function spawnAnimal(options = {}) {
+          if (!options.force && Math.random() > animalSpawnChance()) return false;
           const localRect = options.preferLocal ? localAnimalRect() : null;
           let candidates = animalDefs.filter((def) => def.condition(state) && animalCountFor(def.id) < animalSpeciesLimit(def));
           if (localRect) {
             const localCandidates = candidates.filter((def) => animalAreas(def).some((area) => intersectRect(area, localRect)));
             if (localCandidates.length) candidates = localCandidates;
           }
-          if (!candidates.length || state.animals.length >= ANIMAL_MAX_COUNT) return false;
+          if (!candidates.length || state.animals.length >= dynamicAnimalCapacity()) return false;
           const def = pick(candidates);
           const aquatic = def.id === "streamfish";
           const w = aquatic ? 34 : 30;
@@ -3809,6 +4683,18 @@
         }
 
         function updateAnimals(dt) {
+          const capacity = dynamicAnimalCapacity();
+          const targetCount = dynamicAnimalTarget();
+          const activeAnimals = state.animals.filter((animal) => !animal.leaving);
+          if (activeAnimals.length > capacity) {
+            for (const animal of activeAnimals.sort((a, b) => (a.life || 0) - (b.life || 0)).slice(0, activeAnimals.length - capacity)) {
+              const def = animalDefs.find((item) => item.id === animal.id);
+              animal.leaving = true;
+              animal.wait = 0;
+              animal.mood = "leaving";
+              animal.target = def ? randomAnimalPoint(def, animal.w, animal.h, { offscreen: true, awayFromPlayer: false }) || animal.target : animal.target;
+            }
+          }
           for (const animal of state.animals) {
             const def = animalDefs.find((item) => item.id === animal.id);
             if (!def) continue;
@@ -3850,7 +4736,8 @@
           if (state.localAnimalSpawnTimer <= 0) {
             const localRect = localAnimalRect();
             const localAnimals = state.animals.filter((animal) => !animal.leaving && rectsOverlap(animal, localRect)).length;
-            if (localAnimals < LOCAL_ANIMAL_TARGET && state.animals.length < ANIMAL_MAX_COUNT) {
+            const localTarget = Math.max(1, Math.round(LOCAL_ANIMAL_TARGET * (targetCount / ANIMAL_TARGET_COUNT)));
+            if (localAnimals < localTarget && state.animals.length < capacity) {
               spawnAnimal({ offscreen: true, preferLocal: true });
             }
             scheduleLocalAnimalSpawn();
@@ -3858,7 +4745,7 @@
           if (!Number.isFinite(state.animalSpawnTimer) || state.animalSpawnTimer <= 0) scheduleNextAnimalSpawn();
           state.animalSpawnTimer -= dt;
           if (state.animalSpawnTimer > 0) return;
-          const wantsMore = state.animals.filter((animal) => !animal.leaving).length < ANIMAL_TARGET_COUNT;
+          const wantsMore = state.animals.filter((animal) => !animal.leaving).length < targetCount;
           const spawned = wantsMore && (spawnAnimal({ offscreen: true, preferLocal: true }) || spawnAnimal({ offscreen: true }));
           scheduleNextAnimalSpawn(spawned ? ANIMAL_SPAWN_DELAY : ANIMAL_RETRY_DELAY);
         }
@@ -3885,7 +4772,7 @@
         }
 
         function updatePlayer(dt) {
-          if (state.fieldAction || state.battle || state.recycleGame) return;
+          if (state.fieldAction || state.battle || state.recycleGame || state.crafting) return;
           let dx = 0;
           let dy = 0;
           if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
@@ -3900,7 +4787,7 @@
           if (dx < 0) state.player.facing = "left";
           if (Math.abs(dx) > Math.abs(dy)) state.player.dir = dx > 0 ? "right" : "left";
           else state.player.dir = dy > 0 ? "down" : "up";
-          const speed = state.player.speed * state.speedOptions[state.speedIndex] * (keys.has("shift") ? 1.42 : 1);
+          const speed = state.player.speed * (1 + equipmentBonus("speed")) * state.speedOptions[state.speedIndex] * (keys.has("shift") ? 1.42 : 1);
           const nx = state.player.x + dx * speed * dt;
           const ny = state.player.y + dy * speed * dt;
           const canMove = state.scene === "interior" ? canMoveInterior : canMoveTo;
@@ -3945,6 +4832,10 @@
             const d = dist(state.player, door);
             if (d < 82) candidates.push({ type: "building", ref: building, distance: d, priority: 3 });
           }
+          for (const item of state.questItems) {
+            const d = dist(state.player, item);
+            if (d < 64) candidates.push({ type: "questItem", ref: item, distance: d, priority: -1 });
+          }
           for (const animal of state.animals) {
             const d = dist(state.player, animal);
             if (d < 58) candidates.push({ type: "animal", ref: animal, distance: d, priority: 1 });
@@ -3980,6 +4871,7 @@
             showDialogue("系統", "附近沒有可互動對象。試著靠近垃圾、動物、自然事件、回收場或居民。", 2.2);
             return;
           }
+          if (target.type === "questItem") collectQuestItem(target.ref);
           if (target.type === "animal") observeAnimal(target.ref);
           if (target.type === "event") startFieldAction(target.ref);
           if (target.type === "trash") collectTrash(target.ref);
@@ -3997,6 +4889,218 @@
           if (!gained) return;
           state.recyclePoints += gained;
           addToast(`回收點數 +${gained}`, "good", 2.4);
+        }
+
+        function recycleBackpackToMaterials(limit = 4) {
+          const converted = [];
+          for (const type of trashTypes) {
+            while ((state.backpack[type.id] || 0) > 0 && converted.length < limit) {
+              const material = materialDefs.find((item) => item.from === type.id);
+              if (!material) break;
+              removeTrashFromBackpack(type.id, 1);
+              state.materials[material.id] = (state.materials[material.id] || 0) + material.yield;
+              converted.push({ trash: type, material });
+            }
+            if (converted.length >= limit) break;
+          }
+          if (!converted.length) return "";
+          const summary = converted.map((item) => `${item.trash.name}→${item.material.name} +${item.material.yield}`).join("、");
+          addLog(`工坊再利用：${summary}`);
+          addToast("材料 +", "good", 2.4);
+          uiDirty = true;
+          return summary;
+        }
+
+        function repairDamagedGear() {
+          const damaged = equipmentDefs
+            .map((gear) => ({ def: gear, item: gearState(gear.id) }))
+            .filter((entry) => entry.item.crafted && entry.item.durability < 100)
+            .sort((a, b) => a.item.durability - b.item.durability)[0];
+          if (!damaged) return "";
+          const repairCost = { plasticFiber: 2 };
+          if (!spendMaterials(repairCost)) return `需要 ${recipeText(repairCost)} 才能修補${damaged.def.name}。`;
+          damaged.item.durability = clamp(damaged.item.durability + 35, 0, 100);
+          applyEquipmentStats();
+          return `使用 ${recipeText(repairCost)} 修補${damaged.def.name}，耐久提升到 ${damaged.item.durability}%。`;
+        }
+
+        function craftOrRepairEquipment() {
+          const nextRecipe = equipmentDefs.find((gear) => !gearState(gear.id).crafted && hasMaterials(gear.recipe));
+          if (nextRecipe) {
+            spendMaterials(nextRecipe.recipe);
+            const item = gearState(nextRecipe.id);
+            item.crafted = true;
+            item.durability = 100;
+            applyEquipmentStats();
+            addLog(`製作裝備：${nextRecipe.name}`);
+            addToast(`製作：${nextRecipe.name}`, "good", 3);
+            return `你用 ${recipeText(nextRecipe.recipe)} 製作${nextRecipe.name}。效果：${nextRecipe.effect}`;
+          }
+          const repairText = repairDamagedGear();
+          if (repairText) return repairText;
+          const locked = equipmentDefs.find((gear) => !gearState(gear.id).crafted);
+          if (locked) return `下一件裝備是「${locked.name}」，需要 ${recipeText(locked.recipe)}。先到再生材料機拆解回收物。`;
+          return "所有裝備都已製作且狀態良好。之後戰鬥或巡查造成磨損時，可用再生聚酯纖維修補。";
+        }
+
+        function gearRepairRecipe() {
+          return { plasticFiber: 2 };
+        }
+
+        function craftingRecipes() {
+          const repairRows = equipmentDefs
+            .filter((gear) => {
+              const item = gearState(gear.id);
+              return item.crafted && item.durability < 100;
+            })
+            .map((gear) => {
+              const recipe = gearRepairRecipe(gear);
+              return {
+                id: `repair:${gear.id}`,
+                action: "repair",
+                gear,
+                recipe,
+                title: `修補${gear.name}`,
+                detail: `耐久 +35%，目前 ${gearState(gear.id).durability}%`,
+                button: "修補",
+                disabledReason: hasMaterials(recipe) ? "" : "材料不足",
+              };
+            });
+          const craftRows = equipmentDefs.map((gear) => {
+            const item = gearState(gear.id);
+            return {
+              id: `craft:${gear.id}`,
+              action: "craft",
+              gear,
+              recipe: gear.recipe,
+              title: gear.name,
+              detail: item.crafted ? `${gear.slotLabel}｜已製作｜${gear.effect}` : `${gear.slotLabel}｜T${gear.tier}｜${gear.effect}`,
+              button: item.crafted ? "已製作" : "兌換",
+              disabledReason: item.crafted ? "已製作" : hasMaterials(gear.recipe) ? "" : "材料不足",
+            };
+          });
+          return [...repairRows, ...craftRows];
+        }
+
+        function renderCraftingModal() {
+          if (!state.crafting) return;
+          craftMaterialSummary.innerHTML = materialDefs.map((material) => {
+            const count = state.materials[material.id] || 0;
+            return `
+              <span class="craft-material-chip">
+                <img src="${assetUrl(materialIconName(material.id), "itemPlastic")}" alt="" aria-hidden="true">
+                ${material.name} ${count}
+              </span>
+            `;
+          }).join("");
+          const recipes = craftingRecipes();
+          craftRecipeList.innerHTML = recipes.map((recipe) => {
+            const canExchange = !recipe.disabledReason;
+            const materialRows = Object.entries(recipe.recipe).map(([id, need]) => {
+              const owned = state.materials[id] || 0;
+              const enough = owned >= need;
+              return `
+                <div class="craft-material-line">
+                  <img class="craft-mat-icon" src="${assetUrl(materialIconName(id), "itemPlastic")}" alt="" aria-hidden="true">
+                  <span class="craft-mat-name">${materialDef(id).name}</span>
+                  <span class="craft-count ${enough ? "good" : "bad"}">${owned}/${need}</span>
+                </div>
+              `;
+            }).join("");
+            return `
+              <div class="craft-row ${canExchange ? "" : "locked"}">
+                <div class="craft-materials">
+                  <div class="craft-label">材料</div>
+                  ${materialRows}
+                </div>
+                <div class="craft-arrow" aria-hidden="true">→</div>
+                <div class="craft-output">
+                  <img class="craft-output-icon" src="${assetUrl(recipe.gear.icon, "itemPlastic")}" alt="" aria-hidden="true">
+                  <div>
+                    <div class="craft-output-name">${recipe.title}</div>
+                    <small>${recipe.detail}</small>
+                  </div>
+                </div>
+                <button class="craft-exchange" type="button" data-recipe-id="${recipe.id}" ${canExchange ? "" : "disabled"}>${recipe.button}</button>
+              </div>
+            `;
+          }).join("");
+        }
+
+        function openCraftingModal() {
+          state.crafting = { type: "equipmentBench" };
+          state.dialogue = null;
+          dialogueEl.hidden = true;
+          craftModal.hidden = false;
+          keys.clear();
+          renderCraftingModal();
+          addLog("開啟裝備工作台：選擇配方兌換塑膠裝備或修補耐久。");
+          uiDirty = true;
+        }
+
+        function closeCraftingModal(options = {}) {
+          if (!state.crafting && craftModal.hidden) return;
+          state.crafting = null;
+          craftModal.hidden = true;
+          keys.clear();
+          if (!options.silent && state.started) addLog("關閉裝備工作台。");
+          uiDirty = true;
+        }
+
+        function craftEquipmentById(id) {
+          const gear = equipmentDefs.find((item) => item.id === id);
+          if (!gear) return false;
+          const item = gearState(gear.id);
+          if (item.crafted) {
+            addToast("這件裝備已製作", "warn", 2);
+            return false;
+          }
+          if (!spendMaterials(gear.recipe)) {
+            addToast("材料不足", "bad", 2.2);
+            renderCraftingModal();
+            return false;
+          }
+          item.crafted = true;
+          item.durability = 100;
+          applyEquipmentStats();
+          addExperience(5, "工坊製作");
+          addLog(`製作裝備：${gear.name}。`);
+          addToast(`兌換：${gear.name}`, "good", 2.8);
+          evaluateMissions();
+          renderCraftingModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function repairEquipmentById(id) {
+          const gear = equipmentDefs.find((item) => item.id === id);
+          if (!gear) return false;
+          const item = gearState(gear.id);
+          if (!item.crafted || item.durability >= 100) {
+            addToast("這件裝備不需要修補", "warn", 2);
+            return false;
+          }
+          const recipe = gearRepairRecipe(gear);
+          if (!spendMaterials(recipe)) {
+            addToast("修補材料不足", "bad", 2.2);
+            renderCraftingModal();
+            return false;
+          }
+          item.durability = clamp(item.durability + 35, 0, 100);
+          applyEquipmentStats();
+          addExperience(3, "裝備修補");
+          addLog(`修補裝備：${gear.name}，耐久 ${item.durability}%。`);
+          addToast(`修補：${gear.name}`, "good", 2.8);
+          renderCraftingModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function exchangeCraftRecipe(recipeId) {
+          const [action, id] = String(recipeId || "").split(":");
+          if (action === "craft") return craftEquipmentById(id);
+          if (action === "repair") return repairEquipmentById(id);
+          return false;
         }
 
         function applyIndoorActionEffect(action) {
@@ -4045,6 +5149,16 @@
             addNotes(7, "工具整備");
             return "你重新整理夾子、採樣瓶與手套。今天的現地行動判定更寬。";
           }
+          if (action.effect === "materialRecycler") {
+            const summary = recycleBackpackToMaterials(4);
+            if (!summary) return "背包裡沒有可拆解的回收物。先去路上撿垃圾、擊敗垃圾怪，或完成回收分類前保留一些材料。";
+            addNotes(5, "材料再利用");
+            return `你把回收物拆解成材料：${summary}。寶特瓶可變再生纖維，鋁罐能做扣件，玻璃瓶能做觀察鏡片。`;
+          }
+          if (action.effect === "equipmentBench") {
+            openCraftingModal();
+            return "已開啟裝備工作台。";
+          }
           if (action.effect === "sortingCart") {
             setStationPrep("recycleBonus", 0.08);
             addIndoorReward(3);
@@ -4066,6 +5180,10 @@
 
         function useInteriorAction(action) {
           if (!action) return;
+          if (action.effect === "equipmentBench") {
+            openCraftingModal();
+            return;
+          }
           if (indoorActionUsed(action)) {
             showDialogue(action.label, "今天已經處理過這個設備了，明天會有新的整理項目。", 2.8);
             addToast("今日已完成", "warn", 2);
@@ -4081,7 +5199,7 @@
             state.health = Math.max(0, state.health - cost);
             addToast(`體力 -${cost}`, "warn", 1.8);
           }
-          state.indoorActions[indoorActionKey(action)] = true;
+          if (!action.repeatable) state.indoorActions[indoorActionKey(action)] = true;
           const text = applyIndoorActionEffect(action);
           addLog(`${action.label}：${text}`);
           showDialogue(action.label, text, 4.2);
@@ -4103,7 +5221,7 @@
           actor.observed = true;
           state.stats.animalsObserved += 1;
           progress.seen = true;
-          const trustGain = (state.completedMissions["wildlife-log"] ? 2 : 1) + stationPrepValue("animalTrustBonus");
+          const trustGain = (state.completedMissions["wildlife-log"] ? 2 : 1) + stationPrepValue("animalTrustBonus") + equipmentBonus("trust");
           progress.trust = clamp(progress.trust + trustGain, 0, def.trustGoal);
           actor.mood = "curious";
           actor.wait = 180;
@@ -4457,6 +5575,43 @@
           uiDirty = true;
         }
 
+        function pickBattleQuestion(monster) {
+          const battle = state.battle;
+          const seen = new Set(battle?.questionSeen || []);
+          let pool = battleQuestionBank.filter((question) => !seen.has(question.id));
+          if (!pool.length) {
+            if (battle) battle.questionSeen = [];
+            pool = [...battleQuestionBank];
+          }
+          const monsterTags = new Set((monster?.trashHeld || []).map((typeId) => trashDef(typeId).category));
+          const tagged = pool.filter((question) => monsterTags.has(question.tag));
+          const question = pick(tagged.length ? tagged : pool);
+          return { ...question, options: [...question.options] };
+        }
+
+        function setNextBattleQuestion(monster = battleMonster()) {
+          const battle = state.battle;
+          if (!battle || !monster) return;
+          battle.question = pickBattleQuestion(monster);
+          battle.questionSeen ||= [];
+          battle.questionSeen.push(battle.question.id);
+          battle.questionSeen = battle.questionSeen.slice(-battleQuestionBank.length);
+          uiDirty = true;
+        }
+
+        function battleDamageForAnswer(correct, monster) {
+          if (correct) {
+            let damage = 22 + state.level * 2 + Math.floor(state.recyclePoints / 95) + partnerCount() * 2;
+            if (state.recycleStats.perfect > 0) damage += 4;
+            damage += equipmentBonus("questionDamage");
+            damage += Math.min(10 + equipmentBonus("comboDamage") * 2, (state.battle?.combo || 0) * (2 + equipmentBonus("comboDamage")));
+            return Math.round(damage);
+          }
+          let damage = 2 + Math.floor(state.level / 5);
+          damage += equipmentBonus("wrongAnswerDamage");
+          return Math.max(1, Math.round(damage));
+        }
+
         function startBattle(monster) {
           if (state.battle || state.recycleGame) return;
           state.fieldAction = null;
@@ -4470,8 +5625,15 @@
             effects: [],
             flash: 0.18,
             shake: 0.18,
-            log: [`第 ${monster.stage} 階垃圾怪靠近了。`],
+            question: null,
+            questionSeen: [],
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            combo: 0,
+            bestCombo: 0,
+            log: [`第 ${monster.stage} 階垃圾怪靠近了，用永續知識破解牠的迷思核心。`],
           };
+          setNextBattleQuestion(monster);
           playBattleSound("enemy", 0.8);
           state.dialogue = null;
           hudPills.hidden = true;
@@ -4483,50 +5645,32 @@
           const battle = state.battle;
           const monster = battleMonster();
           if (!battle || !monster) return;
-          let damage = 0;
-          let message = "";
-          let feedback = "";
-          if (key === "1") {
-            damage = 10 + partnerCount() * 2 + Math.floor(state.recyclePoints / 80);
-            message = `你用夾具和垃圾袋做淨化打擊，造成 ${damage} 傷害。`;
-            feedback = "strike";
-          } else if (key === "2") {
-            const practiced = state.recycleStats.played > 0;
-            const perfectBoost = state.recycleStats.perfect > 0 ? 5 : 0;
-            const manualBoost = state.completedMissions["first-recycle"] ? 3 : 0;
-            damage = practiced ? 9 + perfectBoost + manualBoost : 5;
-            battle.weakened = practiced;
-            feedback = "analyze";
-            message = practiced
-              ? `你辨識牠身上的回收物弱點，造成 ${damage} 傷害，並降低下一次攻擊。`
-              : `你還沒練過回收分類，只能粗略判斷，造成 ${damage} 傷害。`;
-          } else if (key === "3") {
-            const partners = partnerCount();
-            if (!partners) {
-              pushBattleLog("還沒有生態夥伴。先觀察動物、累積信任，就能在戰鬥中獲得支援。");
-              return;
-            }
-            damage = 7 + partners * 4;
-            feedback = "partner";
-            if (hasPartnerSkill("canopy")) damage += 4;
-            if (hasPartnerSkill("guard")) {
-              const heal = 6;
-              state.health = clamp(state.health + heal, 0, state.maxHealth);
-              battle.playerHp = state.health;
-              battle.defending = true;
-              message = `生態夥伴支援，造成 ${damage} 傷害；台灣黑熊守護讓你回復 ${heal} 體力。`;
-            } else {
-              message = `生態夥伴支援，造成 ${damage} 傷害。`;
-            }
-          } else if (key === "4") {
-            battle.defending = true;
-            state.health = clamp(state.health + 3, 0, state.maxHealth);
-            battle.playerHp = state.health;
-            pushBattleLog("你整理背包、拉開距離，下一次受到的傷害降低。");
-            triggerBattleFeedback("defend", 0);
+          const question = battle.question || pickBattleQuestion(monster);
+          battle.question = question;
+          const picked = Number(key) - 1;
+          if (!question.options[picked]) return;
+          const correct = picked === question.answer;
+          state.questionStats.answered += 1;
+          if (correct) {
+            state.questionStats.correct += 1;
+            battle.correctAnswers += 1;
+            battle.combo = (battle.combo || 0) + 1;
+            battle.bestCombo = Math.max(battle.bestCombo || 0, battle.combo);
+            battle.weakened = true;
+            addNotes(3, "戰鬥答題");
           } else {
-            return;
+            battle.wrongAnswers += 1;
+            battle.combo = 0;
           }
+          const damage = battleDamageForAnswer(correct, monster);
+          degradeGear(correct ? 1 : 4);
+          const chosen = question.options[picked];
+          const answer = question.options[question.answer];
+          const comboText = correct && battle.combo > 1 ? ` 連答 x${battle.combo} 加成！` : "";
+          const message = correct
+            ? `答對：${chosen}。迷思核心破裂，造成 ${damage} 傷害。${comboText}${question.explain}`
+            : `答錯：你選了「${chosen}」，正解是「${answer}」。只造成 ${damage} 傷害。${question.explain}`;
+          const feedback = correct ? "analyze" : "strike";
 
           if (damage > 0) {
             monster.hp = Math.max(0, monster.hp - damage);
@@ -4539,6 +5683,7 @@
             return;
           }
           monsterBattleTurn(monster);
+          if (state.battle) setNextBattleQuestion(monster);
         }
 
         function monsterBattleTurn(monster) {
@@ -4553,6 +5698,7 @@
             damage = Math.ceil(damage * 0.45);
             battle.defending = false;
           }
+          damage = Math.ceil(damage * (1 - clamp(equipmentBonus("damageReduction"), 0, 0.5)));
           if (state.completedMissions["monster-response"]) damage = Math.ceil(damage * 0.88);
           state.health = clamp(state.health - damage, 0, state.maxHealth);
           battle.playerHp = state.health;
@@ -4959,6 +6105,7 @@
           }
 
           const actors = [
+            ...state.questItems.map((item) => ({ kind: "questItem", data: item, y: item.y + item.h })),
             ...state.trash.map((trash) => ({ kind: "trash", data: trash, y: trash.y + trash.h })),
             ...state.events.map((event) => ({ kind: "event", data: event, y: event.y + event.h })),
             ...state.monsters.map((monster) => ({ kind: "monster", data: monster, y: monster.y + monster.h })),
@@ -4968,6 +6115,7 @@
           ].sort((a, b) => a.y - b.y);
 
           for (const item of actors) {
+            if (item.kind === "questItem") drawQuestItem(item.data);
             if (item.kind === "trash") drawTrashItem(item.data);
             if (item.kind === "event") drawEvent(item.data);
             if (item.kind === "monster") drawTrashMonster(item.data);
@@ -4978,6 +6126,20 @@
           drawInteractionMarker();
 
           ctx.restore();
+        }
+
+        function drawQuestItem(item) {
+          const pulse = 0.5 + Math.sin(performance.now() / 220 + item.pulse) * 0.2;
+          ctx.fillStyle = `rgba(247, 211, 111, ${pulse})`;
+          ctx.fillRect(item.x - 6, item.y - 8, item.w + 12, item.h + 14);
+          const sprite = item.sprite || "sample";
+          const size = spriteDrawSize(sprite);
+          const scale = Math.min(1, 38 / size.w, 38 / size.h);
+          const w = Math.max(18, size.w * scale);
+          const h = Math.max(18, size.h * scale);
+          drawSpriteToBox(sprite, item.x + item.w / 2 - w / 2, item.y + item.h + 2 - h, w, h);
+          drawWorldLabel("!", item.x + item.w / 2, item.y - 28, "#f7d36f", "#2b3b2f");
+          if (dist(item, state.player) < 76) drawWorldLabel(item.label, item.x + item.w / 2, item.y - 50);
         }
 
         function drawEvent(event) {
@@ -5568,6 +6730,7 @@
           };
 
           const smallDot = expanded ? 3 : 2;
+          for (const item of state.questItems) drawMapDot(item.x, item.y, expanded ? 6 : 4, "#f7d36f");
           for (const trash of state.trash) drawMapDot(trash.x, trash.y, smallDot, "#fff3bf");
           for (const event of state.events) drawMapDot(event.x, event.y, smallDot, "#f8de8f");
           for (const monster of state.monsters) drawMapDot(monster.x, monster.y, expanded ? 5 : 3, "#c44f45");
@@ -5671,6 +6834,28 @@
             let line = text;
             while (ctx.measureText(line).width > maxWidth && line.length > 4) line = `${line.slice(0, -2)}...`;
             ctx.fillText(line, x, y);
+          };
+          const drawWrapped = (text, x, y, maxWidth, lineHeight, maxLines = 2) => {
+            const lines = [];
+            let line = "";
+            for (const char of text) {
+              const next = line + char;
+              if (ctx.measureText(next).width > maxWidth && line) {
+                lines.push(line);
+                line = char;
+                if (lines.length >= maxLines) break;
+              } else {
+                line = next;
+              }
+            }
+            if (lines.length < maxLines && line) lines.push(line);
+            if (lines.length > maxLines) lines.length = maxLines;
+            const last = lines.length - 1;
+            if (last >= 0 && ctx.measureText(lines[last]).width > maxWidth) {
+              while (ctx.measureText(`${lines[last]}...`).width > maxWidth && lines[last].length > 2) lines[last] = lines[last].slice(0, -1);
+              lines[last] = `${lines[last]}...`;
+            }
+            for (let i = 0; i < lines.length; i++) ctx.fillText(lines[i], x, y + i * lineHeight);
           };
           const drawTechPanel = (x, y, w, h, fill = "rgba(235, 251, 255, 0.96)", stroke = "#1b5f88") => {
             ctx.fillStyle = "rgba(8, 26, 35, 0.22)";
@@ -5791,45 +6976,52 @@
           ctx.textAlign = "left";
           drawFitted(battle.log[0] || "選擇技能開始行動。", 64, 474, 820);
 
-          drawTechPanel(34, 506, 892, 112, "rgba(15, 55, 86, 0.96)", "#8fd3ff");
+          drawTechPanel(34, 500, 892, 136, "rgba(15, 55, 86, 0.96)", "#8fd3ff");
           ctx.fillStyle = "#e8f7ff";
           ctx.font = "bold 15px sans-serif";
           ctx.textAlign = "left";
-          ctx.fillText("技能指令", 56, 532);
+          const question = battle.question || { type: "選擇題", prompt: "題目載入中...", options: [], answer: 0 };
+          ctx.fillText(`${question.type}｜破解迷思`, 56, 525);
+          ctx.textAlign = "right";
+          ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, 900, 525);
+          ctx.textAlign = "left";
           ctx.fillStyle = "rgba(143, 211, 255, 0.28)";
-          ctx.fillRect(142, 521, 760, 2);
+          ctx.fillRect(190, 514, 712, 2);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 16px sans-serif";
+          drawWrapped(question.prompt, 56, 550, 846, 19, 2);
 
-          const options = [
-            { key: "1", name: "淨化打擊", meta: "工具系", desc: "穩定輸出" },
-            { key: "2", name: "分類分析", meta: state.recycleStats.played ? "回收系" : "未練習", desc: "練習分類後削弱敵方" },
-            { key: "3", name: "夥伴支援", meta: partnerCount() ? `${partnerCount()} 夥伴` : "未解鎖", desc: "已信任動物加入支援" },
-            { key: "4", name: "防禦整理", meta: "守備", desc: "回血並降低下一擊" },
-          ];
+          const options = question.options.map((option, index) => ({
+            key: String(index + 1),
+            name: option,
+            meta: "作答",
+            desc: "正確高傷害，錯誤低傷害",
+          }));
           for (let i = 0; i < options.length; i++) {
             const opt = options[i];
             const ox = 54 + (i % 2) * 438;
-            const oy = 540 + Math.floor(i / 2) * 36;
+            const oy = 576 + Math.floor(i / 2) * 32;
             const fill = i === 0 ? "#f7d36f" : i === 1 ? "#76c6cc" : i === 2 ? "#8fd17b" : "#d9d2a5";
             ctx.fillStyle = fill;
-            ctx.fillRect(ox, oy, 414, 30);
+            ctx.fillRect(ox, oy, 414, 27);
             ctx.strokeStyle = "#0e314a";
             ctx.lineWidth = 3;
-            ctx.strokeRect(ox, oy, 414, 30);
+            ctx.strokeRect(ox, oy, 414, 27);
             ctx.fillStyle = "#0e314a";
-            ctx.fillRect(ox + 8, oy + 6, 24, 18);
+            ctx.fillRect(ox + 8, oy + 5, 24, 17);
             ctx.fillStyle = "#fff7d7";
             ctx.font = "bold 13px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(opt.key, ox + 20, oy + 20);
+            ctx.fillText(opt.key, ox + 20, oy + 18);
             ctx.fillStyle = "#0e314a";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "left";
-            ctx.fillText(opt.name, ox + 42, oy + 20);
+            drawFitted(opt.name, ox + 42, oy + 18, 220);
             ctx.font = "bold 11px sans-serif";
-            drawFitted(opt.desc, ox + 152, oy + 20, 130);
+            drawFitted(opt.desc, ox + 270, oy + 18, 96);
             ctx.textAlign = "right";
             ctx.font = "bold 12px sans-serif";
-            ctx.fillText(opt.meta, ox + 400, oy + 20);
+            ctx.fillText(opt.meta, ox + 400, oy + 18);
           }
           ctx.restore();
         }
@@ -5912,6 +7104,10 @@
             promptEl.hidden = true;
             return;
           }
+          if (state.crafting) {
+            promptEl.hidden = true;
+            return;
+          }
           if (state.dialogue && !state.fieldAction && !state.recycleGame) {
             promptEl.hidden = true;
             return;
@@ -5939,6 +7135,7 @@
             const def = eventDefs.find((event) => event.id === target.ref.id);
             promptEl.textContent = `Space/E ${def.prompt}：${def.name}`;
           }
+          if (target.type === "questItem") promptEl.textContent = `Space/E ${target.ref.prompt}：${target.ref.label}`;
           if (target.type === "trash") promptEl.textContent = `Space/E 撿起：${trashDef(target.ref.type).name}`;
           if (target.type === "npc") promptEl.textContent = `Space/E 對話：${target.ref.name}`;
           if (target.type === "building") {
@@ -5992,14 +7189,16 @@
           `;
 
           const mission = getActiveMission();
-          const progress = missionProgress(mission);
-          const rate = clamp((progress / mission.goal) * 100, 0, 100);
+          const rumorQuest = activeRumorQuest();
+          const progress = rumorQuest ? mainQuestProgress() : missionProgress(mission);
+          const goal = rumorQuest ? mainQuestGoal() : mission.goal;
+          const rate = clamp((progress / goal) * 100, 0, 100);
           questHud.hidden = !state.started || Boolean(state.battle);
           if (!questHud.hidden) {
             questHud.innerHTML = `
-              <div class="quest-kicker">目前任務 ${progress}/${mission.goal}</div>
-              <div class="quest-title">${mission.title}</div>
-              <div class="quest-sub">${mission.instruction}</div>
+              <div class="quest-kicker">${rumorQuest ? "主線謠言" : "目前任務"} ${progress}/${goal}</div>
+              <div class="quest-title">${rumorQuest ? rumorQuest.title : mission.title}</div>
+              <div class="quest-sub">${rumorQuest ? `${rumorQuest.rumor} 線索雷達：${questRadarText()}。` : mission.instruction}</div>
               <div class="quest-progress"><i style="width:${rate}%"></i></div>
             `;
           }
@@ -6020,6 +7219,7 @@
           mapBtn.textContent = "地圖(M)";
           pauseBtn.textContent = state.paused ? "繼續(P)" : "暫停(P)";
           syncSettingsOverlay();
+          if (state.crafting) renderCraftingModal();
           renderSidePanel();
           renderLog();
         }
@@ -6040,6 +7240,14 @@
             const mission = getActiveMission();
             const missionDone = missionProgress(mission);
             const missionRate = clamp((missionDone / mission.goal) * 100, 0, 100);
+            const rumorQuest = activeRumorQuest();
+            const rumorDone = mainQuestProgress();
+            const rumorGoal = mainQuestGoal();
+            const rumorEvidence = activeRumorEvidence() || { label: "線索整理中", zone: "hub" };
+            const rumorRate = clamp((rumorDone / rumorGoal) * 100, 0, 100);
+            const ecoHealth = ecosystemHealth();
+            const animalTarget = dynamicAnimalTarget();
+            const animalCapacity = dynamicAnimalCapacity();
             const unlockedPerks = MISSION_DEFS.filter((item) => state.completedMissions[item.id] && item.perk);
             const perkRows = unlockedPerks.length
               ? unlockedPerks.map((item) => `<div class="tip-row">${item.perk}</div>`).join("")
@@ -6057,6 +7265,17 @@
                   <div class="hero-sub">背包件數 / 回收點數</div>
                 </div>
               </div>
+
+              <details class="drawer" open>
+                <summary>主線謠言 <span class="chip">${rumorQuest ? `${rumorDone}/${rumorGoal}` : "完成"}</span></summary>
+                <div class="drawer-body">
+                  <div class="focus-card ${rumorQuest ? "warn" : ""}">
+                    <div class="focus-title">${rumorQuest ? rumorQuest.title : "所有迷思已破解"} <span class="chip">${rumorQuest ? `第 ${state.mainQuest.index + 1}/${RUMOR_QUESTS.length} 則` : `${RUMOR_QUESTS.length}/${RUMOR_QUESTS.length}`}</span></div>
+                    <small>${rumorQuest ? `${rumorQuest.rumor} 下一個驚嘆號線索：${rumorEvidence.label}。線索雷達：${questRadarText()}。` : "你已完成目前所有謠言主線，可以繼續挑戰題庫、裝備和圖鑑。"}</small>
+                    <div class="meter-line"><i style="width:${rumorRate}%"></i></div>
+                  </div>
+                </div>
+              </details>
 
               <details class="drawer" open>
                 <summary>任務路線 <span class="chip">${missionDone}/${mission.goal}</span></summary>
@@ -6089,10 +7308,14 @@
                       <div class="status-label">圖鑑</div>
                       <div class="status-value">${seenAnimals}/${animalDefs.length}</div>
                     </div>
+                    <div class="status-tile">
+                      <div class="status-label">生態承載</div>
+                      <div class="status-value">${animalTarget}/${animalCapacity}</div>
+                    </div>
                   </div>
                   <div class="focus-card ${threatClass}" style="margin-top:8px;">
-                    <div class="focus-title">${currentZoneAt().name} <span class="chip">${threatChip}</span></div>
-                    <small>${getDailyAdvice()}</small>
+                    <div class="focus-title">${currentZoneAt().name} <span class="chip">健康 ${Math.round(ecoHealth)}</span></div>
+                    <small>${getDailyAdvice()} 垃圾與污染越高，動物承載量會越低。</small>
                   </div>
                 </div>
               </details>
@@ -6109,10 +7332,14 @@
                       <div class="status-label">分類完美</div>
                       <div class="status-value">${state.recycleStats.perfect}/${state.recycleStats.played}</div>
                     </div>
+                    <div class="status-tile">
+                      <div class="status-label">問答正確</div>
+                      <div class="status-value">${state.questionStats.correct}/${state.questionStats.answered}</div>
+                    </div>
                   </div>
                   <div class="tip-list" style="margin-top: 8px;">
-                    <div class="tip-row">戰鬥：1 淨化打擊、2 分類分析、3 夥伴支援、4 防禦整理</div>
-                    <div class="tip-row">分類完美會提高「分類分析」威力；台灣藍鵲、台灣黑熊會強化夥伴支援。</div>
+                    <div class="tip-row">戰鬥已改為永續問答：正確答案高傷害並削弱下一擊，錯誤答案只造成低傷害。</div>
+                    <div class="tip-row">題庫 ${battleQuestionBank.length} 題；裝備、夥伴與完美分類會提高問答戰鬥表現。</div>
                     ${perkRows}
                   </div>
                 </div>
@@ -6148,6 +7375,39 @@
                 </div>
               `;
             }).join("");
+            const materialRows = materialDefs.map((material) => {
+              const count = state.materials[material.id] || 0;
+              const fill = clamp(count / 8, 0, 1) * 100;
+              return `
+                <div class="inventory-item ${count ? "" : "empty"}">
+                  <div class="inventory-top">
+                    <span class="item-name">${material.name}</span>
+                    <span class="item-count">${count}</span>
+                  </div>
+                  <div class="meter-line"><i style="width:${fill}%"></i></div>
+                  <small>${material.hint}</small>
+                </div>
+              `;
+            }).join("");
+            const equippedSlots = equippedGearBySlot();
+            const gearRows = equipmentDefs.map((gear) => {
+              const item = gearState(gear.id);
+              const crafted = item.crafted;
+              const equipped = equippedSlots[gear.slot]?.id === gear.id;
+              return `
+                <div class="card">
+                  <div class="inventory-top">
+                    <img class="item-icon" src="${assetUrl(gear.icon, "itemPlastic")}" alt="" aria-hidden="true">
+                    <span class="item-name">${gear.name}</span>
+                    <span class="item-count">${crafted ? `${item.durability}%` : "未製作"}</span>
+                  </div>
+                  <div class="card-title">${gear.slotLabel} <span class="chip">${equipped ? "已裝備" : crafted ? `T${gear.tier}` : "配方"}</span></div>
+                  <small>${crafted ? gear.effect : `需求：${recipeText(gear.recipe)}。到工坊裝備工作台製作。`}</small>
+                  <div class="meter-line"><i style="width:${crafted ? item.durability : 0}%"></i></div>
+                </div>
+              `;
+            }).join("");
+            const equippedRows = equipmentSlotDefs.map((slot) => `<div class="tip-row">${equippedGearLabel(slot)}</div>`).join("");
             const total = backpackTotal();
             const capacityHint = total >= 5 ? "可直接去回收場，會抽最多 5 件進行分類。" : `再收集 ${5 - total} 件左右，就能玩一輪完整分類。`;
             sideBody.innerHTML = `
@@ -6170,6 +7430,23 @@
                   <div class="inventory-grid">
                     ${categoryRows}
                   </div>
+                </div>
+              </details>
+
+              <details class="drawer" open>
+                <summary>再生材料 <span class="chip">${materialDefs.reduce((sum, material) => sum + (state.materials[material.id] || 0), 0)}</span></summary>
+                <div class="drawer-body">
+                  <div class="inventory-grid">
+                    ${materialRows}
+                  </div>
+                </div>
+              </details>
+
+              <details class="drawer" open>
+                <summary>工坊裝備 <span class="chip">${activeGearCount()}/${equipmentDefs.length}</span></summary>
+                <div class="drawer-body">
+                  <div class="tip-list" style="margin-bottom:8px;">${equippedRows}</div>
+                  ${gearRows}
                 </div>
               </details>
 
@@ -6268,6 +7545,7 @@
 
         function getDailyAdvice() {
           if (state.monsters.length) return `路上有 ${state.monsters.length} 隻垃圾怪。先處理低階怪，避免牠們吸收更多垃圾。`;
+          if (ecosystemPressure() > 70) return "垃圾、污染或水域壓力已經讓動物減少，先清垃圾、處理污染事件，再回來觀察。";
           if (backpackTotal() >= 5) return "背包裡已有多件垃圾，先回社區南側回收場分類換點數。";
           if (state.trash.length >= 7) return "道路垃圾正在增加，優先巡查主路與橋邊，降低垃圾怪生成機率。";
           if (state.ecology.water < 50) return "溪流水質偏低，先去溪流廊道處理排水口、採樣點或岸邊垃圾。";
@@ -6285,6 +7563,10 @@
         function update(dt) {
           if (!state.started) return;
           if (state.paused) {
+            updateCamera();
+            return;
+          }
+          if (state.crafting) {
             updateCamera();
             return;
           }
@@ -6337,6 +7619,14 @@
           if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright", "1", "2", "3", "4", "5"].includes(key)) event.preventDefault();
           const onceKeys = [" ", "e", "enter", "b", "m", "escape", "p", "g", "i", "r", "x"];
           if (event.repeat && (state.battle || state.recycleGame || onceKeys.includes(key))) return;
+          if (state.crafting) {
+            if (key === "escape") closeCraftingModal();
+            else if (key === "p") {
+              closeCraftingModal({ silent: true });
+              togglePause();
+            }
+            return;
+          }
           if (key === "p") {
             togglePause();
             return;
@@ -6411,6 +7701,7 @@
 
         function setPaused(paused) {
           if (!state.started) return;
+          if (paused) closeCraftingModal({ silent: true });
           state.paused = paused;
           keys.clear();
           syncSettingsOverlay();
@@ -6430,6 +7721,7 @@
           startOverlay.hidden = false;
           settingsOverlay.hidden = true;
           homeConfirm.hidden = true;
+          closeCraftingModal({ silent: true });
           promptEl.hidden = true;
           playerStatus.hidden = true;
           questHud.hidden = true;
@@ -6470,6 +7762,15 @@
           homeConfirm.hidden = true;
         });
         volumeSlider.addEventListener("input", () => setVolumeFromSlider(volumeSlider.value));
+        craftClose.addEventListener("click", () => closeCraftingModal());
+        craftModal.addEventListener("click", (event) => {
+          if (event.target === craftModal) closeCraftingModal();
+        });
+        craftRecipeList.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-recipe-id]");
+          if (!button || button.disabled) return;
+          exchangeCraftRecipe(button.dataset.recipeId);
+        });
         saveBtn.addEventListener("click", saveNow);
         pauseBtn.addEventListener("click", togglePause);
         mapBtn.addEventListener("click", () => {
