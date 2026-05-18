@@ -51,12 +51,21 @@
       .app {
         --app-gap: 12px;
         --side-width: 430px;
+        position: relative;
         display: grid;
         grid-template-columns: minmax(0, 1fr) var(--side-width);
         gap: var(--app-gap);
         width: min(calc(100vw - 16px), calc((100vh - 16px) * 1.5 + var(--side-width) + var(--app-gap)));
         height: min(calc(100vh - 16px), calc((100vw - 16px - var(--side-width) - var(--app-gap)) * 0.6667));
         margin: 8px auto;
+      }
+
+      .app.side-collapsed {
+        --app-gap: 0px;
+        --side-width: 0px;
+        grid-template-columns: minmax(0, 1fr);
+        width: min(calc(100vw - 16px), calc((100vh - 16px) * 1.5));
+        height: min(calc(100vh - 16px), calc((100vw - 16px) * 0.6667));
       }
 
       .stage {
@@ -473,6 +482,32 @@
         gap: 7px;
       }
 
+      .side-collapsed .side {
+        display: none;
+      }
+
+      .side-toggle {
+        position: absolute;
+        top: 10px;
+        right: calc(var(--side-width) - 58px);
+        z-index: 22;
+        min-width: 48px;
+        min-height: 32px;
+        padding: 0 9px;
+        border: 2px solid rgba(255, 247, 214, 0.8);
+        border-radius: 8px;
+        background: rgba(28, 48, 36, 0.94);
+        color: #fff7d7;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 950;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+      }
+
+      .side-collapsed .side-toggle {
+        right: 10px;
+      }
+
       .hud-strip {
         display: inline-flex;
         align-items: center;
@@ -540,7 +575,7 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 4px;
-        padding: 7px;
+        padding: 38px 7px 7px;
       }
 
       .metric {
@@ -1847,7 +1882,7 @@
     </style>
   </head>
   <body>
-    <div class="app">
+    <div class="app" id="appShell">
       <main class="stage" aria-label="森循島遊戲畫面">
         <canvas id="game" width="960" height="640"></canvas>
         <div class="hud-pill" id="hudPills"></div>
@@ -1930,7 +1965,9 @@
         </section>
       </main>
 
-      <aside class="side">
+      <button class="side-toggle" id="sideToggle" type="button" aria-controls="infoSide" aria-expanded="true">收合</button>
+
+      <aside class="side" id="infoSide">
         <section class="panel header">
           <h2>森循島控制台</h2>
           <div class="tag" id="sceneLine">自由探索準備中</div>
@@ -1997,6 +2034,8 @@
         const startOverlay = document.getElementById("startOverlay");
         const settingsOverlay = document.getElementById("settingsOverlay");
         const startBtn = document.getElementById("startBtn");
+        const appShell = document.getElementById("appShell");
+        const sideToggle = document.getElementById("sideToggle");
         const loadBtn = document.getElementById("loadBtn");
         const resetBtn = document.getElementById("resetBtn");
         const resumeBtn = document.getElementById("resumeBtn");
@@ -4295,9 +4334,9 @@
           const col = index % cols;
           const row = Math.floor(index / cols);
           const gap = Math.max(5, Math.min(VILLAGE_FARM.w, VILLAGE_FARM.h) * 0.022);
-          const insetX = VILLAGE_FARM.w * 0.14;
-          const topInset = VILLAGE_FARM.h * 0.29;
-          const bottomInset = VILLAGE_FARM.h * 0.12;
+          const insetX = VILLAGE_FARM.w * 0.17;
+          const topInset = VILLAGE_FARM.h * 0.31;
+          const bottomInset = VILLAGE_FARM.h * 0.2;
           const usableW = VILLAGE_FARM.w - insetX * 2;
           const usableH = VILLAGE_FARM.h - topInset - bottomInset;
           const plotW = (usableW - gap * (cols - 1)) / cols;
@@ -5246,7 +5285,23 @@
           const ty = Math.floor(y / TILE);
           const terrain = terrainAt(tx, ty);
           if (terrain === "void" || terrain === "water") return true;
+          if (isFarmFencePoint(x, y)) return true;
           return buildingDefs.some(({ block }) => x > block.x && x < block.x + block.w && y > block.y && y < block.y + block.h);
+        }
+
+        function isFarmFencePoint(x, y) {
+          const farm = VILLAGE_FARM;
+          if (x < farm.x || x > farm.x + farm.w || y < farm.y || y > farm.y + farm.h) return false;
+          const fence = 22;
+          const gateW = TILE * 2.35;
+          const gateLeft = farm.x + farm.w / 2 - gateW / 2;
+          const gateRight = farm.x + farm.w / 2 + gateW / 2;
+          const inTopGate = x >= gateLeft && x <= gateRight && y < farm.y + fence + 14;
+          const topFence = y < farm.y + fence && !inTopGate;
+          const bottomFence = y > farm.y + farm.h - fence;
+          const leftFence = x < farm.x + fence;
+          const rightFence = x > farm.x + farm.w - fence;
+          return topFence || bottomFence || leftFence || rightFence;
         }
 
         function isWaterPoint(x, y) {
@@ -9296,11 +9351,23 @@
           uiDirty = true;
         }
 
+        function setSideCollapsed(collapsed) {
+          appShell.classList.toggle("side-collapsed", collapsed);
+          sideToggle.setAttribute("aria-expanded", String(!collapsed));
+          sideToggle.textContent = collapsed ? "資訊" : "收合";
+          sideToggle.title = collapsed ? "展開右側資訊欄" : "收合右側資訊欄";
+        }
+
         document.querySelectorAll(".tab").forEach((tab) => {
           tab.addEventListener("click", () => {
             setActiveTab(tab.dataset.tab);
           });
         });
+
+        sideToggle.addEventListener("click", () => {
+          setSideCollapsed(!appShell.classList.contains("side-collapsed"));
+        });
+        setSideCollapsed(false);
 
         sideBody.addEventListener("contextmenu", (event) => {
           const slot = event.target.closest("[data-item-id]");
