@@ -153,6 +153,15 @@
     "source": "gpt-image-2"
   },
   {
+    "name": "ecoStationInterior",
+    "file": "ecoStationInterior.png",
+    "size": [
+      1672,
+      941
+    ],
+    "source": "gpt-image-2"
+  },
+  {
     "name": "buildingDataLab",
     "file": "buildingDataLab.png",
     "size": [
@@ -162,11 +171,29 @@
     "source": "gpt-image-2"
   },
   {
+    "name": "dataLabInterior",
+    "file": "dataLabInterior.png",
+    "size": [
+      1672,
+      941
+    ],
+    "source": "gpt-image-2"
+  },
+  {
     "name": "buildingWorkshop",
     "file": "buildingWorkshop.png",
     "size": [
       236,
       178
+    ],
+    "source": "gpt-image-2"
+  },
+  {
+    "name": "workshopInterior",
+    "file": "workshopInterior.png",
+    "size": [
+      1672,
+      941
     ],
     "source": "gpt-image-2"
   },

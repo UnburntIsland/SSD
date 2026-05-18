@@ -191,7 +191,7 @@
         left: 16px;
         bottom: 16px;
         z-index: 4;
-        width: 258px;
+        width: min(360px, calc(100% - 32px));
         padding: 8px 10px;
         border: 2px solid rgba(255, 247, 214, 0.68);
         border-radius: 8px;
@@ -1315,6 +1315,399 @@
         cursor: not-allowed;
       }
 
+      .plant-modal {
+        position: absolute;
+        inset: 0;
+        z-index: 15;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        background: rgba(10, 22, 17, 0.5);
+        backdrop-filter: blur(2px);
+      }
+
+      .plant-modal[hidden] {
+        display: none;
+      }
+
+      .plant-card {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        width: min(860px, 100%);
+        max-height: min(590px, 100%);
+        overflow: hidden;
+        border: 4px solid #fff3bf;
+        border-radius: 8px;
+        background: #203a2d;
+        color: #fff7d7;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+      }
+
+      .plant-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px 10px;
+        border-bottom: 2px solid rgba(255, 243, 191, 0.28);
+      }
+
+      .plant-header h2 {
+        margin: 0;
+        color: #f8de8f;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      .plant-header p {
+        margin: 5px 0 0;
+        color: #dbe8c0;
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.45;
+      }
+
+      .plant-close {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        border: 2px solid rgba(255, 243, 191, 0.58);
+        border-radius: 7px;
+        background: rgba(255, 247, 215, 0.12);
+        color: #fff7d7;
+        cursor: pointer;
+        font-size: 22px;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .plant-body {
+        display: grid;
+        gap: 10px;
+        padding: 12px 16px 16px;
+        overflow: auto;
+      }
+
+      .plant-row,
+      .plant-job,
+      .plant-plot-card {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+        border: 2px solid rgba(255, 243, 191, 0.24);
+        border-radius: 8px;
+        background: rgba(255, 247, 215, 0.08);
+      }
+
+      .plant-row {
+        grid-template-columns: 56px minmax(0, 1fr) minmax(92px, auto);
+        align-items: center;
+      }
+
+      .plant-row > .slot-icon {
+        width: 48px;
+        height: 48px;
+      }
+
+      .plant-row.locked {
+        opacity: 0.72;
+      }
+
+      .plant-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 5px;
+      }
+
+      .plant-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 3px 7px;
+        border-radius: 6px;
+        background: rgba(219, 232, 192, 0.18);
+        color: #fff7d7;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .plant-chip.warn {
+        color: #ffcf8d;
+        background: rgba(195, 129, 50, 0.28);
+      }
+
+      .plant-chip.bad {
+        color: #ff9088;
+        background: rgba(196, 79, 69, 0.24);
+      }
+
+      .plant-title {
+        color: #fff7d7;
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .plant-title small {
+        display: block;
+        margin-top: 3px;
+        color: #dbe8c0;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.35;
+      }
+
+      .plant-action {
+        min-width: 82px;
+        min-height: 38px;
+        padding: 0 12px;
+        border: 2px solid #fff3bf;
+        border-radius: 7px;
+        background: #2e795d;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 950;
+      }
+
+      .plant-action:disabled {
+        border-color: rgba(255, 243, 191, 0.22);
+        background: #70776f;
+        color: #cfc8ac;
+        cursor: not-allowed;
+      }
+
+      .plant-action-stack {
+        display: grid;
+        gap: 5px;
+        justify-items: center;
+      }
+
+      .plant-action-stack .plant-action {
+        width: 100%;
+      }
+
+      .seed-owned {
+        color: #fff7d7;
+        font-size: 11px;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .seed-owned.bad {
+        color: #ff9088;
+      }
+
+      .plant-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #f8de8f;
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .plant-progress {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(220, 207, 168, 0.36);
+      }
+
+      .plant-progress i {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: #80c96c;
+      }
+
+      .bag-equipment {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        margin-bottom: 7px;
+      }
+
+      .equip-slot {
+        display: grid;
+        min-width: 0;
+        min-height: 76px;
+        place-items: center;
+        padding: 6px;
+        border: 2px solid rgba(46, 121, 93, 0.32);
+        border-radius: 7px;
+        background: rgba(255, 247, 220, 0.78);
+      }
+
+      .equip-slot.empty {
+        background:
+          linear-gradient(135deg, rgba(255, 247, 220, 0.52), rgba(219, 232, 192, 0.42));
+      }
+
+      .equip-slot img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .equip-slot.empty img {
+        opacity: 0.22;
+        filter: grayscale(1);
+      }
+
+      .equip-slot span {
+        display: block;
+        margin-top: 4px;
+        color: #244f3c;
+        font-size: 10px;
+        font-weight: 950;
+        text-align: center;
+        overflow-wrap: anywhere;
+      }
+
+      .inventory-slots {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 5px;
+      }
+
+      .slot-cell {
+        position: relative;
+        display: grid;
+        place-items: center;
+        aspect-ratio: 1;
+        min-width: 0;
+        border: 2px solid rgba(105, 126, 86, 0.34);
+        border-radius: 6px;
+        background: #efe5bd;
+        box-shadow: inset 0 0 0 2px rgba(255, 248, 218, 0.38);
+      }
+
+      .slot-cell.empty {
+        background: rgba(239, 229, 189, 0.45);
+      }
+
+      .slot-cell.edible {
+        cursor: context-menu;
+        border-color: rgba(215, 139, 61, 0.58);
+      }
+
+      .slot-icon,
+      .slot-pixel {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      .slot-count {
+        position: absolute;
+        right: 4px;
+        bottom: 2px;
+        min-width: 18px;
+        padding: 1px 3px;
+        border-radius: 5px;
+        background: rgba(30, 53, 41, 0.9);
+        color: #fff7d7;
+        font-size: 10px;
+        font-weight: 950;
+        text-align: right;
+      }
+
+      .slot-name {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        top: 3px;
+        color: rgba(36, 79, 60, 0.78);
+        font-size: 9px;
+        font-weight: 900;
+        line-height: 1.1;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .bag-grid-label {
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      .slot-pixel {
+        position: relative;
+        display: inline-block;
+        border-radius: 5px;
+        background: rgba(255, 248, 218, 0.42);
+      }
+
+      .slot-pixel::before,
+      .slot-pixel::after {
+        content: "";
+        position: absolute;
+        image-rendering: pixelated;
+      }
+
+      .slot-pixel.seed::before {
+        left: 11px;
+        top: 16px;
+        width: 10px;
+        height: 8px;
+        border-radius: 9px 9px 7px 7px;
+        background: #8b5a2d;
+      }
+
+      .slot-pixel.seed::after {
+        left: 14px;
+        top: 7px;
+        width: 4px;
+        height: 12px;
+        background: #5cad5d;
+        box-shadow: -6px 3px 0 #75bf67, 6px 1px 0 #75bf67;
+      }
+
+      .slot-pixel.crop::before {
+        left: 8px;
+        top: 10px;
+        width: 16px;
+        height: 14px;
+        border-radius: 8px;
+        background: #e6c95b;
+        box-shadow: 0 8px 0 #9c6c32;
+      }
+
+      .slot-pixel.crop::after {
+        left: 5px;
+        top: 8px;
+        width: 8px;
+        height: 6px;
+        background: #5cad5d;
+        box-shadow: 14px 2px 0 #74bf69;
+      }
+
+      .slot-pixel.food::before {
+        left: 7px;
+        top: 8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        background: #d88b3d;
+        box-shadow: inset 0 -5px 0 rgba(96, 56, 28, 0.22);
+      }
+
+      .slot-pixel.food::after {
+        left: 11px;
+        top: 5px;
+        width: 10px;
+        height: 5px;
+        background: #8fd17b;
+      }
+
       @media (max-width: 1100px) {
         body {
           overflow: auto;
@@ -1434,6 +1827,22 @@
         .craft-arrow {
           min-height: 22px;
         }
+
+        .plant-modal {
+          padding: 10px;
+        }
+
+        .plant-card {
+          max-height: calc(100% - 8px);
+        }
+
+        .plant-row {
+          grid-template-columns: 1fr;
+        }
+
+        .inventory-slots {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
       }
     </style>
   </head>
@@ -1450,17 +1859,29 @@
           <b id="dialogueTitle"></b>
           <span id="dialogueText"></span>
         </div>
-        <section class="craft-modal" id="craftModal" hidden aria-label="裝備工作台兌換">
+        <section class="craft-modal" id="craftModal" hidden aria-label="工坊工作台兌換">
           <div class="craft-card" role="dialog" aria-modal="true" aria-labelledby="craftTitle">
             <div class="craft-header">
               <div>
-                <h2 id="craftTitle">裝備工作台</h2>
+                <h2 id="craftTitle">工坊工作台</h2>
                 <p>左邊確認需要的再生材料，右邊選擇要兌換的塑膠裝備或修補項目。</p>
               </div>
               <button class="craft-close" id="craftClose" type="button" aria-label="關閉工作台">×</button>
             </div>
             <div class="craft-material-summary" id="craftMaterialSummary"></div>
             <div class="craft-list" id="craftRecipeList"></div>
+          </div>
+        </section>
+        <section class="plant-modal" id="plantModal" hidden aria-label="種植與育種">
+          <div class="plant-card" role="dialog" aria-modal="true" aria-labelledby="plantTitle">
+            <div class="plant-header">
+              <div>
+                <h2 id="plantTitle">種植系統</h2>
+                <p id="plantSubtitle">查看適合種植月份、成長時間與糧食量，並管理種子培育或田地收成。</p>
+              </div>
+              <button class="plant-close" id="plantClose" type="button" aria-label="關閉種植視窗">×</button>
+            </div>
+            <div class="plant-body" id="plantBody"></div>
           </div>
         </section>
         <section class="start" id="startOverlay">
@@ -1598,6 +2019,11 @@
         const craftClose = document.getElementById("craftClose");
         const craftMaterialSummary = document.getElementById("craftMaterialSummary");
         const craftRecipeList = document.getElementById("craftRecipeList");
+        const plantModal = document.getElementById("plantModal");
+        const plantClose = document.getElementById("plantClose");
+        const plantTitle = document.getElementById("plantTitle");
+        const plantSubtitle = document.getElementById("plantSubtitle");
+        const plantBody = document.getElementById("plantBody");
         const sceneLine = document.getElementById("sceneLine");
         const sideBody = document.getElementById("sideBody");
         const logEl = document.getElementById("log");
@@ -1624,6 +2050,14 @@
         const WORLD_H = MAP_H * TILE;
         const SAVE_KEY = "senxunIslandPixelSandboxV2";
         const DAY_MINUTES = 24 * 60;
+        const DAYS_PER_MONTH = 3;
+        const START_MONTH = 3;
+        const SEASON_DEFS = [
+          { id: "spring", name: "春季", months: [3, 4, 5] },
+          { id: "summer", name: "夏季", months: [6, 7, 8] },
+          { id: "autumn", name: "秋季", months: [9, 10, 11] },
+          { id: "winter", name: "冬季", months: [12, 1, 2] },
+        ];
         const BASE_PLAYER_HEALTH = 42;
         const HEALTH_PER_LEVEL = 6;
         const FIELD_ACTION_HEALTH_COST = 5;
@@ -1738,8 +2172,8 @@
         ];
 
         const equipmentSlotDefs = [
-          { slot: "head", label: "帽子/頭盔", noun: "頭盔", key: "Helmet", baseCost: 4 },
-          { slot: "chest", label: "衣服/胸甲", noun: "胸甲", key: "Chest", baseCost: 8 },
+          { slot: "head", label: "帽子", noun: "頭盔", key: "Helmet", baseCost: 4 },
+          { slot: "chest", label: "衣服", noun: "胸甲", key: "Chest", baseCost: 8 },
           { slot: "legs", label: "褲子", noun: "護腿", key: "Pants", baseCost: 7 },
           { slot: "feet", label: "鞋子", noun: "靴", key: "Boots", baseCost: 4 },
         ];
@@ -1795,6 +2229,139 @@
             };
           }),
         );
+
+        const ITEM_STACK_LIMIT = 64;
+        const INVENTORY_SLOT_COUNT = 42;
+        const FARM_PLOT_TIERS = [6, 9, 12, 16, 20, 25];
+        const FARM_PLOT_MAX_COUNT = FARM_PLOT_TIERS[FARM_PLOT_TIERS.length - 1];
+        const FARM_UPGRADE_RECIPES = [
+          null,
+          { plasticFiber: 6, paperPulp: 3, food: 18 },
+          { plasticFiber: 10, paperPulp: 5, metalParts: 2, food: 28 },
+          { plasticFiber: 14, paperPulp: 7, metalParts: 3, glassLens: 2, food: 42 },
+          { plasticFiber: 18, paperPulp: 9, metalParts: 5, glassLens: 3, food: 58 },
+          { plasticFiber: 24, paperPulp: 12, metalParts: 7, glassLens: 4, safeResidue: 2, food: 78 },
+        ];
+        const SEED_LAB_MAX_JOBS = 3;
+        const VILLAGE_FARM = { x: 7.5 * TILE, y: 43.25 * TILE, w: 10 * TILE, h: 7.5 * TILE };
+
+        const plantDefs = [
+          {
+            id: "rice",
+            name: "水稻",
+            seedName: "水稻種子",
+            cropName: "稻穀",
+            months: [3, 4, 5, 6],
+            growth: 540,
+            food: 18,
+            seedDuration: 180,
+            seedYield: 3,
+            failChance: 0.08,
+            note: "喜歡清晨與濕潤環境，成熟後提供穩定主食。",
+          },
+          {
+            id: "sweetPotato",
+            name: "地瓜",
+            seedName: "地瓜藤苗",
+            cropName: "地瓜",
+            months: [4, 5, 6, 7, 8],
+            growth: 720,
+            food: 24,
+            seedDuration: 210,
+            seedYield: 2,
+            failChance: 0.1,
+            note: "耐旱、適合午後暖土，糧食量高但成長較久。",
+          },
+          {
+            id: "greens",
+            name: "短期葉菜",
+            seedName: "葉菜種子",
+            cropName: "葉菜",
+            months: [2, 3, 4, 9, 10, 11],
+            growth: 300,
+            food: 10,
+            seedDuration: 130,
+            seedYield: 4,
+            failChance: 0.07,
+            note: "成長快，適合用來補足短期飽食度。",
+          },
+          {
+            id: "mushroom",
+            name: "林下菇",
+            seedName: "菇類菌包",
+            cropName: "菇類",
+            months: [9, 10, 11, 12, 1, 2],
+            growth: 420,
+            food: 14,
+            seedDuration: 160,
+            seedYield: 2,
+            failChance: 0.12,
+            note: "偏好秋冬與陰濕月份，錯月種植較容易失敗。",
+          },
+          {
+            id: "saltRice",
+            name: "耐鹽稻",
+            seedName: "耐鹽稻種子",
+            cropName: "耐鹽稻穀",
+            months: [5, 6, 7, 8],
+            growth: 660,
+            food: 30,
+            seedDuration: 260,
+            seedYield: 2,
+            failChance: 0.16,
+            hybrid: { parents: ["rice", "greens"], failChance: 0.35 },
+            note: "由水稻與葉菜性狀雜交研發，適合海風影響的島上田地。",
+          },
+          {
+            id: "sunTuber",
+            name: "日照塊根",
+            seedName: "日照塊根苗",
+            cropName: "日照塊根",
+            months: [6, 7, 8, 9],
+            growth: 780,
+            food: 34,
+            seedDuration: 300,
+            seedYield: 2,
+            failChance: 0.18,
+            hybrid: { parents: ["sweetPotato", "mushroom"], failChance: 0.42 },
+            note: "地瓜與菇類培養技術的新品種，產量高但研發風險也高。",
+          },
+        ];
+
+        const foodItemDefs = [
+          {
+            id: "bread",
+            name: "麵包",
+            icon: "foodBread",
+            recipe: { food: 14, sweetPotatoCrop: 1 },
+            satiety: 28,
+            detail: "把糧食與地瓜做成方便攜帶的主食。",
+          },
+          {
+            id: "riceBall",
+            name: "飯糰",
+            icon: "foodRiceBall",
+            recipe: { food: 10, riceCrop: 1 },
+            satiety: 24,
+            detail: "用稻穀與糧食做成巡查時能快速補充的食物。",
+          },
+          {
+            id: "veggieSoup",
+            name: "蔬菜湯",
+            icon: "foodVeggieSoup",
+            recipe: { food: 8, greensCrop: 2 },
+            satiety: 22,
+            detail: "葉菜熬成的熱湯，補充飽食感很穩定。",
+          },
+          {
+            id: "mushroomStew",
+            name: "菇湯",
+            icon: "foodMushroomStew",
+            recipe: { food: 10, mushroomCrop: 1 },
+            satiety: 26,
+            detail: "菇類料理，適合在夜間巡查前準備。",
+          },
+        ];
 
         const trueFalseQuestionSeeds = [
           { tag: "paper", fact: "乾淨、乾燥的紙類通常比沾滿油污的紙類更適合回收。", myth: "只要是紙做的餐盒，沾油也一定能直接回收。", explain: "油污會降低紙類再製品質，乾淨與乾燥是回收前的重要條件。" },
@@ -2463,8 +3030,11 @@
           tree: "tree.png",
           treeTall: "treeTall.png",
           buildingEcoStation: "buildingEcoStation.png",
+          ecoStationInterior: "ecoStationInterior.png",
           buildingDataLab: "buildingDataLab.png",
+          dataLabInterior: "dataLabInterior.png",
           buildingWorkshop: "buildingWorkshop.png",
+          workshopInterior: "workshopInterior.png",
           recycleYard: "recycleYard.png",
           bridge: "bridge.png",
           tileGrass: "tileGrass.png",
@@ -2497,6 +3067,25 @@
           equipPlasticReinforcedChest: "equipPlasticReinforcedChest.png",
           equipPlasticReinforcedPants: "equipPlasticReinforcedPants.png",
           equipPlasticReinforcedBoots: "equipPlasticReinforcedBoots.png",
+          plantRiceSeed: "plantRiceSeed.png",
+          plantRiceCrop: "plantRiceCrop.png",
+          plantSweetPotatoSeed: "plantSweetPotatoSeed.png",
+          plantSweetPotatoCrop: "plantSweetPotatoCrop.png",
+          plantGreensSeed: "plantGreensSeed.png",
+          plantGreensCrop: "plantGreensCrop.png",
+          plantMushroomSeed: "plantMushroomSeed.png",
+          plantMushroomCrop: "plantMushroomCrop.png",
+          plantSaltRiceSeed: "plantSaltRiceSeed.png",
+          plantSaltRiceCrop: "plantSaltRiceCrop.png",
+          plantSunTuberSeed: "plantSunTuberSeed.png",
+          plantSunTuberCrop: "plantSunTuberCrop.png",
+          itemFoodBowl: "itemFoodBowl.png",
+          foodBread: "foodBread.png",
+          foodRiceBall: "foodRiceBall.png",
+          foodVeggieSoup: "foodVeggieSoup.png",
+          foodMushroomStew: "foodMushroomStew.png",
+          farmGardenBase: "farmGardenBase.png",
+          seedLabTray: "seedLabTray.png",
           weatherSunny: "weatherSunny.png",
           weatherCloudy: "weatherCloudy.png",
           weatherRain: "weatherRain.png",
@@ -2724,6 +3313,27 @@
               marker: { x: 692, y: 350, w: 108, h: 40 },
               effect: "seedArchive",
             },
+            {
+              id: "nurseryField",
+              label: "育種農田",
+              prompt: "培育/雜交",
+              rect: { x: 342, y: 360, w: 284, h: 130 },
+              marker: { x: 484, y: 512, w: 138, h: 42 },
+              effect: "seedLab",
+              cost: 0,
+              repeatable: true,
+            },
+            {
+              id: "farmExpansionDesk",
+              label: "農地擴充圖",
+              prompt: "擴充農田",
+              rect: { x: 684, y: 430, w: 164, h: 74 },
+              marker: { x: 766, y: 526, w: 132, h: 42 },
+              effect: "farmUpgrade",
+              cost: 0,
+              repeatable: true,
+              range: 96,
+            },
           ],
           dataLab: [
             {
@@ -2764,8 +3374,8 @@
             },
             {
               id: "sortingCart",
-              label: "裝備工作台",
-              prompt: "製作/修補",
+              label: "工坊工作台",
+              prompt: "料理/製作",
               rect: { x: 432, y: 236, w: 244, h: 90 },
               marker: { x: 554, y: 342, w: 118, h: 42 },
               effect: "equipmentBench",
@@ -2862,6 +3472,15 @@
           stationPrep: { day: 1, fieldBonus: 0, animalTrustBonus: 0, recycleBonus: 0 },
           stats: { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 },
           questionStats: { answered: 0, correct: 0 },
+          satiety: 72,
+          food: 0,
+          meals: {},
+          seeds: {},
+          crops: {},
+          plantResearch: {},
+          seedLabJobs: [],
+          farmPlots: [],
+          farmUpgradeLevel: 0,
           mainQuest: { index: 0, step: 0, completed: 0 },
           questItems: [],
           completedMissions: {},
@@ -2874,6 +3493,7 @@
           battle: null,
           recycleGame: null,
           crafting: null,
+          plantPanel: null,
         };
 
         function assetUrl(name, fallback = "trash") {
@@ -3092,6 +3712,60 @@
           return source?.icon || "itemPlastic";
         }
 
+        function foodItemDef(id) {
+          return foodItemDefs.find((item) => item.id === id) || foodItemDefs[0];
+        }
+
+        function resourceInfo(id) {
+          const material = materialDefs.find((item) => item.id === id);
+          if (material) return { id, name: material.name, icon: materialIconName(id), kind: "material" };
+          const cropPlant = plantDefs.find((plant) => `${plant.id}Crop` === id);
+          if (cropPlant) return { id, name: cropPlant.cropName, icon: plantIconName(cropPlant, "crop"), kind: "crop" };
+          const seedPlant = plantDefs.find((plant) => `${plant.id}Seed` === id);
+          if (seedPlant) return { id, name: seedPlant.seedName, icon: plantIconName(seedPlant, "seed"), kind: "seed" };
+          if (id === "food") return { id, name: "糧食", icon: "itemFoodBowl", kind: "food" };
+          const meal = foodItemDefs.find((item) => item.id === id);
+          if (meal) return { id, name: meal.name, icon: meal.icon, kind: "meal" };
+          return { id, name: id, icon: "itemPlastic", kind: "item" };
+        }
+
+        function resourceCount(id) {
+          if (materialDefs.some((item) => item.id === id)) return state.materials[id] || 0;
+          const cropPlant = plantDefs.find((plant) => `${plant.id}Crop` === id);
+          if (cropPlant) return state.crops[cropPlant.id] || 0;
+          const seedPlant = plantDefs.find((plant) => `${plant.id}Seed` === id);
+          if (seedPlant) return state.seeds[seedPlant.id] || 0;
+          if (id === "food") return state.food || 0;
+          if (foodItemDefs.some((item) => item.id === id)) return state.meals[id] || 0;
+          return 0;
+        }
+
+        function spendResource(id, count) {
+          if (materialDefs.some((item) => item.id === id)) {
+            state.materials[id] = Math.max(0, (state.materials[id] || 0) - count);
+            return true;
+          }
+          const cropPlant = plantDefs.find((plant) => `${plant.id}Crop` === id);
+          if (cropPlant) {
+            state.crops[cropPlant.id] = Math.max(0, (state.crops[cropPlant.id] || 0) - count);
+            return true;
+          }
+          const seedPlant = plantDefs.find((plant) => `${plant.id}Seed` === id);
+          if (seedPlant) {
+            state.seeds[seedPlant.id] = Math.max(0, (state.seeds[seedPlant.id] || 0) - count);
+            return true;
+          }
+          if (id === "food") {
+            state.food = Math.max(0, (state.food || 0) - count);
+            return true;
+          }
+          if (foodItemDefs.some((item) => item.id === id)) {
+            state.meals[id] = Math.max(0, (state.meals[id] || 0) - count);
+            return true;
+          }
+          return false;
+        }
+
         function equipmentDef(id) {
           return equipmentDefs.find((gear) => gear.id === id) || equipmentDefs[0];
         }
@@ -3104,22 +3778,28 @@
           return parts.length ? parts.join("、") : "尚未拆解回收材料。";
         }
 
-        function hasMaterials(recipe) {
-          return Object.entries(recipe || {}).every(([id, count]) => (state.materials[id] || 0) >= count);
+        function hasResources(recipe) {
+          return Object.entries(recipe || {}).every(([id, count]) => resourceCount(id) >= count);
         }
 
-        function spendMaterials(recipe) {
-          if (!hasMaterials(recipe)) return false;
-          for (const [id, count] of Object.entries(recipe || {})) {
-            state.materials[id] = Math.max(0, (state.materials[id] || 0) - count);
-          }
+        function spendResources(recipe) {
+          if (!hasResources(recipe)) return false;
+          for (const [id, count] of Object.entries(recipe || {})) spendResource(id, count);
           uiDirty = true;
           return true;
         }
 
+        function hasMaterials(recipe) {
+          return hasResources(recipe);
+        }
+
+        function spendMaterials(recipe) {
+          return spendResources(recipe);
+        }
+
         function recipeText(recipe) {
           return Object.entries(recipe || {})
-            .map(([id, count]) => `${materialDef(id).name} ${count}`)
+            .map(([id, count]) => `${resourceInfo(id).name} ${count}`)
             .join("、");
         }
 
@@ -3168,6 +3848,93 @@
             .filter((gear) => gearState(gear.id).crafted)
             .map((gear) => `${gear.name} ${gearState(gear.id).durability}%`);
           return rows.length ? rows.join("、") : "尚未製作裝備。";
+        }
+
+        function equipmentGhostIcon(slot) {
+          return `equipPlasticClear${slot.key}`;
+        }
+
+        function inventoryItemInfo(itemId) {
+          const trash = trashTypes.find((type) => type.id === itemId);
+          if (trash) return { id: trash.id, name: trash.name, icon: trash.icon, kind: "trash" };
+          const material = materialDefs.find((item) => item.id === itemId);
+          if (material) return { id: material.id, name: material.name, icon: materialIconName(material.id), kind: "material" };
+          const seedPlant = plantDefs.find((plant) => `${plant.id}Seed` === itemId);
+          if (seedPlant) return { id: itemId, name: seedPlant.seedName, plant: seedPlant, icon: plantIconName(seedPlant, "seed"), kind: "seed" };
+          const cropPlant = plantDefs.find((plant) => `${plant.id}Crop` === itemId);
+          if (cropPlant) return { id: itemId, name: cropPlant.cropName, plant: cropPlant, icon: plantIconName(cropPlant, "crop"), kind: "crop" };
+          if (itemId === "food") return { id: "food", name: "糧食", icon: "itemFoodBowl", kind: "food" };
+          const meal = foodItemDefs.find((item) => item.id === itemId);
+          if (meal) return { id: meal.id, name: meal.name, icon: meal.icon, kind: "meal", satiety: meal.satiety };
+          const gear = equipmentDefs.find((item) => item.id === itemId);
+          if (gear) return { id: gear.id, name: gear.name, icon: gear.icon, kind: "equipment" };
+          return { id: itemId, name: itemId, icon: "itemPlastic", kind: "item" };
+        }
+
+        function splitInventoryStacks(itemId, count, maxStack = ITEM_STACK_LIMIT) {
+          const stacks = [];
+          let left = Math.max(0, Math.floor(count));
+          while (left > 0) {
+            const take = Math.min(maxStack, left);
+            stacks.push({ itemId, count: take });
+            left -= take;
+          }
+          return stacks;
+        }
+
+        function inventoryStacks() {
+          const stacks = [];
+          for (const type of trashTypes) stacks.push(...splitInventoryStacks(type.id, state.backpack[type.id] || 0));
+          for (const material of materialDefs) stacks.push(...splitInventoryStacks(material.id, state.materials[material.id] || 0));
+          for (const plant of plantDefs) stacks.push(...splitInventoryStacks(`${plant.id}Seed`, state.seeds[plant.id] || 0));
+          for (const plant of plantDefs) stacks.push(...splitInventoryStacks(`${plant.id}Crop`, state.crops[plant.id] || 0));
+          stacks.push(...splitInventoryStacks("food", state.food || 0));
+          for (const meal of foodItemDefs) stacks.push(...splitInventoryStacks(meal.id, state.meals[meal.id] || 0));
+          for (const gear of equipmentDefs) {
+            const item = gearState(gear.id);
+            if (item.crafted) stacks.push({ itemId: gear.id, count: 1, durability: item.durability });
+          }
+          return stacks;
+        }
+
+        function inventoryItemIcon(info, className = "slot-icon") {
+          if (info.icon) return `<img class="${className}" src="${assetUrl(info.icon, "itemPlastic")}" alt="" aria-hidden="true">`;
+          return `<span class="${className} slot-pixel ${info.pixel || "seed"}" aria-hidden="true"></span>`;
+        }
+
+        function inventorySlotHtml(stack) {
+          if (!stack) return `<div class="slot-cell empty" aria-hidden="true"></div>`;
+          const info = inventoryItemInfo(stack.itemId);
+          const countText = info.kind === "equipment" ? `${stack.durability}%` : stack.count > 1 ? stack.count : "";
+          const edible = info.kind === "meal";
+          const title = edible ? `${info.name}｜右鍵食用，飽食 +${info.satiety}` : info.name;
+          return `
+            <div class="slot-cell ${edible ? "edible" : ""}" title="${title}" data-item-id="${stack.itemId}">
+              <span class="slot-name">${info.name}</span>
+              ${inventoryItemIcon(info)}
+              ${countText ? `<span class="slot-count">${countText}</span>` : ""}
+            </div>
+          `;
+        }
+
+        function inventoryGridHtml() {
+          const stacks = inventoryStacks();
+          const slotCount = Math.max(INVENTORY_SLOT_COUNT, Math.ceil(stacks.length / 6) * 6);
+          return Array.from({ length: slotCount }, (_, index) => inventorySlotHtml(stacks[index])).join("");
+        }
+
+        function equipmentSlotsHtml() {
+          const equipped = equippedGearBySlot();
+          return equipmentSlotDefs.map((slot) => {
+            const gear = equipped[slot.slot];
+            const title = gear ? `${gear.name} ${gearState(gear.id).durability}%` : slot.label;
+            return `
+              <div class="equip-slot ${gear ? "" : "empty"}" title="${title}">
+                <img src="${assetUrl(gear ? gear.icon : equipmentGhostIcon(slot), "itemPlastic")}" alt="" aria-hidden="true">
+                <span>${slot.label}</span>
+              </div>
+            `;
+          }).join("");
         }
 
         function degradeGear(amount = 1) {
@@ -3287,8 +4054,9 @@
               ...common,
               { x: 112, y: 254, w: 192, h: 76 },
               { x: 600, y: 248, w: 184, h: 86 },
-              { x: 386, y: 368, w: 188, h: 76 },
-              { x: 794, y: 392, w: 58, h: 84 },
+              { x: 342, y: 360, w: 284, h: 130 },
+              { x: 684, y: 430, w: 164, h: 74 },
+              { x: 878, y: 392, w: 58, h: 84 },
             ];
           }
           if (kind === "dataLab") {
@@ -3320,6 +4088,7 @@
           const interior = interiorDefs[building.id];
           if (!interior) return;
           closeCraftingModal({ silent: true });
+          closePlantModal({ silent: true });
           state.outdoorPlayer = { ...state.player };
           state.scene = "interior";
           state.interior = building.id;
@@ -3339,6 +4108,7 @@
 
         function exitInterior() {
           closeCraftingModal({ silent: true });
+          closePlantModal({ silent: true });
           const building = buildingDefs.find((item) => item.id === state.interior);
           const interior = currentInteriorDef();
           const basePlayer = state.outdoorPlayer || state.player;
@@ -3377,6 +4147,231 @@
           return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
         }
 
+        function currentMonth(day = state.day) {
+          return ((START_MONTH - 1 + Math.floor((Math.max(1, day) - 1) / DAYS_PER_MONTH)) % 12) + 1;
+        }
+
+        function currentSeason(month = currentMonth()) {
+          return SEASON_DEFS.find((season) => season.months.includes(month)) || SEASON_DEFS[0];
+        }
+
+        function seasonMonthLabel(day = state.day) {
+          const month = currentMonth(day);
+          return `${currentSeason(month).name} ${month}月`;
+        }
+
+        function formatMinutes(minutes) {
+          const t = ((Math.floor(minutes) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+          return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+        }
+
+        function durationText(minutes) {
+          if (minutes >= DAY_MINUTES) return `${Math.floor(minutes / DAY_MINUTES)} 天 ${Math.round((minutes % DAY_MINUTES) / 60)} 小時`;
+          if (minutes >= 60) return `${Math.round((minutes / 60) * 10) / 10} 小時`;
+          return `${Math.round(minutes)} 分鐘`;
+        }
+
+        function totalGameMinutes() {
+          return (state.day - 1) * DAY_MINUTES + state.time;
+        }
+
+        function plantDef(id) {
+          return plantDefs.find((plant) => plant.id === id) || plantDefs[0];
+        }
+
+        function plantIconName(plantOrId, kind = "seed") {
+          const plant = typeof plantOrId === "string" ? plantDef(plantOrId) : plantOrId;
+          const prefix = {
+            rice: "Rice",
+            sweetPotato: "SweetPotato",
+            greens: "Greens",
+            mushroom: "Mushroom",
+            saltRice: "SaltRice",
+            sunTuber: "SunTuber",
+          }[plant.id] || "Rice";
+          return `plant${prefix}${kind === "crop" ? "Crop" : "Seed"}`;
+        }
+
+        function plantWindowLabel(plant) {
+          return (plant.months || []).map((month) => `${month}月`).join("、") || "全年";
+        }
+
+        function isGoodPlantingTime(plant, month = currentMonth()) {
+          return !plant.months?.length || plant.months.includes(month);
+        }
+
+        function plantUnlocked(plant) {
+          return !plant.hybrid || Boolean(state.plantResearch[plant.id]);
+        }
+
+        function seedCount(id) {
+          return state.seeds[id] || 0;
+        }
+
+        function cropCount(id) {
+          return state.crops[id] || 0;
+        }
+
+        function addSeeds(id, amount = 1) {
+          const plant = plantDef(id);
+          state.seeds[plant.id] = Math.max(0, (state.seeds[plant.id] || 0) + amount);
+          uiDirty = true;
+        }
+
+        function spendSeeds(id, amount = 1) {
+          if (seedCount(id) < amount) return false;
+          state.seeds[id] = Math.max(0, seedCount(id) - amount);
+          uiDirty = true;
+          return true;
+        }
+
+        function addCrop(id, amount = 1) {
+          const plant = plantDef(id);
+          state.crops[plant.id] = Math.max(0, (state.crops[plant.id] || 0) + amount);
+          uiDirty = true;
+        }
+
+        function addFood(amount, label = "糧食") {
+          const gained = Math.max(0, Math.round(amount));
+          if (!gained) return;
+          state.food += gained;
+          addToast(`${label} +${gained}`, "good", 2.6);
+          uiDirty = true;
+        }
+
+        function addMeal(id, amount = 1) {
+          const meal = foodItemDef(id);
+          state.meals[meal.id] = Math.max(0, (state.meals[meal.id] || 0) + amount);
+          uiDirty = true;
+        }
+
+        function consumeMeal(id) {
+          const meal = foodItemDefs.find((item) => item.id === id);
+          if (!meal) return false;
+          if ((state.meals[meal.id] || 0) <= 0) {
+            addToast("背包裡沒有這個食物", "bad", 2.2);
+            return false;
+          }
+          if (state.satiety >= 100) {
+            addToast("已經很有飽足感了", "warn", 2.2);
+            return false;
+          }
+          state.meals[meal.id] = Math.max(0, (state.meals[meal.id] || 0) - 1);
+          const before = state.satiety;
+          state.satiety = clamp(state.satiety + meal.satiety, 0, 100);
+          addLog(`食用${meal.name}，飽食 ${Math.round(before)} → ${Math.round(state.satiety)}。`);
+          addToast(`${meal.name}：飽食 +${Math.round(state.satiety - before)}`, "good", 2.6);
+          uiDirty = true;
+          return true;
+        }
+
+        function farmUpgradeLevel() {
+          return clamp(Math.floor(Number(state.farmUpgradeLevel)) || 0, 0, FARM_PLOT_TIERS.length - 1);
+        }
+
+        function farmPlotCount() {
+          return FARM_PLOT_TIERS[farmUpgradeLevel()] || FARM_PLOT_TIERS[0];
+        }
+
+        function farmPlotColsForCount(count = farmPlotCount()) {
+          if (count <= 9) return 3;
+          if (count <= 16) return 4;
+          return 5;
+        }
+
+        function nextFarmPlotCount() {
+          const level = farmUpgradeLevel();
+          return FARM_PLOT_TIERS[level + 1] || null;
+        }
+
+        function farmUpgradeRecipe(level = farmUpgradeLevel() + 1) {
+          return FARM_UPGRADE_RECIPES[level] || null;
+        }
+
+        function farmPlotRect(index) {
+          const count = farmPlotCount();
+          const cols = farmPlotColsForCount(count);
+          const rows = Math.ceil(count / cols);
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          const gap = Math.max(5, Math.min(VILLAGE_FARM.w, VILLAGE_FARM.h) * 0.022);
+          const insetX = VILLAGE_FARM.w * 0.14;
+          const topInset = VILLAGE_FARM.h * 0.29;
+          const bottomInset = VILLAGE_FARM.h * 0.12;
+          const usableW = VILLAGE_FARM.w - insetX * 2;
+          const usableH = VILLAGE_FARM.h - topInset - bottomInset;
+          const plotW = (usableW - gap * (cols - 1)) / cols;
+          const plotH = (usableH - gap * (rows - 1)) / rows;
+          return {
+            x: VILLAGE_FARM.x + insetX + col * (plotW + gap),
+            y: VILLAGE_FARM.y + topInset + row * (plotH + gap),
+            w: plotW,
+            h: plotH,
+          };
+        }
+
+        function normalizedFarmPlots(plots = []) {
+          return Array.from({ length: FARM_PLOT_MAX_COUNT }, (_, index) => {
+            const saved = plots[index] || {};
+            if (!saved.plantId) return { plantId: null };
+            const plant = plantDefs.find((item) => item.id === saved.plantId);
+            if (!plant) return { plantId: null };
+            return {
+              plantId: plant.id,
+              plantedAt: Number(saved.plantedAt) || totalGameMinutes(),
+              badTiming: Boolean(saved.badTiming),
+              deathAt: Number(saved.deathAt) || 0,
+              dead: Boolean(saved.dead),
+            };
+          });
+        }
+
+        function plotProgress(plot) {
+          if (!plot?.plantId) return 0;
+          const plant = plantDef(plot.plantId);
+          return clamp((totalGameMinutes() - (plot.plantedAt || totalGameMinutes())) / plant.growth, 0, 1.4);
+        }
+
+        function resolveFarmPlotStates() {
+          const now = totalGameMinutes();
+          let changed = false;
+          for (const plot of state.farmPlots) {
+            if (!plot?.plantId || plot.dead) continue;
+            if (plot.deathAt && now >= plot.deathAt) {
+              plot.dead = true;
+              changed = true;
+            }
+          }
+          if (changed) {
+            addLog("有一株作物因種植月份不合而枯萎。");
+            uiDirty = true;
+          }
+        }
+
+        function seedLabJobProgress(job) {
+          return clamp((totalGameMinutes() - job.startedAt) / job.duration, 0, 1);
+        }
+
+        function resolveSeedLabJobs() {
+          const ready = state.seedLabJobs.filter((job) => seedLabJobProgress(job) >= 1);
+          if (!ready.length) return;
+          state.seedLabJobs = state.seedLabJobs.filter((job) => seedLabJobProgress(job) < 1);
+          for (const job of ready) {
+            const plant = plantDef(job.plantId);
+            const failed = Math.random() < job.failChance;
+            if (failed) {
+              addLog(`${job.kind === "hybrid" ? "雜交研發" : "種子培育"}失敗：${plant.name} 未能穩定發芽。`);
+              addToast(`${plant.name} 培育失敗`, "bad", 2.8);
+              continue;
+            }
+            if (job.kind === "hybrid") state.plantResearch[plant.id] = true;
+            addSeeds(plant.id, job.yield || plant.seedYield || 1);
+            addLog(`${job.kind === "hybrid" ? "新品種研發成功" : "種子培育完成"}：${plant.seedName} +${job.yield || plant.seedYield || 1}。`);
+            addToast(`${plant.seedName} +${job.yield || plant.seedYield || 1}`, "good", 2.8);
+          }
+          uiDirty = true;
+        }
+
         function currentZoneAt(x = state.player.x, y = state.player.y) {
           if (state.scene === "interior") {
             const interior = interiorDefs[state.interior];
@@ -3393,6 +4388,58 @@
 
         function defaultStats() {
           return { trashCollected: 0, recycledItems: 0, eventsResolved: 0, animalsObserved: 0, monstersDefeated: 0 };
+        }
+
+        function defaultSeeds() {
+          return { rice: 2, sweetPotato: 1, greens: 3, mushroom: 1 };
+        }
+
+        function defaultCrops() {
+          return Object.fromEntries(plantDefs.map((plant) => [plant.id, 0]));
+        }
+
+        function defaultMeals() {
+          return Object.fromEntries(foodItemDefs.map((item) => [item.id, 0]));
+        }
+
+        function defaultPlantResearch() {
+          return Object.fromEntries(plantDefs.filter((plant) => plant.hybrid).map((plant) => [plant.id, false]));
+        }
+
+        function defaultFarmPlots() {
+          return Array.from({ length: FARM_PLOT_MAX_COUNT }, () => ({ plantId: null }));
+        }
+
+        function farmUpgradeText() {
+          const current = farmPlotCount();
+          const next = nextFarmPlotCount();
+          if (!next) return `農田已擴充到最大 ${current} 格。`;
+          const recipe = farmUpgradeRecipe();
+          return `目前 ${current} 格，可擴充到 ${next} 格。需要 ${recipeText(recipe)}。`;
+        }
+
+        function upgradeFarmPlots() {
+          const currentLevel = farmUpgradeLevel();
+          const currentCount = FARM_PLOT_TIERS[currentLevel];
+          const nextCount = FARM_PLOT_TIERS[currentLevel + 1];
+          if (!nextCount) {
+            addToast("農田已達最大", "warn", 2.4);
+            return `農田已擴充到最大 ${currentCount} 格，這片地已經被好好利用了。`;
+          }
+          const recipe = farmUpgradeRecipe(currentLevel + 1);
+          if (!hasResources(recipe)) {
+            addToast("擴充材料不足", "bad", 2.4);
+            return `還不能擴充到 ${nextCount} 格。需要 ${recipeText(recipe)}。`;
+          }
+          spendResources(recipe);
+          state.farmUpgradeLevel = currentLevel + 1;
+          state.farmPlots = normalizedFarmPlots(state.farmPlots);
+          adjustEco({ forest: 1, bio: 1, pollution: -1 });
+          addNotes(8, "回收材料擴建農田");
+          addLog(`農田擴充完成：${currentCount} 格 → ${nextCount} 格。`);
+          addToast(`農田擴充：${nextCount} 格`, "good", 2.8);
+          uiDirty = true;
+          return `擴充完成！社區農田從 ${currentCount} 格變成 ${nextCount} 格，新的格子可以直接種植。`;
         }
 
         function defaultMaterials() {
@@ -3909,6 +4956,15 @@
           resetStationPrep();
           state.stats = defaultStats();
           state.questionStats = defaultQuestionStats();
+          state.satiety = 72;
+          state.food = 0;
+          state.meals = defaultMeals();
+          state.seeds = defaultSeeds();
+          state.crops = defaultCrops();
+          state.plantResearch = defaultPlantResearch();
+          state.seedLabJobs = [];
+          state.farmPlots = defaultFarmPlots();
+          state.farmUpgradeLevel = 0;
           state.mainQuest = defaultMainQuest();
           state.questItems = [];
           state.completedMissions = {};
@@ -3921,7 +4977,9 @@
           state.battle = null;
           state.recycleGame = null;
           state.crafting = null;
+          state.plantPanel = null;
           closeCraftingModal({ silent: true });
+          closePlantModal({ silent: true });
           addLog("抵達森循島：撿垃圾、阻止垃圾怪、把資源帶回回收場。");
           addLog("任務路線已開啟：先清出第一條安全步道。");
           addLog("WASD 移動，E/空白鍵互動；戰鬥和分類時用 1-5 選項。");
@@ -3967,6 +5025,15 @@
             stationPrep: state.stationPrep,
             stats: state.stats,
             questionStats: state.questionStats,
+            satiety: state.satiety,
+            food: state.food,
+            meals: state.meals,
+            seeds: state.seeds,
+            crops: state.crops,
+            plantResearch: state.plantResearch,
+            seedLabJobs: state.seedLabJobs,
+            farmPlots: state.farmPlots,
+            farmUpgradeLevel: state.farmUpgradeLevel,
             mainQuest: state.mainQuest,
             questItems: state.questItems,
             completedMissions: state.completedMissions,
@@ -4044,6 +5111,25 @@
             ensureStationPrepDay();
             state.stats = { ...defaultStats(), ...(data.stats || {}) };
             state.questionStats = { ...defaultQuestionStats(), ...(data.questionStats || {}) };
+            state.satiety = clamp(Number(data.satiety) || 72, 0, 100);
+            state.food = Math.max(0, Math.floor(Number(data.food)) || 0);
+            state.meals = { ...defaultMeals(), ...(data.meals || {}) };
+            for (const meal of foodItemDefs) state.meals[meal.id] = Math.max(0, Math.floor(Number(state.meals[meal.id])) || 0);
+            state.seeds = { ...defaultSeeds(), ...(data.seeds || {}) };
+            state.crops = { ...defaultCrops(), ...(data.crops || {}) };
+            state.plantResearch = { ...defaultPlantResearch(), ...(data.plantResearch || {}) };
+            state.seedLabJobs = Array.isArray(data.seedLabJobs)
+              ? data.seedLabJobs.map((job) => ({
+                  kind: job.kind === "hybrid" ? "hybrid" : "cultivate",
+                  plantId: plantDefs.some((plant) => plant.id === job.plantId) ? job.plantId : plantDefs[0].id,
+                  startedAt: Number(job.startedAt) || totalGameMinutes(),
+                  duration: Math.max(30, Number(job.duration) || plantDefs[0].seedDuration),
+                  failChance: clamp(Number(job.failChance) || 0.1, 0, 0.95),
+                  yield: Math.max(1, Math.floor(Number(job.yield)) || 1),
+                })).slice(0, SEED_LAB_MAX_JOBS)
+              : [];
+            state.farmPlots = normalizedFarmPlots(data.farmPlots || []);
+            state.farmUpgradeLevel = clamp(Math.floor(Number(data.farmUpgradeLevel)) || 0, 0, FARM_PLOT_TIERS.length - 1);
             state.mainQuest = { ...defaultMainQuest(), ...(data.mainQuest || {}) };
             state.mainQuest.index = clamp(Math.floor(Number(state.mainQuest.index)) || 0, 0, RUMOR_QUESTS.length);
             state.mainQuest.step = Math.max(0, Math.floor(Number(state.mainQuest.step)) || 0);
@@ -4590,7 +5676,10 @@
         function updateTime(dt) {
           const speed = state.speedOptions[state.speedIndex];
           const before = state.time;
+          const beforeMonth = currentMonth();
           state.time += dt * 3.2 * speed;
+          state.satiety = clamp(state.satiety - dt * 0.08 * speed, 0, 100);
+          if (state.satiety <= 0 && state.health > 1) state.health = Math.max(1, state.health - dt * 0.16 * speed);
           if (state.time >= DAY_MINUTES) {
             state.time -= DAY_MINUTES;
             state.day += 1;
@@ -4600,10 +5689,14 @@
             const weatherLog = applyDailyWeatherEffect(state.weather);
             const restoredHealth = state.health < state.maxHealth;
             state.health = state.maxHealth;
-            addLog(`第 ${state.day} 天開始，天氣：${state.weather}。${weatherLog}${restoredHealth ? " 體力已完全恢復。" : ""}`);
+            state.satiety = clamp(state.satiety + 12, 0, 100);
+            const monthShift = currentMonth() !== beforeMonth ? ` 月份推進到${seasonMonthLabel()}，農田適性已更新。` : "";
+            addLog(`第 ${state.day} 天開始，${seasonMonthLabel()}，天氣：${state.weather}。${weatherLog}${monthShift}${restoredHealth ? " 體力已完全恢復。" : ""}`);
             if (restoredHealth) addToast("新的一天：體力已完全恢復", "good");
             for (let i = 0; i < 3; i++) spawnEvent();
           }
+          resolveSeedLabJobs();
+          resolveFarmPlotStates();
           if (Math.floor(before / 30) !== Math.floor(state.time / 30)) uiDirty = true;
         }
 
@@ -4772,7 +5865,7 @@
         }
 
         function updatePlayer(dt) {
-          if (state.fieldAction || state.battle || state.recycleGame || state.crafting) return;
+          if (state.fieldAction || state.battle || state.recycleGame || state.crafting || state.plantPanel) return;
           let dx = 0;
           let dy = 0;
           if (keys.has("arrowleft") || keys.has("a")) dx -= 1;
@@ -4832,6 +5925,15 @@
             const d = dist(state.player, door);
             if (d < 82) candidates.push({ type: "building", ref: building, distance: d, priority: 3 });
           }
+          for (let i = 0; i < farmPlotCount(); i++) {
+            const plotRect = farmPlotRect(i);
+            const d = dist(state.player, plotRect);
+            const insideFarm = rectsOverlap(
+              { x: state.player.x + state.player.w * 0.25, y: state.player.y + state.player.h * 0.75, w: state.player.w * 0.5, h: state.player.h * 0.25 },
+              expandedRect(VILLAGE_FARM, 8),
+            );
+            if (d < 64 || insideFarm) candidates.push({ type: "farmPlot", ref: { index: i, rect: plotRect }, distance: d, priority: 0 });
+          }
           for (const item of state.questItems) {
             const d = dist(state.player, item);
             if (d < 64) candidates.push({ type: "questItem", ref: item, distance: d, priority: -1 });
@@ -4875,6 +5977,7 @@
           if (target.type === "animal") observeAnimal(target.ref);
           if (target.type === "event") startFieldAction(target.ref);
           if (target.type === "trash") collectTrash(target.ref);
+          if (target.type === "farmPlot") openFarmPlotModal(target.ref.index);
           if (target.type === "npc") talkToNpc(target.ref);
           if (target.type === "building") {
             if (target.ref.facility === "recycle") startRecycleGame();
@@ -4948,6 +6051,17 @@
         }
 
         function craftingRecipes() {
+          const foodRows = foodItemDefs.map((meal) => ({
+            id: `cook:${meal.id}`,
+            action: "cook",
+            meal,
+            icon: meal.icon,
+            recipe: meal.recipe,
+            title: meal.name,
+            detail: `${meal.detail} 食用後飽食 +${meal.satiety}。`,
+            button: "製作",
+            disabledReason: hasResources(meal.recipe) ? "" : "材料不足",
+          }));
           const repairRows = equipmentDefs
             .filter((gear) => {
               const item = gearState(gear.id);
@@ -4979,17 +6093,23 @@
               disabledReason: item.crafted ? "已製作" : hasMaterials(gear.recipe) ? "" : "材料不足",
             };
           });
-          return [...repairRows, ...craftRows];
+          return [...foodRows, ...repairRows, ...craftRows];
         }
 
         function renderCraftingModal() {
           if (!state.crafting) return;
-          craftMaterialSummary.innerHTML = materialDefs.map((material) => {
-            const count = state.materials[material.id] || 0;
+          const summaryIds = [
+            ...materialDefs.map((material) => material.id),
+            "food",
+            ...plantDefs.map((plant) => `${plant.id}Crop`).filter((id) => resourceCount(id) > 0),
+          ];
+          craftMaterialSummary.innerHTML = summaryIds.map((id) => {
+            const info = resourceInfo(id);
+            const count = resourceCount(id);
             return `
               <span class="craft-material-chip">
-                <img src="${assetUrl(materialIconName(material.id), "itemPlastic")}" alt="" aria-hidden="true">
-                ${material.name} ${count}
+                <img src="${assetUrl(info.icon, "itemPlastic")}" alt="" aria-hidden="true">
+                ${info.name} ${count}
               </span>
             `;
           }).join("");
@@ -4997,16 +6117,18 @@
           craftRecipeList.innerHTML = recipes.map((recipe) => {
             const canExchange = !recipe.disabledReason;
             const materialRows = Object.entries(recipe.recipe).map(([id, need]) => {
-              const owned = state.materials[id] || 0;
+              const info = resourceInfo(id);
+              const owned = resourceCount(id);
               const enough = owned >= need;
               return `
                 <div class="craft-material-line">
-                  <img class="craft-mat-icon" src="${assetUrl(materialIconName(id), "itemPlastic")}" alt="" aria-hidden="true">
-                  <span class="craft-mat-name">${materialDef(id).name}</span>
+                  <img class="craft-mat-icon" src="${assetUrl(info.icon, "itemPlastic")}" alt="" aria-hidden="true">
+                  <span class="craft-mat-name">${info.name}</span>
                   <span class="craft-count ${enough ? "good" : "bad"}">${owned}/${need}</span>
                 </div>
               `;
             }).join("");
+            const outputIcon = recipe.icon || recipe.gear?.icon || "itemFoodBowl";
             return `
               <div class="craft-row ${canExchange ? "" : "locked"}">
                 <div class="craft-materials">
@@ -5015,7 +6137,7 @@
                 </div>
                 <div class="craft-arrow" aria-hidden="true">→</div>
                 <div class="craft-output">
-                  <img class="craft-output-icon" src="${assetUrl(recipe.gear.icon, "itemPlastic")}" alt="" aria-hidden="true">
+                  <img class="craft-output-icon" src="${assetUrl(outputIcon, "itemPlastic")}" alt="" aria-hidden="true">
                   <div>
                     <div class="craft-output-name">${recipe.title}</div>
                     <small>${recipe.detail}</small>
@@ -5028,13 +6150,14 @@
         }
 
         function openCraftingModal() {
+          closePlantModal({ silent: true });
           state.crafting = { type: "equipmentBench" };
           state.dialogue = null;
           dialogueEl.hidden = true;
           craftModal.hidden = false;
           keys.clear();
           renderCraftingModal();
-          addLog("開啟裝備工作台：選擇配方兌換塑膠裝備或修補耐久。");
+          addLog("開啟工坊工作台：可製作料理、兌換塑膠裝備或修補耐久。");
           uiDirty = true;
         }
 
@@ -5043,7 +6166,7 @@
           state.crafting = null;
           craftModal.hidden = true;
           keys.clear();
-          if (!options.silent && state.started) addLog("關閉裝備工作台。");
+          if (!options.silent && state.started) addLog("關閉工坊工作台。");
           uiDirty = true;
         }
 
@@ -5096,10 +6219,334 @@
           return true;
         }
 
+        function craftFoodById(id) {
+          const meal = foodItemDefs.find((item) => item.id === id);
+          if (!meal) return false;
+          if (!spendResources(meal.recipe)) {
+            addToast("料理材料不足", "bad", 2.2);
+            renderCraftingModal();
+            return false;
+          }
+          addMeal(meal.id, 1);
+          addExperience(2, "工坊料理");
+          addLog(`製作料理：${meal.name}。可在背包對食物按右鍵食用。`);
+          addToast(`製作：${meal.name}`, "good", 2.6);
+          renderCraftingModal();
+          uiDirty = true;
+          return true;
+        }
+
         function exchangeCraftRecipe(recipeId) {
           const [action, id] = String(recipeId || "").split(":");
+          if (action === "cook") return craftFoodById(id);
           if (action === "craft") return craftEquipmentById(id);
           if (action === "repair") return repairEquipmentById(id);
+          return false;
+        }
+
+        function plantIconHtml(plant, kind = "seed", className = "slot-icon") {
+          const iconName = kind === "food" ? "itemFoodBowl" : plantIconName(plant, kind);
+          return `<img class="${className}" src="${assetUrl(iconName, "itemPlastic")}" alt="" aria-hidden="true">`;
+        }
+
+        function renderSeedLabModal() {
+          resolveSeedLabJobs();
+          const full = state.seedLabJobs.length >= SEED_LAB_MAX_JOBS;
+          plantTitle.textContent = "生態站育種農田";
+          plantSubtitle.textContent = `培育種子或雜交新品種；目前是${seasonMonthLabel()}，田地適性會依月份與四季變化。`;
+          const jobRows = state.seedLabJobs.length
+            ? state.seedLabJobs.map((job) => {
+                const plant = plantDef(job.plantId);
+                const rate = seedLabJobProgress(job) * 100;
+                return `
+                  <div class="plant-job">
+                    <div class="plant-section-title">${job.kind === "hybrid" ? "雜交研發" : "種子培育"}：${plant.name}<span>${Math.round(rate)}%</span></div>
+                    <div class="plant-progress"><i style="width:${rate}%"></i></div>
+                    <div class="plant-meta">
+                      <span class="plant-chip">剩餘 ${durationText(Math.max(0, job.duration - (totalGameMinutes() - job.startedAt)))}</span>
+                      <span class="plant-chip ${job.failChance > 0.25 ? "warn" : ""}">失敗率 ${Math.round(job.failChance * 100)}%</span>
+                      <span class="plant-chip">完成：${plant.seedName} +${job.yield}</span>
+                    </div>
+                  </div>
+                `;
+              }).join("")
+            : `<div class="plant-job"><div class="plant-section-title">目前沒有培育中項目<span>0/${SEED_LAB_MAX_JOBS}</span></div><div class="plant-meta"><span class="plant-chip">可同時培育 ${SEED_LAB_MAX_JOBS} 組</span></div></div>`;
+
+          const cultivateRows = plantDefs
+            .filter((plant) => plantUnlocked(plant))
+            .map((plant) => `
+              <div class="plant-row">
+                ${plantIconHtml(plant)}
+                <div class="plant-title">
+                  ${plant.seedName}
+                  <small>${plant.note}</small>
+                  <div class="plant-meta">
+                    <span class="plant-chip">適合月份 ${plantWindowLabel(plant)}</span>
+                    <span class="plant-chip">田地成長 ${durationText(plant.growth)}</span>
+                    <span class="plant-chip">糧食 +${plant.food}</span>
+                    <span class="plant-chip">培育 ${durationText(plant.seedDuration)}</span>
+                    <span class="plant-chip ${plant.failChance > 0.12 ? "warn" : ""}">失敗率 ${Math.round(plant.failChance * 100)}%</span>
+                    <span class="plant-chip">持有 ${seedCount(plant.id)}</span>
+                  </div>
+                </div>
+                <button class="plant-action" type="button" data-plant-action="cultivate" data-plant-id="${plant.id}" ${full ? "disabled" : ""}>培育</button>
+              </div>
+            `).join("");
+
+          const hybridRows = plantDefs
+            .filter((plant) => plant.hybrid)
+            .map((plant) => {
+              const parents = plant.hybrid.parents.map((id) => plantDef(id));
+              const enough = parents.every((parent) => seedCount(parent.id) >= 1);
+              const unlocked = plantUnlocked(plant);
+              return `
+                <div class="plant-row ${unlocked ? "locked" : ""}">
+                  ${plantIconHtml(plant, "crop")}
+                  <div class="plant-title">
+                    ${plant.name}
+                    <small>${plant.note}</small>
+                    <div class="plant-meta">
+                      <span class="plant-chip">親本 ${parents.map((parent) => `${parent.seedName} ${seedCount(parent.id)}/1`).join("、")}</span>
+                      <span class="plant-chip">適合月份 ${plantWindowLabel(plant)}</span>
+                      <span class="plant-chip">成長 ${durationText(plant.growth)}</span>
+                      <span class="plant-chip">糧食 +${plant.food}</span>
+                      <span class="plant-chip warn">研發失敗率 ${Math.round(plant.hybrid.failChance * 100)}%</span>
+                    </div>
+                  </div>
+                  <button class="plant-action" type="button" data-plant-action="hybrid" data-plant-id="${plant.id}" ${unlocked || !enough || full ? "disabled" : ""}>${unlocked ? "已研發" : "雜交"}</button>
+                </div>
+              `;
+            }).join("");
+
+          plantBody.innerHTML = `
+            <div class="plant-section-title">培育佇列 <span>${state.seedLabJobs.length}/${SEED_LAB_MAX_JOBS}</span></div>
+            ${jobRows}
+            <div class="plant-section-title">培育種子 <span>基礎與已研發品種</span></div>
+            ${cultivateRows}
+            <div class="plant-section-title">雜交研發新品種 <span>需要親本種子</span></div>
+            ${hybridRows}
+          `;
+        }
+
+        function renderFarmPlotModal() {
+          resolveFarmPlotStates();
+          const totalPlots = farmPlotCount();
+          const index = clamp(Number(state.plantPanel?.plotIndex) || 0, 0, totalPlots - 1);
+          const plot = state.farmPlots[index] || { plantId: null };
+          plantTitle.textContent = `出生點農田｜第 ${index + 1}/${totalPlots} 格`;
+          plantSubtitle.textContent = `目前是${seasonMonthLabel()}；月份不合或提早收成會提高枯萎風險。`;
+
+          if (plot.plantId) {
+            const plant = plantDef(plot.plantId);
+            const progress = plotProgress(plot);
+            const elapsed = Math.max(0, totalGameMinutes() - (plot.plantedAt || totalGameMinutes()));
+            const ready = progress >= 1;
+            const status = plot.dead ? "枯萎" : ready ? "成熟可收成" : "成長中";
+            plantBody.innerHTML = `
+              <div class="plant-plot-card">
+                <div class="plant-section-title">${plant.name}<span>${status}</span></div>
+                <div class="plant-progress"><i style="width:${clamp(progress * 100, 0, 100)}%; background:${plot.dead ? "#8b8b80" : ready ? "#f7d36f" : "#80c96c"}"></i></div>
+                <div class="plant-meta">
+                  <span class="plant-chip">已成長 ${durationText(elapsed)}</span>
+                  <span class="plant-chip">完整成長 ${durationText(plant.growth)}</span>
+                  <span class="plant-chip">適合月份 ${plantWindowLabel(plant)}</span>
+                  <span class="plant-chip">成熟糧食 +${plant.food}</span>
+                  ${plot.badTiming ? `<span class="plant-chip warn">錯月種植：收成品質下降且可能枯萎</span>` : `<span class="plant-chip">種植月份良好</span>`}
+                  ${!ready && !plot.dead ? `<span class="plant-chip bad">提早收成有高枯萎風險</span>` : ""}
+                </div>
+                <button class="plant-action" type="button" data-plant-action="${plot.dead ? "clearPlot" : "harvest"}" data-plot-index="${index}">${plot.dead ? "清除枯株" : ready ? "收成" : "提早收成"}</button>
+              </div>
+            `;
+            return;
+          }
+
+          const rows = plantDefs
+            .filter((plant) => plantUnlocked(plant))
+            .map((plant) => {
+              const goodNow = isGoodPlantingTime(plant);
+              const count = seedCount(plant.id);
+              return `
+                <div class="plant-row">
+                  ${plantIconHtml(plant)}
+                  <div class="plant-title">
+                    ${plant.seedName}
+                    <small>${plant.note}</small>
+                    <div class="plant-meta">
+                      <span class="plant-chip ${goodNow ? "" : "warn"}">${goodNow ? "本月適合種植" : "本月不適合，可能枯萎"}</span>
+                      <span class="plant-chip">適合月份 ${plantWindowLabel(plant)}</span>
+                      <span class="plant-chip">成長 ${durationText(plant.growth)}</span>
+                      <span class="plant-chip">成熟糧食 +${plant.food}</span>
+                    </div>
+                  </div>
+                  <div class="plant-action-stack">
+                    <button class="plant-action" type="button" data-plant-action="plant" data-plant-id="${plant.id}" data-plot-index="${index}" ${count ? "" : "disabled"}>種植</button>
+                    <span class="seed-owned ${count ? "" : "bad"}">擁有: ${count}</span>
+                  </div>
+                </div>
+              `;
+            }).join("");
+          plantBody.innerHTML = `
+            <div class="plant-section-title">選擇要種植的種子 <span>糧食 ${state.food}</span></div>
+            ${rows}
+          `;
+        }
+
+        function renderPlantModal() {
+          if (!state.plantPanel) return;
+          if (state.plantPanel.mode === "lab") renderSeedLabModal();
+          else renderFarmPlotModal();
+        }
+
+        function openPlantLabModal() {
+          closeCraftingModal({ silent: true });
+          state.plantPanel = { mode: "lab" };
+          state.dialogue = null;
+          dialogueEl.hidden = true;
+          plantModal.hidden = false;
+          keys.clear();
+          renderPlantModal();
+          addLog("開啟生態站育種農田。");
+          uiDirty = true;
+        }
+
+        function openFarmPlotModal(index) {
+          closeCraftingModal({ silent: true });
+          state.plantPanel = { mode: "farm", plotIndex: clamp(Math.floor(Number(index)) || 0, 0, farmPlotCount() - 1) };
+          state.dialogue = null;
+          dialogueEl.hidden = true;
+          plantModal.hidden = false;
+          keys.clear();
+          renderPlantModal();
+          uiDirty = true;
+        }
+
+        function closePlantModal(options = {}) {
+          if (!state.plantPanel && plantModal.hidden) return;
+          state.plantPanel = null;
+          plantModal.hidden = true;
+          keys.clear();
+          if (!options.silent && state.started) addLog("關閉種植視窗。");
+          uiDirty = true;
+        }
+
+        function startSeedCultivation(plantId) {
+          const plant = plantDef(plantId);
+          if (!plantUnlocked(plant) || state.seedLabJobs.length >= SEED_LAB_MAX_JOBS) return false;
+          state.seedLabJobs.push({
+            kind: "cultivate",
+            plantId: plant.id,
+            startedAt: totalGameMinutes(),
+            duration: plant.seedDuration,
+            failChance: plant.failChance,
+            yield: plant.seedYield,
+          });
+          addLog(`開始培育${plant.seedName}，需要 ${durationText(plant.seedDuration)}。`);
+          addToast(`培育：${plant.seedName}`, "good", 2.4);
+          renderPlantModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function startHybridResearch(plantId) {
+          const plant = plantDef(plantId);
+          if (!plant.hybrid || plantUnlocked(plant) || state.seedLabJobs.length >= SEED_LAB_MAX_JOBS) return false;
+          const parents = plant.hybrid.parents.map((id) => plantDef(id));
+          if (!parents.every((parent) => seedCount(parent.id) >= 1)) {
+            addToast("親本種子不足", "bad", 2.4);
+            renderPlantModal();
+            return false;
+          }
+          for (const parent of parents) spendSeeds(parent.id, 1);
+          state.seedLabJobs.push({
+            kind: "hybrid",
+            plantId: plant.id,
+            startedAt: totalGameMinutes(),
+            duration: plant.seedDuration + 120,
+            failChance: plant.hybrid.failChance,
+            yield: 2,
+          });
+          addLog(`開始雜交研發：${parents.map((parent) => parent.name).join(" × ")} → ${plant.name}。`);
+          addToast(`雜交：${plant.name}`, "warn", 2.8);
+          renderPlantModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function plantSeedInPlot(plotIndex, plantId) {
+          if (plotIndex < 0 || plotIndex >= farmPlotCount()) return false;
+          const plant = plantDef(plantId);
+          const plot = state.farmPlots[plotIndex];
+          if (!plot || plot.plantId) return false;
+          if (!spendSeeds(plant.id, 1)) {
+            addToast("種子不足", "bad", 2.4);
+            renderPlantModal();
+            return false;
+          }
+          const badTiming = !isGoodPlantingTime(plant);
+          state.farmPlots[plotIndex] = {
+            plantId: plant.id,
+            plantedAt: totalGameMinutes(),
+            badTiming,
+            deathAt: badTiming && Math.random() < 0.42 ? totalGameMinutes() + plant.growth * randRange(0.32, 0.78) : 0,
+            dead: false,
+          };
+          addLog(`種植${plant.name}：${badTiming ? "月份不合，枯萎風險提高。" : "月份良好。"}`);
+          addToast(`種植：${plant.name}`, badTiming ? "warn" : "good", 2.8);
+          renderPlantModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function harvestPlot(plotIndex) {
+          if (plotIndex < 0 || plotIndex >= farmPlotCount()) return false;
+          const plot = state.farmPlots[plotIndex];
+          if (!plot?.plantId) return false;
+          const plant = plantDef(plot.plantId);
+          if (plot.dead) {
+            state.farmPlots[plotIndex] = { plantId: null };
+            addLog(`清除枯萎的${plant.name}。`);
+            addToast("清除枯株", "warn", 2);
+            renderPlantModal();
+            uiDirty = true;
+            return true;
+          }
+          const progress = plotProgress(plot);
+          if (progress < 1 && Math.random() < 0.68) {
+            plot.dead = true;
+            addLog(`提早收成失敗：${plant.name} 枯萎，無法食用。`);
+            addToast("提早收成失敗", "bad", 2.8);
+            renderPlantModal();
+            uiDirty = true;
+            return false;
+          }
+          if (progress >= 1 && plot.badTiming && Math.random() < 0.34) {
+            plot.dead = true;
+            addLog(`錯月種植導致${plant.name}成熟前枯萎，無法食用。`);
+            addToast("錯月種植失敗", "bad", 2.8);
+            renderPlantModal();
+            uiDirty = true;
+            return false;
+          }
+          const earlyRate = progress < 1 ? clamp(progress * 0.35, 0.08, 0.35) : 1;
+          const timingRate = plot.badTiming ? 0.55 : 1;
+          const food = Math.max(1, Math.round(plant.food * earlyRate * timingRate));
+          addCrop(plant.id, 1);
+          addFood(food, plant.cropName);
+          adjustEco({ forest: 1, bio: 1, pollution: -1 });
+          state.farmPlots[plotIndex] = { plantId: null };
+          addLog(`收成${plant.cropName}，糧食 +${food}${progress < 1 ? "（提早收成，產量偏低）" : ""}。`);
+          renderPlantModal();
+          uiDirty = true;
+          return true;
+        }
+
+        function handlePlantModalAction(action, target) {
+          const plantId = target.dataset.plantId;
+          const plotIndex = Number(target.dataset.plotIndex);
+          if (action === "cultivate") return startSeedCultivation(plantId);
+          if (action === "hybrid") return startHybridResearch(plantId);
+          if (action === "plant") return plantSeedInPlot(plotIndex, plantId);
+          if (action === "harvest" || action === "clearPlot") return harvestPlot(plotIndex);
           return false;
         }
 
@@ -5122,6 +6569,13 @@
             addIndoorReward(4);
             addNotes(7, "種子盤點");
             return "你盤點種子與標本罐，補上採集日期，讓後續復育更穩定。";
+          }
+          if (action.effect === "seedLab") {
+            openPlantLabModal();
+            return "已開啟育種農田。";
+          }
+          if (action.effect === "farmUpgrade") {
+            return upgradeFarmPlots();
           }
           if (action.effect === "waterAnalyzer") {
             adjustEco({ water: 4, pollution: -4, bio: 1 });
@@ -5157,7 +6611,7 @@
           }
           if (action.effect === "equipmentBench") {
             openCraftingModal();
-            return "已開啟裝備工作台。";
+            return "已開啟工坊工作台。";
           }
           if (action.effect === "sortingCart") {
             setStationPrep("recycleBonus", 0.08);
@@ -5180,6 +6634,10 @@
 
         function useInteriorAction(action) {
           if (!action) return;
+          if (action.effect === "seedLab") {
+            openPlantLabModal();
+            return;
+          }
           if (action.effect === "equipmentBench") {
             openCraftingModal();
             return;
@@ -5969,6 +7427,77 @@
           ctx.fillRect(x + 22, y + 11, 2, 2);
         }
 
+        function drawFarmPlant(plot, rect) {
+          if (!plot?.plantId) return;
+          const plant = plantDef(plot.plantId);
+          const progress = plotProgress(plot);
+          const mature = progress >= 1;
+          const dead = plot.dead;
+          const icon = mature && !dead ? plantIconName(plant, "crop") : plantIconName(plant, "seed");
+          const size = dead ? 30 : mature ? 50 : 28 + progress * 18;
+          drawSpriteToBox(icon, rect.x + rect.w / 2 - size / 2, rect.y + rect.h - size - 4, size, size);
+          if (dead) {
+            ctx.fillStyle = "rgba(95, 91, 78, 0.55)";
+            ctx.fillRect(rect.x + 4, rect.y + 4, rect.w - 8, rect.h - 8);
+            ctx.strokeStyle = "#f0d1a0";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(rect.x + 10, rect.y + rect.h - 8);
+            ctx.lineTo(rect.x + rect.w - 10, rect.y + 8);
+            ctx.stroke();
+          }
+        }
+
+        function drawVillageFarmPlotBed(rect, plot) {
+          ctx.save();
+          ctx.fillStyle = "rgba(55, 38, 24, 0.35)";
+          ctx.fillRect(rect.x + 2, rect.y + rect.h - 2, rect.w - 1, 4);
+          ctx.fillStyle = "#8e5f37";
+          ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+          ctx.fillStyle = "#cfaa67";
+          ctx.fillRect(rect.x + 2, rect.y + 2, rect.w - 4, rect.h - 4);
+          ctx.fillStyle = "#73502f";
+          ctx.fillRect(rect.x + 4, rect.y + 4, rect.w - 8, rect.h - 8);
+          ctx.strokeStyle = "rgba(239, 201, 121, 0.32)";
+          ctx.lineWidth = 1;
+          const furrowCount = Math.max(2, Math.floor(rect.h / 9));
+          for (let i = 1; i <= furrowCount; i++) {
+            const y = rect.y + 4 + (rect.h - 8) * (i / (furrowCount + 1));
+            ctx.beginPath();
+            ctx.moveTo(rect.x + 7, y);
+            ctx.lineTo(rect.x + rect.w - 7, y);
+            ctx.stroke();
+          }
+          if (plot?.plantId) {
+            ctx.fillStyle = "rgba(255, 247, 215, 0.12)";
+            ctx.fillRect(rect.x + 4, rect.y + 4, rect.w - 8, rect.h - 8);
+          }
+          ctx.restore();
+        }
+
+        function drawVillageFarm() {
+          const farm = VILLAGE_FARM;
+          ctx.fillStyle = "rgba(0,0,0,0.13)";
+          ctx.fillRect(farm.x + 8, farm.y + farm.h - 7, farm.w - 14, 10);
+          if (!drawSpriteToBox("farmGardenBase", farm.x, farm.y, farm.w, farm.h)) {
+            ctx.fillStyle = "rgba(87, 123, 66, 0.22)";
+            ctx.fillRect(farm.x + 10, farm.y + 18, farm.w - 20, farm.h - 32);
+          }
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("社區農田", farm.x + farm.w / 2, farm.y + 22);
+          for (let i = 0; i < farmPlotCount(); i++) {
+            const rect = farmPlotRect(i);
+            const plot = state.farmPlots[i] || { plantId: null };
+            drawVillageFarmPlotBed(rect, plot);
+            drawFarmPlant(plot, rect);
+          }
+          if (dist(state.player, { x: farm.x + farm.w / 2 - 12, y: farm.y + farm.h / 2 - 12, w: 24, h: 24 }) < 92) {
+            drawWorldLabel("種植", farm.x + farm.w / 2, farm.y - 12);
+          }
+        }
+
         function drawHabitatLandmarks() {
           for (let ty = 7; ty <= 150; ty += 6) {
             if (ty >= 31 && ty <= 37) continue;
@@ -6103,6 +7632,7 @@
             drawBuilding(building.x, building.y, building.w, building.h, "#2e795d", "#dfc888", building.label, building.sprite);
             drawBuildingEntrance(building);
           }
+          drawVillageFarm();
 
           const actors = [
             ...state.questItems.map((item) => ({ kind: "questItem", data: item, y: item.y + item.h })),
@@ -6291,6 +7821,20 @@
           }
         }
 
+        function drawInteriorFarmBed(x, y, w, h) {
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillRect(x + 8, y + h - 5, w, 12);
+          ctx.fillStyle = "#5a3b23";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "#7b4c2a";
+          ctx.fillRect(x + 8, y + 8, w - 16, h - 16);
+          drawSpriteToBox("seedLabTray", x + 32, y + 14, w - 64, h - 34);
+          ctx.fillStyle = "#f8de8f";
+          ctx.font = "bold 13px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("育種農田", x + w / 2, y + h - 12);
+        }
+
         function drawSampleJars(x, y, count, color = "#b6e7ea") {
           for (let i = 0; i < count; i++) {
             const jarX = x + i * 18;
@@ -6361,11 +7905,34 @@
         }
 
         function drawEcoStationInterior() {
+          if (drawSpriteToBox("ecoStationInterior", 0, 0, canvas.width, canvas.height)) return;
           drawInteriorShelf(86, 176, 128, 48, "#7bbf75");
           drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#7bbf75");
           drawInteriorTable({ x: 112, y: 254, w: 192, h: 76 }, "#8dbd72");
           drawInteriorTable({ x: 600, y: 248, w: 184, h: 86 }, "#91c989");
-          drawInteriorTable({ x: 386, y: 368, w: 188, h: 76 }, "#b6d284");
+          drawInteriorFarmBed(342, 360, 284, 130);
+          drawInteriorTable({ x: 684, y: 430, w: 164, h: 74 }, "#8dbd72");
+          ctx.fillStyle = "#203d2d";
+          ctx.fillRect(706, 444, 120, 42);
+          ctx.strokeStyle = "#d7ecb4";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(706, 444, 120, 42);
+          const cells = farmPlotColsForCount(nextFarmPlotCount() || farmPlotCount());
+          const rows = Math.ceil((nextFarmPlotCount() || farmPlotCount()) / cells);
+          const cellW = 96 / cells;
+          const cellH = 28 / rows;
+          ctx.fillStyle = "#d7ecb4";
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cells; col++) {
+              const n = row * cells + col;
+              if (n >= (nextFarmPlotCount() || farmPlotCount())) continue;
+              ctx.fillRect(718 + col * cellW, 452 + row * cellH, Math.max(5, cellW - 3), Math.max(4, cellH - 3));
+            }
+          }
+          ctx.fillStyle = "#f8de8f";
+          ctx.font = "bold 11px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("農地擴充圖", 766, 502);
           ctx.fillStyle = "#203d2d";
           ctx.fillRect(338, 112, 284, 92);
           ctx.fillStyle = "#d7ecb4";
@@ -6377,19 +7944,20 @@
           drawWallPanel(338, 112, 284, 92, "棲地觀察板", "森林・溪流・濕地", "#203d2d");
           drawSeedTray(136, 270, 144, 42, 2);
           drawSeedTray(622, 266, 136, 44, 2);
-          drawSampleJars(410, 386, 6, "#cfe9b3");
-          drawSampleJars(508, 386, 4, "#f3dda0");
+          drawSampleJars(650, 386, 4, "#cfe9b3");
+          drawSampleJars(720, 386, 4, "#f3dda0");
           ctx.fillStyle = "#513926";
           ctx.fillRect(360, 240, 98, 28);
           ctx.fillStyle = "#e8d29b";
           ctx.fillRect(368, 247, 82, 8);
           ctx.fillRect(368, 259, 54, 5);
           drawSupplyCrates(612, 342, 3);
-          drawTree(804, 390, false);
-          drawBush(782, 446, 5);
+          drawTree(888, 390, false);
+          drawBush(866, 446, 5);
         }
 
         function drawDataLabInterior() {
+          if (drawSpriteToBox("dataLabInterior", 0, 0, canvas.width, canvas.height)) return;
           drawInteriorShelf(86, 176, 128, 48, "#9bd6e0");
           drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#9bd6e0");
           drawInteriorTable({ x: 108, y: 248, w: 208, h: 82 }, "#d9d2a5", "#5e7790");
@@ -6428,6 +7996,7 @@
         }
 
         function drawWorkshopInterior() {
+          if (drawSpriteToBox("workshopInterior", 0, 0, canvas.width, canvas.height)) return;
           drawInteriorShelf(86, 176, 128, 48, "#d9b26a");
           drawInteriorShelf(canvas.width - 214, 176, 128, 48, "#d9b26a");
           drawInteriorTable({ x: 104, y: 250, w: 228, h: 86 }, "#b9834c", "#68442a");
@@ -6526,6 +8095,9 @@
             const marker = interiorActionMarkerRect(target.ref);
             return { x: marker.x + marker.w / 2, y: marker.y + 3, w: marker.w, h: marker.h };
           }
+          if (target.type === "farmPlot") {
+            return { x: target.ref.rect.x + target.ref.rect.w / 2, y: target.ref.rect.y + 3, w: target.ref.rect.w, h: target.ref.rect.h };
+          }
           return {
             x: target.ref.x + (target.ref.w || 0) / 2,
             y: target.ref.y - 6,
@@ -6535,7 +8107,7 @@
         }
 
         function drawInteractionMarker() {
-          if (state.battle || state.recycleGame || state.fieldAction) return;
+          if (state.battle || state.recycleGame || state.fieldAction || state.crafting || state.plantPanel) return;
           const target = nearestInteractable();
           const point = interactablePoint(target);
           if (!point) return;
@@ -6729,7 +8301,26 @@
             ctx.fillRect(toMapX(worldX) - size / 2, toMapY(worldY) - size / 2, size, size);
           };
 
+          const drawMapRect = (rect, fill, stroke = "rgba(255,247,215,0.78)") => {
+            if (!rectsOverlap(rect, view)) return;
+            const rx = toMapX(clamp(rect.x, view.x, view.x + view.w));
+            const ry = toMapY(clamp(rect.y, view.y, view.y + view.h));
+            const rr = toMapX(clamp(rect.x + rect.w, view.x, view.x + view.w));
+            const rb = toMapY(clamp(rect.y + rect.h, view.y, view.y + view.h));
+            const rw = Math.max(expanded ? 5 : 4, rr - rx);
+            const rh = Math.max(expanded ? 5 : 4, rb - ry);
+            ctx.fillStyle = fill;
+            ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = expanded ? 1.5 : 1;
+            ctx.strokeRect(rx, ry, rw, rh);
+          };
+
           const smallDot = expanded ? 3 : 2;
+          for (const building of buildingDefs) {
+            drawMapRect(building.block || buildingVisualRect(building), building.facility === "recycle" ? "#f0b35d" : "#fff0a8", "#244f3c");
+          }
+          drawMapRect(VILLAGE_FARM, "#80c96c", "#fff3bf");
           for (const item of state.questItems) drawMapDot(item.x, item.y, expanded ? 6 : 4, "#f7d36f");
           for (const trash of state.trash) drawMapDot(trash.x, trash.y, smallDot, "#fff3bf");
           for (const event of state.events) drawMapDot(event.x, event.y, smallDot, "#f8de8f");
@@ -7108,6 +8699,10 @@
             promptEl.hidden = true;
             return;
           }
+          if (state.plantPanel) {
+            promptEl.hidden = true;
+            return;
+          }
           if (state.dialogue && !state.fieldAction && !state.recycleGame) {
             promptEl.hidden = true;
             return;
@@ -7137,13 +8732,19 @@
           }
           if (target.type === "questItem") promptEl.textContent = `Space/E ${target.ref.prompt}：${target.ref.label}`;
           if (target.type === "trash") promptEl.textContent = `Space/E 撿起：${trashDef(target.ref.type).name}`;
+          if (target.type === "farmPlot") {
+            const plot = state.farmPlots[target.ref.index] || { plantId: null };
+            promptEl.textContent = plot.plantId ? `Space/E 管理農田：${plantDef(plot.plantId).name}` : "Space/E 種植：出生點農田";
+          }
           if (target.type === "npc") promptEl.textContent = `Space/E 對話：${target.ref.name}`;
           if (target.type === "building") {
             promptEl.textContent = target.ref.facility === "recycle" ? `Space/E 回收分類：${target.ref.label}` : `Space/E 進入：${target.ref.label}`;
           }
           if (target.type === "interiorAction") {
             const cost = target.ref.cost ?? INDOOR_ACTION_HEALTH_COST;
-            const costText = cost > 0 ? `｜體力 -${cost}` : "";
+            const nextPlots = nextFarmPlotCount();
+            const upgradeText = target.ref.effect === "farmUpgrade" ? (nextPlots ? `｜${farmPlotCount()}→${nextPlots}格` : "｜已滿") : "";
+            const costText = cost > 0 ? `｜體力 -${cost}` : upgradeText;
             promptEl.textContent = `Space/E ${target.ref.prompt}：${target.ref.label}${costText}`;
           }
           if (target.type === "exit") {
@@ -7153,7 +8754,7 @@
         }
 
         function renderPlayerStatus() {
-          const hidden = !state.started || Boolean(state.battle) || Boolean(state.recycleGame) || Boolean(state.fieldAction);
+          const hidden = !state.started || Boolean(state.battle) || Boolean(state.recycleGame) || Boolean(state.fieldAction) || Boolean(state.plantPanel);
           playerStatus.hidden = hidden;
           if (hidden) return;
           const needed = expToNextLevel(state.level);
@@ -7164,7 +8765,8 @@
             <div class="status-row">
               <span>Lv ${state.level}</span>
               <span>EXP ${expText}</span>
-              <span>體力 ${state.health}/${state.maxHealth}</span>
+              <span>體力 ${Math.ceil(state.health)}/${state.maxHealth}</span>
+              <span>飽食 ${Math.round(state.satiety)}/100</span>
             </div>
             <div class="status-xp"><i style="width:${expRate}%"></i></div>
           `;
@@ -7174,10 +8776,10 @@
           if (!uiDirty) return;
           uiDirty = false;
           const zone = currentZoneAt();
-          sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜回收點數 ${state.recyclePoints}`;
+          sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${seasonMonthLabel()} ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜糧食 ${state.food}｜回收點數 ${state.recyclePoints}`;
           hudPills.hidden = Boolean(state.battle);
           const weather = weatherDef();
-          const hudText = [`第 ${state.day} 天`, formatClock(), state.weather].join("｜");
+          const hudText = [`第 ${state.day} 天`, seasonMonthLabel(), formatClock(), state.weather].join("｜");
           hudPills.innerHTML = `
             <span class="pill hud-strip" aria-label="${hudText}，${weather.note}">
               <img class="weather-icon" src="${weatherIconUrl()}" alt="" aria-hidden="true">
@@ -7220,6 +8822,7 @@
           pauseBtn.textContent = state.paused ? "繼續(P)" : "暫停(P)";
           syncSettingsOverlay();
           if (state.crafting) renderCraftingModal();
+          if (state.plantPanel) renderPlantModal();
           renderSidePanel();
           renderLog();
         }
@@ -7359,94 +8962,35 @@
           }
 
           if (activeTab === "bag") {
-            const categoryRows = trashTypes.map((type) => {
-              const count = state.backpack[type.id] || 0;
-              const category = categoryDef(type.category);
-              const fill = clamp(count / 5, 0, 1) * 100;
-              return `
-                <div class="inventory-item ${count ? "" : "empty"}">
-                  <div class="inventory-top">
-                    <img class="item-icon" src="${assetUrl(type.icon)}" alt="" aria-hidden="true">
-                    <span class="item-name">${type.name}</span>
-                    <span class="item-count">${count}</span>
-                  </div>
-                  <div class="meter-line"><i style="width:${fill}%"></i></div>
-                  <small>${category.label}｜${type.hint}</small>
-                </div>
-              `;
-            }).join("");
-            const materialRows = materialDefs.map((material) => {
-              const count = state.materials[material.id] || 0;
-              const fill = clamp(count / 8, 0, 1) * 100;
-              return `
-                <div class="inventory-item ${count ? "" : "empty"}">
-                  <div class="inventory-top">
-                    <span class="item-name">${material.name}</span>
-                    <span class="item-count">${count}</span>
-                  </div>
-                  <div class="meter-line"><i style="width:${fill}%"></i></div>
-                  <small>${material.hint}</small>
-                </div>
-              `;
-            }).join("");
-            const equippedSlots = equippedGearBySlot();
-            const gearRows = equipmentDefs.map((gear) => {
-              const item = gearState(gear.id);
-              const crafted = item.crafted;
-              const equipped = equippedSlots[gear.slot]?.id === gear.id;
-              return `
-                <div class="card">
-                  <div class="inventory-top">
-                    <img class="item-icon" src="${assetUrl(gear.icon, "itemPlastic")}" alt="" aria-hidden="true">
-                    <span class="item-name">${gear.name}</span>
-                    <span class="item-count">${crafted ? `${item.durability}%` : "未製作"}</span>
-                  </div>
-                  <div class="card-title">${gear.slotLabel} <span class="chip">${equipped ? "已裝備" : crafted ? `T${gear.tier}` : "配方"}</span></div>
-                  <small>${crafted ? gear.effect : `需求：${recipeText(gear.recipe)}。到工坊裝備工作台製作。`}</small>
-                  <div class="meter-line"><i style="width:${crafted ? item.durability : 0}%"></i></div>
-                </div>
-              `;
-            }).join("");
-            const equippedRows = equipmentSlotDefs.map((slot) => `<div class="tip-row">${equippedGearLabel(slot)}</div>`).join("");
+            const stacks = inventoryStacks();
+            const slotCapacity = Math.max(INVENTORY_SLOT_COUNT, Math.ceil(stacks.length / 6) * 6);
             const total = backpackTotal();
+            const seedTotal = plantDefs.reduce((sum, plant) => sum + seedCount(plant.id), 0);
+            const cropTotal = plantDefs.reduce((sum, plant) => sum + cropCount(plant.id), 0);
+            const mealTotal = foodItemDefs.reduce((sum, meal) => sum + (state.meals[meal.id] || 0), 0);
             const capacityHint = total >= 5 ? "可直接去回收場，會抽最多 5 件進行分類。" : `再收集 ${5 - total} 件左右，就能玩一輪完整分類。`;
             sideBody.innerHTML = `
-              <div class="hero-summary">
-                <div class="hero-card">
-                  <div class="hero-kicker">背包暫存</div>
-                  <div class="hero-main">${total} 件</div>
-                  <div class="hero-sub">${total ? backpackSummary() : "目前沒有垃圾。靠近路上垃圾按 Space/E 撿起。"}</div>
-                </div>
-                <div class="hero-card">
-                  <div class="hero-kicker">回收場</div>
-                  <div class="hero-main">${state.recyclePoints} 點</div>
-                  <div class="hero-sub">${state.recycleStats.perfect}/${state.recycleStats.played} 次完美分類</div>
-                </div>
-              </div>
-
               <details class="drawer" open>
-                <summary>分類內容 <span class="chip">${total} 件</span></summary>
+                <summary>裝備欄 <span class="chip">4 格</span></summary>
                 <div class="drawer-body">
-                  <div class="inventory-grid">
-                    ${categoryRows}
-                  </div>
+                  <div class="bag-equipment">${equipmentSlotsHtml()}</div>
                 </div>
               </details>
 
               <details class="drawer" open>
-                <summary>再生材料 <span class="chip">${materialDefs.reduce((sum, material) => sum + (state.materials[material.id] || 0), 0)}</span></summary>
+                <summary><span class="bag-grid-label">背包格子(${stacks.length}/${slotCapacity})</span></summary>
                 <div class="drawer-body">
-                  <div class="inventory-grid">
-                    ${materialRows}
-                  </div>
+                  <div class="inventory-slots">${inventoryGridHtml()}</div>
                 </div>
               </details>
 
               <details class="drawer" open>
-                <summary>工坊裝備 <span class="chip">${activeGearCount()}/${equipmentDefs.length}</span></summary>
+                <summary>農田資源 <span class="chip">${seedTotal} 種子｜${cropTotal} 作物｜${mealTotal} 食物</span></summary>
                 <div class="drawer-body">
-                  <div class="tip-list" style="margin-bottom:8px;">${equippedRows}</div>
-                  ${gearRows}
+                  <div class="tip-list">
+                    <div class="tip-row">生態站「育種農田」可以培育種子或雜交新品種。</div>
+                    <div class="tip-row">農田收成會取得作物與糧食；到工坊可製作麵包、飯糰和湯品。</div>
+                  </div>
                 </div>
               </details>
 
@@ -7460,6 +9004,7 @@
                   <div class="tip-list" style="margin-top: 8px;">
                     <div class="tip-row">到社區南側回收場互動，使用 1-5 選分類。</div>
                     <div class="tip-row">完美通過會拿 bonus，並強化戰鬥技能「分類分析」。</div>
+                    <div class="tip-row">回收物仍會以格子顯示；底層分類數量會保持相容。</div>
                   </div>
                 </div>
               </details>
@@ -7570,6 +9115,10 @@
             updateCamera();
             return;
           }
+          if (state.plantPanel) {
+            updateCamera();
+            return;
+          }
           updateBattleEffects(dt);
           if (!state.battle && !state.recycleGame) updateTime(dt);
           if (state.scene === "outdoor") {
@@ -7623,6 +9172,14 @@
             if (key === "escape") closeCraftingModal();
             else if (key === "p") {
               closeCraftingModal({ silent: true });
+              togglePause();
+            }
+            return;
+          }
+          if (state.plantPanel) {
+            if (key === "escape") closePlantModal();
+            else if (key === "p") {
+              closePlantModal({ silent: true });
               togglePause();
             }
             return;
@@ -7702,6 +9259,7 @@
         function setPaused(paused) {
           if (!state.started) return;
           if (paused) closeCraftingModal({ silent: true });
+          if (paused) closePlantModal({ silent: true });
           state.paused = paused;
           keys.clear();
           syncSettingsOverlay();
@@ -7722,6 +9280,7 @@
           settingsOverlay.hidden = true;
           homeConfirm.hidden = true;
           closeCraftingModal({ silent: true });
+          closePlantModal({ silent: true });
           promptEl.hidden = true;
           playerStatus.hidden = true;
           questHud.hidden = true;
@@ -7741,6 +9300,13 @@
           tab.addEventListener("click", () => {
             setActiveTab(tab.dataset.tab);
           });
+        });
+
+        sideBody.addEventListener("contextmenu", (event) => {
+          const slot = event.target.closest("[data-item-id]");
+          if (!slot || !slot.classList.contains("edible")) return;
+          event.preventDefault();
+          consumeMeal(slot.dataset.itemId);
         });
 
         startBtn.addEventListener("click", resetGame);
@@ -7770,6 +9336,15 @@
           const button = event.target.closest("[data-recipe-id]");
           if (!button || button.disabled) return;
           exchangeCraftRecipe(button.dataset.recipeId);
+        });
+        plantClose.addEventListener("click", () => closePlantModal());
+        plantModal.addEventListener("click", (event) => {
+          if (event.target === plantModal) closePlantModal();
+        });
+        plantBody.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-plant-action]");
+          if (!button || button.disabled) return;
+          handlePlantModalAction(button.dataset.plantAction, button);
         });
         saveBtn.addEventListener("click", saveNow);
         pauseBtn.addEventListener("click", togglePause);
