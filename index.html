@@ -488,8 +488,8 @@
 
       .side-toggle {
         position: absolute;
-        top: 12px;
-        right: 12px;
+        top: 50%;
+        right: calc(var(--side-width) - 17px);
         z-index: 22;
         display: grid;
         width: 34px;
@@ -506,6 +506,7 @@
         font-size: 22px;
         font-weight: 950;
         line-height: 1;
+        transform: translateY(-50%);
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22), inset 0 -2px 0 rgba(105, 126, 86, 0.22);
       }
 
@@ -513,12 +514,11 @@
       .side-toggle:focus-visible {
         background: #f8de8f;
         outline: none;
-        transform: translateY(-1px);
+        transform: translateY(calc(-50% - 1px));
       }
 
       .side-collapsed .side-toggle {
-        top: 136px;
-        right: 12px;
+        right: -17px;
         background: rgba(255, 247, 220, 0.94);
       }
 
@@ -3346,32 +3346,32 @@
               id: "seedlingBench",
               label: "育苗台",
               prompt: "照護育苗",
-              rect: { x: 112, y: 254, w: 192, h: 76 },
-              marker: { x: 208, y: 344, w: 108, h: 40 },
+              rect: { x: 70, y: 208, w: 154, h: 208 },
+              marker: { x: 210, y: 434, w: 112, h: 36 },
               effect: "seedlingBench",
             },
             {
               id: "habitatBoard",
               label: "棲地觀察板",
               prompt: "整理紀錄",
-              rect: { x: 338, y: 112, w: 284, h: 92 },
-              marker: { x: 480, y: 222, w: 116, h: 40 },
+              rect: { x: 358, y: 100, w: 248, h: 122 },
+              marker: { x: 480, y: 298, w: 126, h: 36 },
               effect: "habitatBoard",
             },
             {
               id: "seedArchive",
               label: "種子樣本櫃",
               prompt: "盤點樣本",
-              rect: { x: 600, y: 248, w: 184, h: 86 },
-              marker: { x: 692, y: 350, w: 108, h: 40 },
+              rect: { x: 700, y: 104, w: 154, h: 214 },
+              marker: { x: 778, y: 338, w: 112, h: 36 },
               effect: "seedArchive",
             },
             {
               id: "nurseryField",
               label: "育種農田",
               prompt: "培育/雜交",
-              rect: { x: 342, y: 360, w: 284, h: 130 },
-              marker: { x: 484, y: 512, w: 138, h: 42 },
+              rect: { x: 300, y: 392, w: 284, h: 188 },
+              marker: { x: 480, y: 366, w: 146, h: 38 },
               effect: "seedLab",
               cost: 0,
               repeatable: true,
@@ -3380,8 +3380,8 @@
               id: "farmExpansionDesk",
               label: "農地擴充圖",
               prompt: "擴充農田",
-              rect: { x: 684, y: 430, w: 164, h: 74 },
-              marker: { x: 766, y: 526, w: 132, h: 42 },
+              rect: { x: 678, y: 404, w: 236, h: 174 },
+              marker: { x: 764, y: 384, w: 132, h: 38 },
               effect: "farmUpgrade",
               cost: 0,
               repeatable: true,
@@ -3393,24 +3393,24 @@
               id: "waterAnalyzer",
               label: "水質分析儀",
               prompt: "分析水樣",
-              rect: { x: 108, y: 248, w: 208, h: 82 },
-              marker: { x: 212, y: 346, w: 112, h: 40 },
+              rect: { x: 70, y: 166, w: 248, h: 130 },
+              marker: { x: 200, y: 322, w: 120, h: 38 },
               effect: "waterAnalyzer",
             },
             {
               id: "weatherConsole",
               label: "氣象雷達",
               prompt: "讀取預報",
-              rect: { x: 382, y: 250, w: 210, h: 82 },
-              marker: { x: 488, y: 348, w: 112, h: 40 },
+              rect: { x: 348, y: 156, w: 268, h: 146 },
+              marker: { x: 484, y: 328, w: 120, h: 38 },
               effect: "weatherConsole",
             },
             {
               id: "speciesDatabase",
               label: "物種資料庫",
               prompt: "校對資料",
-              rect: { x: 680, y: 234, w: 122, h: 188 },
-              marker: { x: 742, y: 438, w: 92, h: 42 },
+              rect: { x: 688, y: 132, w: 238, h: 178 },
+              marker: { x: 808, y: 334, w: 124, h: 38 },
               effect: "speciesDatabase",
             },
           ],
@@ -3419,8 +3419,8 @@
               id: "toolBench",
               label: "再生材料機",
               prompt: "拆解回收物",
-              rect: { x: 104, y: 250, w: 228, h: 86 },
-              marker: { x: 218, y: 354, w: 118, h: 42 },
+              rect: { x: 74, y: 406, w: 292, h: 178 },
+              marker: { x: 220, y: 382, w: 124, h: 38 },
               effect: "materialRecycler",
               cost: 0,
               repeatable: true,
@@ -3429,8 +3429,8 @@
               id: "sortingCart",
               label: "工坊工作台",
               prompt: "料理/製作",
-              rect: { x: 432, y: 236, w: 244, h: 90 },
-              marker: { x: 554, y: 342, w: 118, h: 42 },
+              rect: { x: 368, y: 318, w: 226, h: 158 },
+              marker: { x: 482, y: 500, w: 126, h: 40 },
               effect: "equipmentBench",
               cost: 0,
               repeatable: true,
@@ -3439,8 +3439,8 @@
               id: "supplyLocker",
               label: "補給櫃",
               prompt: "補充體力",
-              rect: { x: 712, y: 370, w: 124, h: 94 },
-              marker: { x: 774, y: 478, w: 92, h: 42 },
+              rect: { x: 716, y: 118, w: 194, h: 266 },
+              marker: { x: 640, y: 368, w: 112, h: 38 },
               effect: "supplyLocker",
               cost: 0,
             },
@@ -3453,6 +3453,7 @@
         let lastTime = 0;
         let saveTimer = 0;
         let uiDirty = true;
+        let lastRuntimeErrorAt = 0;
         let battleAudio = null;
         let musicGain = null;
         let sfxGain = null;
@@ -4102,42 +4103,40 @@
 
         function interiorBlocks() {
           const kind = currentInteriorKind();
-          const common = [
-            { x: 74, y: 112, w: canvas.width - 148, h: 52 },
-            { x: 86, y: 176, w: 128, h: 48 },
-            { x: canvas.width - 214, y: 176, w: 128, h: 48 },
-          ];
           if (kind === "ecoStation") {
             return [
-              ...common,
-              { x: 112, y: 254, w: 192, h: 76 },
-              { x: 600, y: 248, w: 184, h: 86 },
-              { x: 342, y: 360, w: 284, h: 130 },
-              { x: 684, y: 430, w: 164, h: 74 },
-              { x: 878, y: 392, w: 58, h: 84 },
+              { x: 66, y: 198, w: 166, h: 224 },
+              { x: 246, y: 136, w: 108, h: 156 },
+              { x: 366, y: 104, w: 250, h: 94 },
+              { x: 384, y: 218, w: 228, h: 70 },
+              { x: 696, y: 104, w: 164, h: 218 },
+              { x: 300, y: 392, w: 284, h: 188 },
+              { x: 676, y: 404, w: 240, h: 176 },
             ];
           }
           if (kind === "dataLab") {
             return [
-              ...common,
-              { x: 108, y: 248, w: 208, h: 82 },
-              { x: 382, y: 250, w: 210, h: 82 },
-              { x: 680, y: 234, w: 122, h: 188 },
-              { x: 252, y: 408, w: 160, h: 70 },
+              { x: 66, y: 166, w: 250, h: 130 },
+              { x: 340, y: 154, w: 296, h: 154 },
+              { x: 688, y: 132, w: 238, h: 178 },
+              { x: 118, y: 382, w: 236, h: 186 },
+              { x: 746, y: 360, w: 196, h: 148 },
+              { x: 870, y: 520, w: 72, h: 84 },
             ];
           }
           return [
-            ...common,
-            { x: 104, y: 250, w: 228, h: 86 },
-            { x: 432, y: 236, w: 244, h: 90 },
-            { x: 712, y: 370, w: 124, h: 94 },
-            { x: 196, y: 410, w: 138, h: 80 },
+            { x: 58, y: 104, w: 260, h: 178 },
+            { x: 324, y: 92, w: 374, h: 198 },
+            { x: 716, y: 112, w: 198, h: 274 },
+            { x: 74, y: 406, w: 292, h: 178 },
+            { x: 368, y: 318, w: 226, h: 158 },
+            { x: 636, y: 406, w: 286, h: 176 },
           ];
         }
 
         function canMoveInterior(x, y, w, h) {
           const foot = { x: x + w * 0.2, y: y + h * 0.78, w: w * 0.6, h: h * 0.18 };
-          const walk = { x: 58, y: 166, w: canvas.width - 116, h: canvas.height - 188 };
+          const walk = { x: 42, y: 128, w: canvas.width - 84, h: canvas.height - 150 };
           if (foot.x < walk.x || foot.y < walk.y || foot.x + foot.w > walk.x + walk.w || foot.y + foot.h > walk.y + walk.h) return false;
           return !interiorBlocks().some((block) => rectsOverlap(foot, block));
         }
@@ -5313,18 +5312,18 @@
           const farm = VILLAGE_FARM;
           if (x < farm.x || x > farm.x + farm.w || y < farm.y || y > farm.y + farm.h) return false;
           const fence = 22;
-          const topFenceInset = 10;
-          const topFenceHeight = 14;
+          const topFenceInset = farm.h * 0.23;
+          const topFenceHeight = 18;
           const topFenceTop = farm.y + topFenceInset;
           const topFenceBottom = topFenceTop + topFenceHeight;
           const gateW = TILE * 2.35;
           const gateLeft = farm.x + farm.w / 2 - gateW / 2;
           const gateRight = farm.x + farm.w / 2 + gateW / 2;
-          const inTopGate = x >= gateLeft && x <= gateRight && y < topFenceBottom + 12;
+          const inTopGate = x >= gateLeft && x <= gateRight && y < topFenceBottom + TILE * 0.75;
           const topFence = y >= topFenceTop && y < topFenceBottom && !inTopGate;
           const bottomFence = y > farm.y + farm.h - fence;
-          const leftFence = x < farm.x + fence;
-          const rightFence = x > farm.x + farm.w - fence;
+          const leftFence = y >= topFenceTop && x < farm.x + fence;
+          const rightFence = y >= topFenceTop && x > farm.x + farm.w - fence;
           return topFence || bottomFence || leftFence || rightFence;
         }
 
@@ -5350,6 +5349,68 @@
             isWaterPoint(x + w * 0.76, y + h * 0.58) &&
             isWaterPoint(x + w * 0.5, y + h * 0.84)
           );
+        }
+
+        function actorCollisionRect(actor, x = actor.x, y = actor.y) {
+          const w = actor.w || 24;
+          const h = actor.h || 30;
+          return {
+            x: x + w * 0.2,
+            y: y + h * 0.58,
+            w: w * 0.6,
+            h: h * 0.32,
+          };
+        }
+
+        function actorCollisionCenter(actor, x = actor.x, y = actor.y) {
+          const rect = actorCollisionRect(actor, x, y);
+          return { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+        }
+
+        function outdoorActorBlockers(entity) {
+          if (state.scene !== "outdoor") return [];
+          return [state.player, ...state.npcs, ...state.animals]
+            .filter((actor) => actor && actor !== entity && !actor.leaving && actor.w && actor.h);
+        }
+
+        function actorCollisionBlocked(entity, x, y) {
+          const nextRect = actorCollisionRect(entity, x, y);
+          const nextCenter = actorCollisionCenter(entity, x, y);
+          const currentCenter = actorCollisionCenter(entity);
+          return outdoorActorBlockers(entity).some((other) => {
+            const otherRect = actorCollisionRect(other);
+            if (!rectsOverlap(nextRect, otherRect)) return false;
+            const otherCenter = actorCollisionCenter(other);
+            const currentDistance = Math.hypot(currentCenter.x - otherCenter.x, currentCenter.y - otherCenter.y);
+            const nextDistance = Math.hypot(nextCenter.x - otherCenter.x, nextCenter.y - otherCenter.y);
+            return nextDistance <= currentDistance + 0.8;
+          });
+        }
+
+        function canMoveOutdoorActor(entity, x, y, options = {}) {
+          if (!canMoveTo(x, y, entity.w, entity.h)) return false;
+          return !options.actorCollide || !actorCollisionBlocked(entity, x, y);
+        }
+
+        function tryRandomCardinalStep(entity, speed, dt, options = {}) {
+          const step = Math.max(2, speed * dt);
+          const directions = [
+            { x: 1, y: 0 },
+            { x: -1, y: 0 },
+            { x: 0, y: 1 },
+            { x: 0, y: -1 },
+          ].sort(() => Math.random() - 0.5);
+          for (const dir of directions) {
+            const nx = entity.x + dir.x * step;
+            const ny = entity.y + dir.y * step;
+            if (!canMoveOutdoorActor(entity, nx, ny, options)) continue;
+            entity.x = nx;
+            entity.y = ny;
+            if (dir.x > 0) entity.facing = "right";
+            if (dir.x < 0) entity.facing = "left";
+            return true;
+          }
+          return false;
         }
 
         function nearestSwimPoint(x, y, w, h) {
@@ -5851,13 +5912,23 @@
           const ny = entity.y + (dy / d) * step;
           if (options.collide && entity.w && entity.h) {
             let moved = false;
-            if (canMoveTo(nx, entity.y, entity.w, entity.h)) {
+            const canStep = (x, y) => canMoveOutdoorActor(entity, x, y, options);
+            if (canStep(nx, entity.y)) {
               entity.x = nx;
               moved = true;
             }
-            if (canMoveTo(entity.x, ny, entity.w, entity.h)) {
+            if (canStep(entity.x, ny)) {
               entity.y = ny;
               moved = true;
+            }
+            if (moved) {
+              entity.stuckTime = 0;
+              return d < 4;
+            }
+            entity.stuckTime = (entity.stuckTime || 0) + dt;
+            if (options.wanderOnBlock && entity.stuckTime > 0.12 && tryRandomCardinalStep(entity, speed, dt, options)) {
+              entity.stuckTime = 0;
+              return true;
             }
             return d < 4 || (!moved && d < 10);
           }
@@ -5889,14 +5960,14 @@
 
         function moveAnimalToward(animal, def, target, speed, dt) {
           if (def.id === "streamfish") return moveSwimToward(animal, target, speed, dt);
-          return moveToward(animal, target, speed, dt, { collide: true });
+          return moveToward(animal, target, speed, dt, { collide: true, actorCollide: true, wanderOnBlock: true });
         }
 
         function updateNpcs(dt) {
           for (const npc of state.npcs) {
             const slot = scheduleFor(npc);
             npc.currentAct = slot.act;
-            moveToward(npc, slot, 52, dt, { collide: true });
+            moveToward(npc, slot, 52, dt, { collide: true, actorCollide: true, wanderOnBlock: true });
           }
         }
 
@@ -6019,7 +6090,9 @@
           const speed = state.player.speed * (1 + equipmentBonus("speed")) * state.speedOptions[state.speedIndex] * (keys.has("shift") ? 1.42 : 1);
           const nx = state.player.x + dx * speed * dt;
           const ny = state.player.y + dy * speed * dt;
-          const canMove = state.scene === "interior" ? canMoveInterior : canMoveTo;
+          const canMove = state.scene === "interior"
+            ? canMoveInterior
+            : (x, y, w, h) => canMoveTo(x, y, w, h) && !actorCollisionBlocked(state.player, x, y);
           if (canMove(nx, state.player.y, state.player.w, state.player.h)) state.player.x = nx;
           if (canMove(state.player.x, ny, state.player.w, state.player.h)) state.player.y = ny;
         }
@@ -6888,23 +6961,31 @@
         }
 
         function getBattleAudio() {
-          const AudioCtor = window.AudioContext || window.webkitAudioContext;
-          if (!AudioCtor) return null;
-          if (!battleAudio || battleAudio.state === "closed") battleAudio = new AudioCtor();
-          if (!musicGain) {
-            musicGain = battleAudio.createGain();
-            musicGain.connect(battleAudio.destination);
+          try {
+            const AudioCtor = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtor) return null;
+            if (!battleAudio || battleAudio.state === "closed") battleAudio = new AudioCtor();
+            if (!musicGain) {
+              musicGain = battleAudio.createGain();
+              musicGain.connect(battleAudio.destination);
+            }
+            if (!sfxGain) {
+              sfxGain = battleAudio.createGain();
+              sfxGain.connect(battleAudio.destination);
+            }
+            applyAudioSettings();
+            if (battleAudio.state === "suspended") {
+              const resumed = battleAudio.resume();
+              if (resumed?.catch) resumed.catch(() => {});
+            }
+            return battleAudio;
+          } catch (err) {
+            console.warn("battle audio disabled", err);
+            battleAudio = null;
+            musicGain = null;
+            sfxGain = null;
+            return null;
           }
-          if (!sfxGain) {
-            sfxGain = battleAudio.createGain();
-            sfxGain.connect(battleAudio.destination);
-          }
-          applyAudioSettings();
-          if (battleAudio.state === "suspended") {
-            const resumed = battleAudio.resume();
-            if (resumed?.catch) resumed.catch(() => {});
-          }
-          return battleAudio;
         }
 
         function playTone(audio, startFreq, endFreq, duration, type = "square", volume = 0.08, delay = 0, destination = null) {
@@ -7648,10 +7729,6 @@
             ctx.fillStyle = "rgba(87, 123, 66, 0.22)";
             ctx.fillRect(farm.x + 10, farm.y + 18, farm.w - 20, farm.h - 32);
           }
-          ctx.fillStyle = "#fff7d7";
-          ctx.font = "bold 12px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("社區農田", farm.x + farm.w / 2, farm.y + 22);
           for (let i = 0; i < farmPlotCount(); i++) {
             const rect = farmPlotRect(i);
             const plot = state.farmPlots[i] || { plantId: null };
@@ -9278,6 +9355,16 @@
           logEl.innerHTML = state.log.map((line) => `<div>${line}</div>`).join("");
         }
 
+        function reportRuntimeError(err, phase = "遊戲迴圈") {
+          console.error(`[森循島] ${phase}`, err);
+          const now = performance.now();
+          if (!state.started || now - lastRuntimeErrorAt < 3000) return;
+          lastRuntimeErrorAt = now;
+          addLog("系統保護：偵測到一次執行錯誤，已避免遊戲停止。");
+          addToast("已自動防止卡死", "warn", 2.8);
+          uiDirty = true;
+        }
+
         function update(dt) {
           if (!state.started) return;
           if (state.paused) {
@@ -9322,10 +9409,15 @@
         function loop(now) {
           const dt = Math.min(0.05, (now - lastTime) / 1000 || 0);
           lastTime = now;
-          update(dt);
-          render();
-          updateHud();
-          requestAnimationFrame(loop);
+          try {
+            update(dt);
+            render();
+            updateHud();
+          } catch (err) {
+            reportRuntimeError(err);
+          } finally {
+            requestAnimationFrame(loop);
+          }
         }
 
         document.addEventListener("keydown", (event) => {
