@@ -5836,7 +5836,10 @@
               monster.mode = "chase";
               monster.target = null;
               moveToward(monster, state.player, 38 + monster.stage * 14, dt, { collide: true });
-              if (!state.battle && dist(monster, state.player) < 34 + monster.stage * 4) startBattle(monster);
+              if (!state.battle && dist(monster, state.player) < 34 + monster.stage * 4) {
+                startBattle(monster);
+                return;
+              }
               continue;
             }
 
@@ -7382,6 +7385,7 @@
             bestCombo: 0,
             log: [`第 ${monster.stage} 階垃圾怪靠近了，用永續知識破解牠的迷思核心。`],
           };
+          keys.clear();
           setNextBattleQuestion(battleMonsterData);
           playBattleSound("enemy", 0.8);
           state.dialogue = null;
@@ -9171,6 +9175,15 @@
         function updateHud() {
           if (!uiDirty) return;
           uiDirty = false;
+          if (state.battle) {
+            hudPills.hidden = true;
+            questHud.hidden = true;
+            promptEl.hidden = true;
+            playerStatus.hidden = true;
+            toastStack.hidden = !state.toasts.length;
+            renderLog();
+            return;
+          }
           const zone = currentZoneAt();
           sceneLine.textContent = `${zone.name}｜第 ${state.day} 天 ${seasonMonthLabel()} ${formatClock()}｜${state.weather}｜背包 ${backpackTotal()}｜糧食 ${state.food}｜回收點數 ${state.recyclePoints}`;
           hudPills.hidden = Boolean(state.battle);
@@ -9512,6 +9525,14 @@
           uiDirty = true;
         }
 
+        window.addEventListener("error", (event) => {
+          reportRuntimeError(event.error || event.message, "瀏覽器事件");
+        });
+
+        window.addEventListener("unhandledrejection", (event) => {
+          reportRuntimeError(event.reason || "Promise rejected", "非同步事件");
+        });
+
         function update(dt) {
           if (!state.started) return;
           if (state.paused) {
@@ -9535,6 +9556,10 @@
               updateEvents(dt);
               updateTrash(dt);
               updateMonsters(dt);
+              if (state.battle) {
+                updateCamera();
+                return;
+              }
               updateFieldAction(dt);
             }
           } else {
