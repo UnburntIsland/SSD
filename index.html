@@ -7239,14 +7239,58 @@
           battle.effects = battle.effects.filter((effect) => effect.age < effect.maxLife);
         }
 
-        function battleMonster() {
-          if (!state.battle) return null;
-          const monster = state.monsters.find((item) => item.uid === state.battle.monsterUid);
-          if (!monster) return null;
+        function makeBattleMonsterSnapshot(monster) {
           const normalized = normalizeTrashMonster(monster);
           if (!normalized) return null;
-          Object.assign(monster, normalized);
-          return monster;
+          const maxHp = monsterMaxHp(normalized.stage, normalized.absorbed);
+          return {
+            uid: normalized.uid,
+            x: finiteNumber(normalized.x, state.player.x),
+            y: finiteNumber(normalized.y, state.player.y),
+            w: Math.max(24, finiteNumber(normalized.w, 28 + normalized.stage * 5)),
+            h: Math.max(24, finiteNumber(normalized.h, 28 + normalized.stage * 5)),
+            stage: normalized.stage,
+            absorbed: normalized.absorbed,
+            trashHeld: [...normalized.trashHeld],
+            hp: clamp(finiteNumber(normalized.hp, maxHp), 1, maxHp),
+            pulse: finiteNumber(normalized.pulse, 0),
+            mode: normalized.mode || "idle",
+          };
+        }
+
+        function liveBattleMonster() {
+          if (!state.battle) return null;
+          return state.monsters.find((item) => item.uid === state.battle.monsterUid) || null;
+        }
+
+        function battleMonster() {
+          if (!state.battle) return null;
+          if (state.battle.monster) return state.battle.monster;
+          const live = liveBattleMonster();
+          const snapshot = makeBattleMonsterSnapshot(live);
+          if (!snapshot) return null;
+          state.battle.monster = snapshot;
+          state.battle.monsterHp = snapshot.hp;
+          return state.battle.monster;
+        }
+
+        function syncBattleMonster(monster) {
+          if (!state.battle || !monster) return;
+          const maxHp = monsterMaxHp(monster.stage, monster.absorbed);
+          const hp = clamp(finiteNumber(monster.hp, state.battle.monsterHp || maxHp), 0, maxHp);
+          monster.hp = hp;
+          state.battle.monster = {
+            ...monster,
+            trashHeld: Array.isArray(monster.trashHeld) ? [...monster.trashHeld] : ["general"],
+          };
+          state.battle.monsterHp = hp;
+          const live = liveBattleMonster();
+          if (live) {
+            live.hp = hp;
+            live.stage = monster.stage;
+            live.absorbed = monster.absorbed;
+            live.trashHeld = [...state.battle.monster.trashHeld];
+          }
         }
 
         function pushBattleLog(text) {
@@ -7314,15 +7358,22 @@
           Object.assign(monster, normalized);
           state.fieldAction = null;
           monster.hp = clamp(finiteNumber(monster.hp, monsterMaxHp(monster.stage, monster.absorbed)), 1, monsterMaxHp(monster.stage, monster.absorbed));
+          const battleMonsterData = makeBattleMonsterSnapshot(monster);
+          if (!battleMonsterData) {
+            uiDirty = true;
+            return;
+          }
           state.battle = {
-            monsterUid: monster.uid,
+            monsterUid: battleMonsterData.uid,
+            monster: battleMonsterData,
             playerHp: state.health,
-            monsterHp: monster.hp,
+            monsterHp: battleMonsterData.hp,
             defending: false,
             weakened: false,
             effects: [],
             flash: 0.18,
             shake: 0.18,
+            renderFallback: false,
             question: null,
             questionSeen: [],
             correctAnswers: 0,
@@ -7331,7 +7382,7 @@
             bestCombo: 0,
             log: [`第 ${monster.stage} 階垃圾怪靠近了，用永續知識破解牠的迷思核心。`],
           };
-          setNextBattleQuestion(monster);
+          setNextBattleQuestion(battleMonsterData);
           playBattleSound("enemy", 0.8);
           state.dialogue = null;
           hudPills.hidden = true;
@@ -7349,7 +7400,7 @@
             uiDirty = true;
             return;
           }
-          const question = battle.question || pickBattleQuestion(monster);
+          const question = normalizedBattleQuestion(battle.question || pickBattleQuestion(monster));
           battle.question = question;
           const picked = Number(key) - 1;
           if (!question.options[picked]) return;
@@ -7378,7 +7429,7 @@
 
           if (damage > 0) {
             monster.hp = Math.max(0, monster.hp - damage);
-            battle.monsterHp = monster.hp;
+            syncBattleMonster(monster);
             pushBattleLog(message);
             triggerBattleFeedback(feedback || "strike", damage);
           }
@@ -7414,7 +7465,7 @@
         function finishBattle(victory, monster) {
           if (victory) {
             playBattleSound("victory");
-            const drops = monster.trashHeld.length ? monster.trashHeld : ["general"];
+            const drops = Array.isArray(monster.trashHeld) && monster.trashHeld.length ? monster.trashHeld : ["general"];
             state.stats.monstersDefeated += 1;
             addTrashBundleToBackpack(drops, "戰鬥回收");
             addNotes(12 + monster.stage * 8 + monster.absorbed, "擊敗垃圾怪");
@@ -7427,8 +7478,11 @@
             playBattleSound("defeat");
             applyBattleDefeatPenalty();
             state.health = Math.ceil(state.maxHealth * 0.45);
-            monster.x += randRange(-90, 90);
-            monster.y += randRange(-70, 70);
+            const live = liveBattleMonster();
+            if (live) {
+              live.x += randRange(-90, 90);
+              live.y += randRange(-70, 70);
+            }
             adjustEco({ pollution: 6, bio: -2 });
             state.battle = null;
             showDialogue("體力不足", "你被垃圾怪逼退，戰鬥結束並扣除 50% 累積 EXP。牠還在路上，先恢復體力或找夥伴再戰。", 4.2);
@@ -8661,12 +8715,96 @@
           }
         }
 
+        function normalizedBattleQuestion(question) {
+          const fallback = {
+            type: "是非題",
+            prompt: "乾淨分類能提升回收品質，讓資源更容易被再利用。",
+            options: ["是", "否"],
+            answer: 0,
+          };
+          if (!question || !Array.isArray(question.options) || !question.options.length) return fallback;
+          const options = question.options.map((option) => String(option ?? "選項"));
+          return {
+            ...fallback,
+            ...question,
+            prompt: String(question.prompt || fallback.prompt),
+            type: String(question.type || fallback.type),
+            options,
+            answer: clamp(Math.floor(finiteNumber(question.answer, 0)), 0, options.length - 1),
+          };
+        }
+
+        function drawBattleFallbackOverlay(err = null) {
+          const battle = state.battle;
+          if (!battle) return;
+          const question = normalizedBattleQuestion(battle.question);
+          ctx.save();
+          ctx.fillStyle = "#173d36";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#2f7a5d";
+          ctx.fillRect(0, 0, canvas.width, 94);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 28px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("垃圾淨化戰", canvas.width / 2, 58);
+          ctx.font = "bold 18px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(battle.log?.[0] || "用永續知識破解垃圾怪。", 72, 150);
+          ctx.fillStyle = "#f8de8f";
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText(`${question.type}｜破解迷思`, 72, 216);
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 18px sans-serif";
+          const prompt = question.prompt.length > 56 ? `${question.prompt.slice(0, 56)}...` : question.prompt;
+          ctx.fillText(prompt, 72, 254);
+          question.options.forEach((option, index) => {
+            const x = 92 + (index % 2) * 390;
+            const y = 314 + Math.floor(index / 2) * 70;
+            ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
+            ctx.fillRect(x, y, 330, 46);
+            ctx.strokeStyle = "#fff7d7";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, 330, 46);
+            ctx.fillStyle = "#173d36";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "left";
+            const label = `${index + 1}. ${option}`;
+            ctx.fillText(label.length > 22 ? `${label.slice(0, 22)}...` : label, x + 18, y + 29);
+          });
+          ctx.fillStyle = "#dbe8c0";
+          ctx.font = "bold 14px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("按 1-4 作答。正確答案高傷害，錯誤答案低傷害。", canvas.width / 2, canvas.height - 58);
+          if (err) {
+            ctx.fillStyle = "rgba(255,255,255,0.22)";
+            ctx.fillRect(72, canvas.height - 38, canvas.width - 144, 2);
+          }
+          ctx.restore();
+        }
+
+        function drawBattleScene() {
+          const battle = state.battle;
+          if (!battle) return;
+          if (battle.renderFallback) {
+            drawBattleFallbackOverlay();
+            return;
+          }
+          try {
+            drawBattleOverlay();
+          } catch (err) {
+            battle.renderFallback = true;
+            reportRuntimeError(err, "戰鬥畫面");
+            drawBattleFallbackOverlay(err);
+          }
+        }
+
         function drawBattleOverlay() {
           const battle = state.battle;
           const monster = battleMonster();
           if (!battle) return;
           if (!monster) {
-            state.battle = null;
+            battle.renderFallback = true;
+            drawBattleFallbackOverlay();
             uiDirty = true;
             return;
           }
@@ -8821,7 +8959,7 @@
           ctx.fillStyle = "#e8f7ff";
           ctx.font = "bold 15px sans-serif";
           ctx.textAlign = "left";
-          const question = battle.question || { type: "選擇題", prompt: "題目載入中...", options: [], answer: 0 };
+          const question = normalizedBattleQuestion(battle.question);
           ctx.fillText(`${question.type}｜破解迷思`, 56, 525);
           ctx.textAlign = "right";
           ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, 900, 525);
@@ -8907,7 +9045,16 @@
 
         function render() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          if (state.battle) hudPills.hidden = true;
+          if (state.battle) {
+            hudPills.hidden = true;
+            questHud.hidden = true;
+            promptEl.hidden = true;
+            playerStatus.hidden = true;
+            drawBattleScene();
+            drawPauseOverlay();
+            renderToasts();
+            return;
+          }
           if (state.scene === "interior") {
             renderInterior();
           } else {
@@ -8916,7 +9063,6 @@
             drawMiniMap();
             drawFieldActionOverlay();
           }
-          drawBattleOverlay();
           drawRecycleOverlay();
           updatePrompt();
           renderPlayerStatus();
@@ -9356,10 +9502,11 @@
         }
 
         function reportRuntimeError(err, phase = "遊戲迴圈") {
-          console.error(`[森循島] ${phase}`, err);
           const now = performance.now();
-          if (!state.started || now - lastRuntimeErrorAt < 3000) return;
+          if (now - lastRuntimeErrorAt < 3000) return;
           lastRuntimeErrorAt = now;
+          console.error(`[森循島] ${phase}`, err);
+          if (!state.started) return;
           addLog("系統保護：偵測到一次執行錯誤，已避免遊戲停止。");
           addToast("已自動防止卡死", "warn", 2.8);
           uiDirty = true;
