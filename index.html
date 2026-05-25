@@ -3486,6 +3486,7 @@
           [146.83, 220, 293.66],
           [196, 246.94, 293.66],
         ];
+        const BATTLE_SAFE_MODE = true;
 
         const state = {
           started: false,
@@ -7028,6 +7029,7 @@
         }
 
         function playBattleSound(kind, power = 1) {
+          if (BATTLE_SAFE_MODE) return;
           const audio = getBattleAudio();
           if (!audio) return;
           const boost = clamp(power, 0.75, 2.2);
@@ -7130,6 +7132,7 @@
         }
 
         function startBackgroundMusic() {
+          if (BATTLE_SAFE_MODE) return;
           const audio = getBattleAudio();
           if (!audio) return;
           applyAudioSettings();
@@ -7376,7 +7379,7 @@
             effects: [],
             flash: 0.18,
             shake: 0.18,
-            renderFallback: false,
+            renderFallback: BATTLE_SAFE_MODE,
             question: null,
             questionSeen: [],
             correctAnswers: 0,
@@ -7387,7 +7390,7 @@
           };
           keys.clear();
           setNextBattleQuestion(battleMonsterData);
-          playBattleSound("enemy", 0.8);
+          if (!BATTLE_SAFE_MODE) playBattleSound("enemy", 0.8);
           state.dialogue = null;
           hudPills.hidden = true;
           dialogueEl.hidden = true;
