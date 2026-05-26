@@ -3487,6 +3487,43 @@
           [196, 246.94, 293.66],
         ];
         const BATTLE_SAFE_MODE = true;
+        const BATTLE_SKILLS = [
+          {
+            id: "clean-strike",
+            name: "淨化斬",
+            desc: "穩定攻擊垃圾核心",
+            feedback: "strike",
+            correctMultiplier: 1.1,
+            wrongMultiplier: 0.36,
+          },
+          {
+            id: "eco-scan",
+            name: "生態掃描",
+            desc: "答對會削弱反擊",
+            feedback: "analyze",
+            correctMultiplier: 0.92,
+            wrongMultiplier: 0.28,
+            weakenOnCorrect: true,
+          },
+          {
+            id: "partner-aid",
+            name: "夥伴協作",
+            desc: "夥伴越多加成越高",
+            feedback: "partner",
+            correctMultiplier: 0.86,
+            wrongMultiplier: 0.22,
+            partnerBonus: true,
+          },
+          {
+            id: "recycle-guard",
+            name: "回收護盾",
+            desc: "答對會降低下次傷害",
+            feedback: "defend",
+            correctMultiplier: 0.62,
+            wrongMultiplier: 0.16,
+            defendOnCorrect: true,
+          },
+        ];
 
         const state = {
           started: false,
@@ -7340,16 +7377,48 @@
           uiDirty = true;
         }
 
-        function battleDamageForAnswer(correct, monster) {
+        function battleSkillByKey(key) {
+          const index = Number(key) - 1;
+          return BATTLE_SKILLS[index] || null;
+        }
+
+        function battleSkillById(id) {
+          return BATTLE_SKILLS.find((skill) => skill.id === id) || BATTLE_SKILLS[0];
+        }
+
+        function selectBattleSkill(key, monster) {
+          const battle = state.battle;
+          const skill = battleSkillByKey(key);
+          if (!battle || !monster || !skill) return false;
+          battle.phase = "question";
+          battle.selectedSkill = skill.id;
+          setNextBattleQuestion(monster);
+          pushBattleLog(`你準備使用「${skill.name}」。回答知識題決定這招的效果。`);
+          return true;
+        }
+
+        function resetBattleSkillChoice() {
+          const battle = state.battle;
+          if (!battle) return;
+          battle.phase = "skill";
+          battle.selectedSkill = null;
+          battle.question = null;
+          uiDirty = true;
+        }
+
+        function battleDamageForAnswer(correct, monster, skill = BATTLE_SKILLS[0]) {
           if (correct) {
             let damage = 22 + state.level * 2 + Math.floor(state.recyclePoints / 95) + partnerCount() * 2;
             if (state.recycleStats.perfect > 0) damage += 4;
             damage += equipmentBonus("questionDamage");
             damage += Math.min(10 + equipmentBonus("comboDamage") * 2, (state.battle?.combo || 0) * (2 + equipmentBonus("comboDamage")));
+            if (skill.partnerBonus) damage += partnerCount() * 4;
+            damage *= skill.correctMultiplier ?? 1;
             return Math.round(damage);
           }
           let damage = 2 + Math.floor(state.level / 5);
           damage += equipmentBonus("wrongAnswerDamage");
+          damage *= skill.wrongMultiplier ?? 1;
           return Math.max(1, Math.round(damage));
         }
 
@@ -7380,6 +7449,8 @@
             flash: 0.18,
             shake: 0.18,
             renderFallback: BATTLE_SAFE_MODE,
+            phase: "skill",
+            selectedSkill: null,
             question: null,
             questionSeen: [],
             correctAnswers: 0,
@@ -7389,7 +7460,6 @@
             log: [`第 ${monster.stage} 階垃圾怪靠近了，用永續知識破解牠的迷思核心。`],
           };
           keys.clear();
-          setNextBattleQuestion(battleMonsterData);
           if (!BATTLE_SAFE_MODE) playBattleSound("enemy", 0.8);
           state.dialogue = null;
           hudPills.hidden = true;
@@ -7407,10 +7477,15 @@
             uiDirty = true;
             return;
           }
+          if (battle.phase !== "question") {
+            selectBattleSkill(key, monster);
+            return;
+          }
           const question = normalizedBattleQuestion(battle.question || pickBattleQuestion(monster));
           battle.question = question;
           const picked = Number(key) - 1;
           if (!question.options[picked]) return;
+          const skill = battleSkillById(battle.selectedSkill);
           const correct = picked === question.answer;
           state.questionStats.answered += 1;
           if (correct) {
@@ -7418,21 +7493,22 @@
             battle.correctAnswers += 1;
             battle.combo = (battle.combo || 0) + 1;
             battle.bestCombo = Math.max(battle.bestCombo || 0, battle.combo);
-            battle.weakened = true;
+            if (skill.weakenOnCorrect) battle.weakened = true;
+            if (skill.defendOnCorrect) battle.defending = true;
             addNotes(3, "戰鬥答題");
           } else {
             battle.wrongAnswers += 1;
             battle.combo = 0;
           }
-          const damage = battleDamageForAnswer(correct, monster);
+          const damage = battleDamageForAnswer(correct, monster, skill);
           degradeGear(correct ? 1 : 4);
           const chosen = question.options[picked];
           const answer = question.options[question.answer];
           const comboText = correct && battle.combo > 1 ? ` 連答 x${battle.combo} 加成！` : "";
           const message = correct
-            ? `答對：${chosen}。迷思核心破裂，造成 ${damage} 傷害。${comboText}${question.explain}`
-            : `答錯：你選了「${chosen}」，正解是「${answer}」。只造成 ${damage} 傷害。${question.explain}`;
-          const feedback = correct ? "analyze" : "strike";
+            ? `「${skill.name}」成功！你選了「${chosen}」，造成 ${damage} 傷害。${comboText}${question.explain}`
+            : `「${skill.name}」效果不足。你選了「${chosen}」，正解是「${answer}」，仍造成 ${damage} 傷害。${question.explain}`;
+          const feedback = skill.feedback || (correct ? "analyze" : "strike");
 
           if (damage > 0) {
             monster.hp = Math.max(0, monster.hp - damage);
@@ -7445,7 +7521,7 @@
             return;
           }
           monsterBattleTurn(monster);
-          if (state.battle) setNextBattleQuestion(monster);
+          if (state.battle) resetBattleSkillChoice();
         }
 
         function monsterBattleTurn(monster) {
@@ -8757,9 +8833,40 @@
           ctx.font = "bold 18px sans-serif";
           ctx.textAlign = "left";
           ctx.fillText(battle.log?.[0] || "用永續知識破解垃圾怪。", 72, 150);
+          const monster = battleMonster();
+          const enemyMax = monster ? monsterMaxHp(monster.stage, monster.absorbed) : 1;
+          ctx.fillStyle = "#dbe8c0";
+          ctx.font = "bold 15px sans-serif";
+          ctx.fillText(`體力 ${Math.ceil(state.health)}/${state.maxHealth}   垃圾怪 ${Math.ceil(monster?.hp || 0)}/${enemyMax}`, 72, 186);
+          if (battle.phase !== "question") {
+            ctx.fillStyle = "#f8de8f";
+            ctx.font = "bold 22px sans-serif";
+            ctx.fillText("選擇技能", 72, 232);
+            BATTLE_SKILLS.forEach((skill, index) => {
+              const x = 92 + (index % 2) * 390;
+              const y = 282 + Math.floor(index / 2) * 82;
+              ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
+              ctx.fillRect(x, y, 330, 58);
+              ctx.strokeStyle = "#fff7d7";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(x, y, 330, 58);
+              ctx.fillStyle = "#173d36";
+              ctx.font = "bold 17px sans-serif";
+              ctx.fillText(`${index + 1}. ${skill.name}`, x + 18, y + 24);
+              ctx.font = "bold 13px sans-serif";
+              ctx.fillText(skill.desc, x + 18, y + 45);
+            });
+            ctx.fillStyle = "#dbe8c0";
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("按 1-4 選技能。選完後會出題，答對高傷害、答錯低傷害。", canvas.width / 2, canvas.height - 58);
+            ctx.restore();
+            return;
+          }
+          const selectedSkill = battleSkillById(battle.selectedSkill);
           ctx.fillStyle = "#f8de8f";
           ctx.font = "bold 20px sans-serif";
-          ctx.fillText(`${question.type}｜破解迷思`, 72, 216);
+          ctx.fillText(`${question.type}｜${selectedSkill.name} 命中判定`, 72, 216);
           ctx.fillStyle = "#fff7d7";
           ctx.font = "bold 18px sans-serif";
           const prompt = question.prompt.length > 56 ? `${question.prompt.slice(0, 56)}...` : question.prompt;
@@ -8781,7 +8888,7 @@
           ctx.fillStyle = "#dbe8c0";
           ctx.font = "bold 14px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("按 1-4 作答。正確答案高傷害，錯誤答案低傷害。", canvas.width / 2, canvas.height - 58);
+          ctx.fillText("按 1-4 作答。正確答案讓技能高傷害，錯誤答案仍有低傷害。", canvas.width / 2, canvas.height - 58);
           if (err) {
             ctx.fillStyle = "rgba(255,255,255,0.22)";
             ctx.fillRect(72, canvas.height - 38, canvas.width - 144, 2);
@@ -8966,8 +9073,10 @@
           ctx.fillStyle = "#e8f7ff";
           ctx.font = "bold 15px sans-serif";
           ctx.textAlign = "left";
+          const choosingSkill = battle.phase !== "question";
+          const selectedSkill = battleSkillById(battle.selectedSkill);
           const question = normalizedBattleQuestion(battle.question);
-          ctx.fillText(`${question.type}｜破解迷思`, 56, 525);
+          ctx.fillText(choosingSkill ? "選擇技能" : `${question.type}｜${selectedSkill.name} 命中判定`, 56, 525);
           ctx.textAlign = "right";
           ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, 900, 525);
           ctx.textAlign = "left";
@@ -8975,14 +9084,21 @@
           ctx.fillRect(190, 514, 712, 2);
           ctx.fillStyle = "#fff7d7";
           ctx.font = "bold 16px sans-serif";
-          drawWrapped(question.prompt, 56, 550, 846, 19, 2);
+          drawWrapped(choosingSkill ? "先選擇一個技能；接著回答知識題來決定該技能是高傷害或低傷害。" : question.prompt, 56, 550, 846, 19, 2);
 
-          const options = question.options.map((option, index) => ({
-            key: String(index + 1),
-            name: option,
-            meta: "作答",
-            desc: "正確高傷害，錯誤低傷害",
-          }));
+          const options = choosingSkill
+            ? BATTLE_SKILLS.map((skill, index) => ({
+                key: String(index + 1),
+                name: skill.name,
+                meta: "技能",
+                desc: skill.desc,
+              }))
+            : question.options.map((option, index) => ({
+                key: String(index + 1),
+                name: option,
+                meta: "作答",
+                desc: "正確高傷害，錯誤低傷害",
+              }));
           for (let i = 0; i < options.length; i++) {
             const opt = options[i];
             const ox = 54 + (i % 2) * 438;
