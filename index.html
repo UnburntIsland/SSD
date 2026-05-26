@@ -8820,78 +8820,172 @@
         function drawBattleFallbackOverlay(err = null) {
           const battle = state.battle;
           if (!battle) return;
-          const question = normalizedBattleQuestion(battle.question);
-          ctx.save();
-          ctx.fillStyle = "#173d36";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#2f7a5d";
-          ctx.fillRect(0, 0, canvas.width, 94);
-          ctx.fillStyle = "#fff7d7";
-          ctx.font = "bold 28px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("垃圾淨化戰", canvas.width / 2, 58);
-          ctx.font = "bold 18px sans-serif";
-          ctx.textAlign = "left";
-          ctx.fillText(battle.log?.[0] || "用永續知識破解垃圾怪。", 72, 150);
           const monster = battleMonster();
-          const enemyMax = monster ? monsterMaxHp(monster.stage, monster.absorbed) : 1;
-          ctx.fillStyle = "#dbe8c0";
-          ctx.font = "bold 15px sans-serif";
-          ctx.fillText(`體力 ${Math.ceil(state.health)}/${state.maxHealth}   垃圾怪 ${Math.ceil(monster?.hp || 0)}/${enemyMax}`, 72, 186);
-          if (battle.phase !== "question") {
-            ctx.fillStyle = "#f8de8f";
-            ctx.font = "bold 22px sans-serif";
-            ctx.fillText("選擇技能", 72, 232);
-            BATTLE_SKILLS.forEach((skill, index) => {
-              const x = 92 + (index % 2) * 390;
-              const y = 282 + Math.floor(index / 2) * 82;
-              ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
-              ctx.fillRect(x, y, 330, 58);
-              ctx.strokeStyle = "#fff7d7";
-              ctx.lineWidth = 2;
-              ctx.strokeRect(x, y, 330, 58);
-              ctx.fillStyle = "#173d36";
-              ctx.font = "bold 17px sans-serif";
-              ctx.fillText(`${index + 1}. ${skill.name}`, x + 18, y + 24);
-              ctx.font = "bold 13px sans-serif";
-              ctx.fillText(skill.desc, x + 18, y + 45);
-            });
-            ctx.fillStyle = "#dbe8c0";
-            ctx.font = "bold 14px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("按 1-4 選技能。選完後會出題，答對高傷害、答錯低傷害。", canvas.width / 2, canvas.height - 58);
-            ctx.restore();
-            return;
-          }
+          const question = normalizedBattleQuestion(battle.question);
           const selectedSkill = battleSkillById(battle.selectedSkill);
-          ctx.fillStyle = "#f8de8f";
-          ctx.font = "bold 20px sans-serif";
-          ctx.fillText(`${question.type}｜${selectedSkill.name} 命中判定`, 72, 216);
-          ctx.fillStyle = "#fff7d7";
-          ctx.font = "bold 18px sans-serif";
-          const prompt = question.prompt.length > 56 ? `${question.prompt.slice(0, 56)}...` : question.prompt;
-          ctx.fillText(prompt, 72, 254);
-          question.options.forEach((option, index) => {
-            const x = 92 + (index % 2) * 390;
-            const y = 314 + Math.floor(index / 2) * 70;
-            ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
-            ctx.fillRect(x, y, 330, 46);
-            ctx.strokeStyle = "#fff7d7";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, 330, 46);
-            ctx.fillStyle = "#173d36";
+          const choosingSkill = battle.phase !== "question";
+          const enemyMax = monster ? monsterMaxHp(monster.stage, monster.absorbed) : 1;
+
+          const fitText = (text, x, y, maxWidth) => {
+            let line = String(text || "");
+            while (ctx.measureText(line).width > maxWidth && line.length > 4) line = `${line.slice(0, -2)}...`;
+            ctx.fillText(line, x, y);
+          };
+          const wrapText = (text, x, y, maxWidth, lineHeight, maxLines = 2) => {
+            const lines = [];
+            let line = "";
+            for (const char of String(text || "")) {
+              const next = line + char;
+              if (ctx.measureText(next).width > maxWidth && line) {
+                lines.push(line);
+                line = char;
+                if (lines.length >= maxLines) break;
+              } else {
+                line = next;
+              }
+            }
+            if (lines.length < maxLines && line) lines.push(line);
+            for (let i = 0; i < Math.min(lines.length, maxLines); i++) fitText(lines[i], x, y + i * lineHeight, maxWidth);
+          };
+          const panel = (x, y, w, h, fill = "#e9f6f7", stroke = "#1d6490") => {
+            ctx.fillStyle = "rgba(25, 55, 42, 0.22)";
+            ctx.fillRect(x + 7, y + 8, w, h);
+            ctx.fillStyle = fill;
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = stroke;
+            ctx.fillRect(x, y, w, 26);
+            ctx.fillStyle = "rgba(255,255,255,0.35)";
+            ctx.fillRect(x + 8, y + 8, w - 16, 3);
+          };
+          const hpPanel = (x, y, w, title, hp, maxHp, sub, align = "left") => {
+            panel(x, y, w, 86);
+            ctx.fillStyle = "#ffffff";
             ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = align;
+            ctx.fillText(title, align === "right" ? x + w - 12 : x + 12, y + 19);
+            ctx.fillStyle = "#1f5265";
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(sub, align === "right" ? x + w - 12 : x + 12, y + 52);
+            const rate = clamp(hp / Math.max(1, maxHp), 0, 1);
+            const bx = x + 20;
+            const by = y + 58;
+            const bw = w - 40;
+            ctx.fillStyle = "#a8b8b4";
+            ctx.fillRect(bx, by, bw, 14);
+            ctx.fillStyle = rate > 0.5 ? "#4fae62" : rate > 0.24 ? "#e0aa3c" : "#cf5048";
+            ctx.fillRect(bx, by, Math.max(3, bw * rate), 14);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`${Math.ceil(hp)} / ${maxHp}`, bx + bw / 2, by + 11);
+          };
+          const platform = (cx, cy, w, h) => {
+            ctx.fillStyle = "rgba(18, 67, 46, 0.32)";
+            ctx.beginPath();
+            ctx.ellipse(cx + 16, cy + 24, w * 0.5, h * 0.48, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#9f8c4a";
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 16, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#dfd07b";
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(36, 79, 60, 0.5)";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          };
+          const optionBox = (x, y, w, h, index, title, desc, meta) => {
+            ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = "#0e314a";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = "#0e314a";
+            ctx.fillRect(x + 8, y + 8, 28, 22);
+            ctx.fillStyle = "#fff7d7";
+            ctx.font = "bold 15px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(String(index + 1), x + 22, y + 25);
+            ctx.fillStyle = "#0e314a";
+            ctx.font = "bold 17px sans-serif";
             ctx.textAlign = "left";
-            const label = `${index + 1}. ${option}`;
-            ctx.fillText(label.length > 22 ? `${label.slice(0, 22)}...` : label, x + 18, y + 29);
-          });
-          ctx.fillStyle = "#dbe8c0";
-          ctx.font = "bold 14px sans-serif";
+            fitText(title, x + 48, y + 24, w - 170);
+            ctx.font = "bold 12px sans-serif";
+            fitText(desc, x + 48, y + h - 10, w - 70);
+            ctx.textAlign = "right";
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillText(meta, x + w - 14, y + 24);
+          };
+
+          ctx.save();
+          const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          bg.addColorStop(0, "#7bc4d7");
+          bg.addColorStop(0.48, "#d9f0dc");
+          bg.addColorStop(1, "#4e8e5c");
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(255,255,255,0.24)";
+          for (let i = 0; i < 9; i++) ctx.fillRect(34 + i * 116, 54 + (i % 3) * 18, 58, 4);
+          ctx.fillStyle = "rgba(34, 103, 74, 0.2)";
+          ctx.fillRect(0, 337, canvas.width, 118);
+          ctx.fillStyle = "rgba(27, 74, 54, 0.22)";
+          for (let x = 26; x < canvas.width; x += 82) ctx.fillRect(x, 360, 42, 5);
+
+          panel(canvas.width / 2 - 144, 28, 288, 44, "rgba(30, 83, 105, 0.92)", "#8fd3ff");
+          ctx.fillStyle = "#e8f7ff";
+          ctx.font = "bold 24px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("按 1-4 作答。正確答案讓技能高傷害，錯誤答案仍有低傷害。", canvas.width / 2, canvas.height - 58);
+          ctx.fillText("垃圾淨化戰", canvas.width / 2, 59);
+
+          hpPanel(52, 108, 330, "回收調查員", state.health, state.maxHealth, `夥伴 ${partnerCount()}｜回收 ${state.recyclePoints}`, "left");
+          hpPanel(canvas.width - 382, 108, 330, monster ? `第 ${monster.stage} 階垃圾怪` : "垃圾怪", monster?.hp || 0, enemyMax, `吸收 ${monster?.absorbed || 0} 件垃圾`, "right");
+
+          platform(238, 404, 282, 58);
+          platform(724, 356, 250, 52);
+          drawSpriteToBox("player", 184, 246, 108, 154, true);
+          if (monster) {
+            const sprite = `trashMonster${monster.stage}`;
+            const size = SPRITE_DRAW_SIZES[sprite] || { w: 54, h: 52 };
+            const scale = monster.stage === 3 ? 2.22 : monster.stage === 2 ? 2.02 : 1.84;
+            drawSpriteToBox(sprite, 724 - (size.w * scale) / 2, 356 - size.h * scale + 8, size.w * scale, size.h * scale, false);
+          }
+
+          panel(44, 444, canvas.width - 88, 54, "#e8f7ff", "#1d6490");
+          ctx.fillStyle = "#0e4163";
+          ctx.font = "bold 17px sans-serif";
+          ctx.textAlign = "left";
+          fitText(battle.log?.[0] || "第 1 階垃圾怪靠近了。", 64, 478, canvas.width - 128);
+
+          panel(44, 506, canvas.width - 88, 122, "rgba(15, 55, 86, 0.96)", "#8fd3ff");
+          ctx.fillStyle = "#e8f7ff";
+          ctx.font = "bold 16px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(choosingSkill ? "技能指令" : `${question.type}｜${selectedSkill.name} 命中判定`, 64, 531);
+          ctx.textAlign = "right";
+          ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, canvas.width - 64, 531);
+          ctx.textAlign = "left";
+          ctx.fillStyle = "#fff7d7";
+          ctx.font = "bold 14px sans-serif";
+          wrapText(choosingSkill ? "選擇技能後會出題，答對讓該技能高傷害，答錯則變成低傷害。" : question.prompt, 64, 552, canvas.width - 128, 17, 2);
+
+          const options = choosingSkill
+            ? BATTLE_SKILLS.map((skill) => ({ title: skill.name, desc: skill.desc, meta: "技能" }))
+            : question.options.map((option) => ({ title: option, desc: "正確高傷害，錯誤低傷害", meta: "作答" }));
+          for (let i = 0; i < options.length; i++) {
+            const x = 64 + (i % 2) * 424;
+            const y = 574 + Math.floor(i / 2) * 34;
+            optionBox(x, y, 398, 28, i, options[i].title, options[i].desc, options[i].meta);
+          }
           if (err) {
             ctx.fillStyle = "rgba(255,255,255,0.22)";
-            ctx.fillRect(72, canvas.height - 38, canvas.width - 144, 2);
+            ctx.fillRect(72, canvas.height - 8, canvas.width - 144, 2);
           }
           ctx.restore();
         }
