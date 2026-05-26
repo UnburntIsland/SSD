@@ -8901,27 +8901,29 @@
             ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
             ctx.stroke();
           };
-          const optionBox = (x, y, w, h, index, title, desc, meta) => {
+          const optionBox = (x, y, w, h, index, title, desc, meta, compact = false) => {
             ctx.fillStyle = index === 0 ? "#f7d36f" : index === 1 ? "#76c6cc" : index === 2 ? "#8fd17b" : "#d9d2a5";
             ctx.fillRect(x, y, w, h);
             ctx.strokeStyle = "#0e314a";
             ctx.lineWidth = 3;
             ctx.strokeRect(x, y, w, h);
             ctx.fillStyle = "#0e314a";
-            ctx.fillRect(x + 8, y + 8, 28, 22);
+            ctx.fillRect(x + 8, y + 8, 28, compact ? 18 : 24);
             ctx.fillStyle = "#fff7d7";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(String(index + 1), x + 22, y + 25);
+            ctx.fillText(String(index + 1), x + 22, y + (compact ? 23 : 26));
             ctx.fillStyle = "#0e314a";
-            ctx.font = "bold 17px sans-serif";
+            ctx.font = compact ? "bold 15px sans-serif" : "bold 18px sans-serif";
             ctx.textAlign = "left";
-            fitText(title, x + 48, y + 24, w - 170);
-            ctx.font = "bold 12px sans-serif";
-            fitText(desc, x + 48, y + h - 10, w - 70);
+            fitText(title, x + 48, y + (compact ? 23 : 25), w - 150);
+            if (!compact) {
+              ctx.font = "bold 13px sans-serif";
+              fitText(desc, x + 48, y + 47, w - 70);
+            }
             ctx.textAlign = "right";
             ctx.font = "bold 12px sans-serif";
-            ctx.fillText(meta, x + w - 14, y + 24);
+            ctx.fillText(meta, x + w - 14, y + (compact ? 23 : 25));
           };
 
           ctx.save();
@@ -8971,17 +8973,22 @@
           ctx.textAlign = "right";
           ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, canvas.width - 64, 531);
           ctx.textAlign = "left";
-          ctx.fillStyle = "#fff7d7";
-          ctx.font = "bold 14px sans-serif";
-          wrapText(choosingSkill ? "選擇技能後會出題，答對讓該技能高傷害，答錯則變成低傷害。" : question.prompt, 64, 552, canvas.width - 128, 17, 2);
-
-          const options = choosingSkill
-            ? BATTLE_SKILLS.map((skill) => ({ title: skill.name, desc: skill.desc, meta: "技能" }))
-            : question.options.map((option) => ({ title: option, desc: "正確高傷害，錯誤低傷害", meta: "作答" }));
-          for (let i = 0; i < options.length; i++) {
-            const x = 64 + (i % 2) * 424;
-            const y = 574 + Math.floor(i / 2) * 34;
-            optionBox(x, y, 398, 28, i, options[i].title, options[i].desc, options[i].meta);
+          if (choosingSkill) {
+            for (let i = 0; i < BATTLE_SKILLS.length; i++) {
+              const skill = BATTLE_SKILLS[i];
+              const x = 64 + (i % 2) * 424;
+              const y = 552 + Math.floor(i / 2) * 38;
+              optionBox(x, y, 398, 32, i, skill.name, skill.desc, "技能");
+            }
+          } else {
+            ctx.fillStyle = "#fff7d7";
+            ctx.font = "bold 14px sans-serif";
+            wrapText(question.prompt, 64, 552, canvas.width - 128, 17, 2);
+            for (let i = 0; i < question.options.length; i++) {
+              const x = 64 + (i % 2) * 424;
+              const y = 590 + Math.floor(i / 2) * 30;
+              optionBox(x, y, 398, 24, i, question.options[i], "", "作答", true);
+            }
           }
           if (err) {
             ctx.fillStyle = "rgba(255,255,255,0.22)";
@@ -9176,9 +9183,11 @@
           ctx.textAlign = "left";
           ctx.fillStyle = "rgba(143, 211, 255, 0.28)";
           ctx.fillRect(190, 514, 712, 2);
-          ctx.fillStyle = "#fff7d7";
-          ctx.font = "bold 16px sans-serif";
-          drawWrapped(choosingSkill ? "先選擇一個技能；接著回答知識題來決定該技能是高傷害或低傷害。" : question.prompt, 56, 550, 846, 19, 2);
+          if (!choosingSkill) {
+            ctx.fillStyle = "#fff7d7";
+            ctx.font = "bold 16px sans-serif";
+            drawWrapped(question.prompt, 56, 550, 846, 19, 2);
+          }
 
           const options = choosingSkill
             ? BATTLE_SKILLS.map((skill, index) => ({
@@ -9191,33 +9200,36 @@
                 key: String(index + 1),
                 name: option,
                 meta: "作答",
-                desc: "正確高傷害，錯誤低傷害",
+                desc: "正確高傷害",
               }));
           for (let i = 0; i < options.length; i++) {
             const opt = options[i];
             const ox = 54 + (i % 2) * 438;
-            const oy = 576 + Math.floor(i / 2) * 32;
+            const oy = choosingSkill ? 546 + Math.floor(i / 2) * 42 : 588 + Math.floor(i / 2) * 30;
+            const oh = choosingSkill ? 36 : 24;
             const fill = i === 0 ? "#f7d36f" : i === 1 ? "#76c6cc" : i === 2 ? "#8fd17b" : "#d9d2a5";
             ctx.fillStyle = fill;
-            ctx.fillRect(ox, oy, 414, 27);
+            ctx.fillRect(ox, oy, 414, oh);
             ctx.strokeStyle = "#0e314a";
             ctx.lineWidth = 3;
-            ctx.strokeRect(ox, oy, 414, 27);
+            ctx.strokeRect(ox, oy, 414, oh);
             ctx.fillStyle = "#0e314a";
-            ctx.fillRect(ox + 8, oy + 5, 24, 17);
+            ctx.fillRect(ox + 8, oy + 6, 24, 18);
             ctx.fillStyle = "#fff7d7";
             ctx.font = "bold 13px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(opt.key, ox + 20, oy + 18);
+            ctx.fillText(opt.key, ox + 20, oy + 20);
             ctx.fillStyle = "#0e314a";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "left";
-            drawFitted(opt.name, ox + 42, oy + 18, 220);
-            ctx.font = "bold 11px sans-serif";
-            drawFitted(opt.desc, ox + 270, oy + 18, 96);
+            drawFitted(opt.name, ox + 42, oy + 20, choosingSkill ? 220 : 290);
+            if (choosingSkill) {
+              ctx.font = "bold 11px sans-serif";
+              drawFitted(opt.desc, ox + 42, oy + 33, 300);
+            }
             ctx.textAlign = "right";
             ctx.font = "bold 12px sans-serif";
-            ctx.fillText(opt.meta, ox + 400, oy + 18);
+            ctx.fillText(opt.meta, ox + 400, oy + 20);
           }
           ctx.restore();
         }
