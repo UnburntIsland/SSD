@@ -2241,7 +2241,7 @@
         function equipmentStatsFor(slot, tier) {
           if (slot === "head") return { questionDamage: tier * 2, trust: tier >= 3 ? 1 : 0, questNotes: tier >= 4 ? 4 : tier >= 2 ? 2 : 0 };
           if (slot === "chest") return { maxHealth: 4 + tier * 4, damageReduction: tier * 0.04 };
-          if (slot === "legs") return { comboDamage: tier, wrongAnswerDamage: Math.max(1, Math.floor(tier / 2)) };
+          if (slot === "legs") return { questionDamage: tier, wrongAnswerDamage: Math.max(1, Math.floor(tier / 2)) };
           if (slot === "feet") return { speed: 0.04 + tier * 0.02 };
           return {};
         }
@@ -2259,7 +2259,6 @@
           if (stats.questNotes) parts.push(`謠言線索筆記 +${stats.questNotes}`);
           if (stats.maxHealth) parts.push(`最大體力 +${stats.maxHealth}`);
           if (stats.damageReduction) parts.push(`受到傷害 -${Math.round(stats.damageReduction * 100)}%`);
-          if (stats.comboDamage) parts.push(`連答加成 +${stats.comboDamage}`);
           if (stats.wrongAnswerDamage) parts.push(`答錯保底傷害 +${stats.wrongAnswerDamage}`);
           if (stats.speed) parts.push(`跑速 +${Math.round(stats.speed * 100)}%`);
           return `${slot.label}裝備。${parts.join("、")}。`;
@@ -3491,37 +3490,36 @@
           {
             id: "clean-strike",
             name: "淨化斬",
-            desc: "穩定攻擊垃圾核心",
+            role: "攻擊",
             feedback: "strike",
-            correctMultiplier: 1.1,
-            wrongMultiplier: 0.36,
+            baseMultiplier: 1,
+            askQuestion: true,
+            correctMultiplier: 1.5,
+            wrongMultiplier: 0.5,
           },
           {
             id: "eco-scan",
             name: "生態掃描",
-            desc: "答對會削弱反擊",
+            role: "攻擊",
             feedback: "analyze",
-            correctMultiplier: 0.92,
-            wrongMultiplier: 0.28,
-            weakenOnCorrect: true,
+            baseMultiplier: 0.82,
+            weakenOnUse: true,
           },
           {
             id: "partner-aid",
             name: "夥伴協作",
-            desc: "夥伴越多加成越高",
+            role: "攻擊",
             feedback: "partner",
-            correctMultiplier: 0.86,
-            wrongMultiplier: 0.22,
+            baseMultiplier: 0.74,
             partnerBonus: true,
           },
           {
             id: "recycle-guard",
             name: "回收護盾",
-            desc: "答對會降低下次傷害",
+            role: "防禦",
             feedback: "defend",
-            correctMultiplier: 0.62,
-            wrongMultiplier: 0.16,
-            defendOnCorrect: true,
+            baseMultiplier: 0,
+            defendOnUse: true,
           },
         ];
 
