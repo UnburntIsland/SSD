@@ -457,12 +457,16 @@
 
       .primary,
       .secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 44px;
         padding: 0 18px;
         border: 3px solid #294b39;
         border-radius: 8px;
         cursor: pointer;
         font-weight: 900;
+        text-decoration: none;
       }
 
       .primary {
@@ -473,6 +477,11 @@
       .secondary {
         background: #efe5bd;
         color: #294b39;
+      }
+
+      .official-link {
+        background: #f8de8f;
+        color: #244f3c;
       }
 
       .side {
@@ -1949,6 +1958,7 @@
             <div class="start-actions">
               <button class="primary" id="startBtn">開始巡島</button>
               <button class="secondary" id="loadBtn">讀取自動存檔</button>
+              <a class="secondary official-link" href="https://unburntisland.github.io/GoM/index.html" target="_blank" rel="noopener noreferrer">官方網站</a>
               <button class="secondary" id="resetBtn">清除存檔</button>
             </div>
           </div>
@@ -1964,6 +1974,7 @@
             </div>
             <div class="settings-actions">
               <button class="primary" id="resumeBtn">回到遊戲</button>
+              <a class="secondary official-link" href="https://unburntisland.github.io/GoM/index.html" target="_blank" rel="noopener noreferrer">官方網站</a>
               <button class="secondary" id="homeBtn">回到首頁</button>
             </div>
             <div class="home-confirm" id="homeConfirm" hidden>
@@ -2254,7 +2265,7 @@
 
         function equipmentEffectText(slot, stats) {
           const parts = [];
-          if (stats.questionDamage) parts.push(`問答正確傷害 +${stats.questionDamage}`);
+          if (stats.questionDamage) parts.push(`淨化斬傷害 +${stats.questionDamage}`);
           if (stats.trust) parts.push(`觀察信任 +${stats.trust}`);
           if (stats.questNotes) parts.push(`謠言線索筆記 +${stats.questNotes}`);
           if (stats.maxHealth) parts.push(`最大體力 +${stats.maxHealth}`);
@@ -7388,10 +7399,14 @@
           const battle = state.battle;
           const skill = battleSkillByKey(key);
           if (!battle || !monster || !skill) return false;
-          battle.phase = "question";
           battle.selectedSkill = skill.id;
+          if (!skill.askQuestion) {
+            performSelectedBattleSkill(skill, monster);
+            return true;
+          }
+          battle.phase = "question";
           setNextBattleQuestion(monster);
-          pushBattleLog(`你準備使用「${skill.name}」。回答知識題決定這招的效果。`);
+          pushBattleLog(`你使用「${skill.name}」，回答題目決定傷害。`);
           return true;
         }
 
@@ -7404,20 +7419,49 @@
           uiDirty = true;
         }
 
+        function baseBattleDamage(skill = BATTLE_SKILLS[0]) {
+          let damage = 20 + state.level * 2 + Math.floor(state.recyclePoints / 110) + partnerCount();
+          if (state.recycleStats.perfect > 0) damage += 3;
+          damage += equipmentBonus("questionDamage");
+          if (skill.partnerBonus) damage += partnerCount() * 4;
+          damage *= skill.baseMultiplier ?? 1;
+          return Math.max(0, Math.round(damage));
+        }
+
         function battleDamageForAnswer(correct, monster, skill = BATTLE_SKILLS[0]) {
-          if (correct) {
-            let damage = 22 + state.level * 2 + Math.floor(state.recyclePoints / 95) + partnerCount() * 2;
-            if (state.recycleStats.perfect > 0) damage += 4;
-            damage += equipmentBonus("questionDamage");
-            damage += Math.min(10 + equipmentBonus("comboDamage") * 2, (state.battle?.combo || 0) * (2 + equipmentBonus("comboDamage")));
-            if (skill.partnerBonus) damage += partnerCount() * 4;
-            damage *= skill.correctMultiplier ?? 1;
-            return Math.round(damage);
+          const multiplier = correct ? skill.correctMultiplier ?? 1.5 : skill.wrongMultiplier ?? 0.5;
+          const fallback = correct ? 1 : 1 + equipmentBonus("wrongAnswerDamage");
+          return Math.max(fallback, Math.round(baseBattleDamage(skill) * multiplier));
+        }
+
+        function applyBattleSkillStatus(skill) {
+          const battle = state.battle;
+          if (!battle || !skill) return;
+          if (skill.weakenOnUse) battle.weakened = true;
+          if (skill.defendOnUse) battle.defending = true;
+        }
+
+        function performSelectedBattleSkill(skill, monster) {
+          const battle = state.battle;
+          if (!battle || !monster || !skill) return;
+          applyBattleSkillStatus(skill);
+          let damage = skill.role === "防禦" ? 0 : baseBattleDamage(skill);
+          degradeGear(2);
+          if (damage > 0) {
+            monster.hp = Math.max(0, monster.hp - damage);
+            syncBattleMonster(monster);
+            pushBattleLog(`你使用「${skill.name}」，造成 ${damage} 傷害。`);
+            triggerBattleFeedback(skill.feedback || "strike", damage);
+          } else {
+            pushBattleLog(`你使用「${skill.name}」，下次受到的傷害降低。`);
+            triggerBattleFeedback(skill.feedback || "defend", 0);
           }
-          let damage = 2 + Math.floor(state.level / 5);
-          damage += equipmentBonus("wrongAnswerDamage");
-          damage *= skill.wrongMultiplier ?? 1;
-          return Math.max(1, Math.round(damage));
+          if (monster.hp <= 0) {
+            finishBattle(true, monster);
+            return;
+          }
+          monsterBattleTurn(monster);
+          if (state.battle) resetBattleSkillChoice();
         }
 
         function startBattle(monster) {
@@ -7451,10 +7495,6 @@
             selectedSkill: null,
             question: null,
             questionSeen: [],
-            correctAnswers: 0,
-            wrongAnswers: 0,
-            combo: 0,
-            bestCombo: 0,
             log: [`第 ${monster.stage} 階垃圾怪靠近了，用永續知識破解牠的迷思核心。`],
           };
           keys.clear();
@@ -7488,23 +7528,14 @@
           state.questionStats.answered += 1;
           if (correct) {
             state.questionStats.correct += 1;
-            battle.correctAnswers += 1;
-            battle.combo = (battle.combo || 0) + 1;
-            battle.bestCombo = Math.max(battle.bestCombo || 0, battle.combo);
-            if (skill.weakenOnCorrect) battle.weakened = true;
-            if (skill.defendOnCorrect) battle.defending = true;
             addNotes(3, "戰鬥答題");
-          } else {
-            battle.wrongAnswers += 1;
-            battle.combo = 0;
           }
           const damage = battleDamageForAnswer(correct, monster, skill);
           degradeGear(correct ? 1 : 4);
           const chosen = question.options[picked];
           const answer = question.options[question.answer];
-          const comboText = correct && battle.combo > 1 ? ` 連答 x${battle.combo} 加成！` : "";
           const message = correct
-            ? `「${skill.name}」成功！你選了「${chosen}」，造成 ${damage} 傷害。${comboText}${question.explain}`
+            ? `「${skill.name}」成功！你選了「${chosen}」，造成 ${damage} 傷害。${question.explain}`
             : `「${skill.name}」效果不足。你選了「${chosen}」，正解是「${answer}」，仍造成 ${damage} 傷害。${question.explain}`;
           const feedback = skill.feedback || (correct ? "analyze" : "strike");
 
@@ -8914,11 +8945,7 @@
             ctx.fillStyle = "#0e314a";
             ctx.font = compact ? "bold 15px sans-serif" : "bold 18px sans-serif";
             ctx.textAlign = "left";
-            fitText(title, x + 48, y + (compact ? 23 : 25), w - 150);
-            if (!compact) {
-              ctx.font = "bold 13px sans-serif";
-              fitText(desc, x + 48, y + 47, w - 70);
-            }
+            fitText(title, x + 48, y + (compact ? 23 : 25), w - 120);
             ctx.textAlign = "right";
             ctx.font = "bold 12px sans-serif";
             ctx.fillText(meta, x + w - 14, y + (compact ? 23 : 25));
@@ -8968,15 +8995,13 @@
           ctx.font = "bold 16px sans-serif";
           ctx.textAlign = "left";
           ctx.fillText(choosingSkill ? "技能指令" : `${question.type}｜${selectedSkill.name} 命中判定`, 64, 531);
-          ctx.textAlign = "right";
-          ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, canvas.width - 64, 531);
           ctx.textAlign = "left";
           if (choosingSkill) {
             for (let i = 0; i < BATTLE_SKILLS.length; i++) {
               const skill = BATTLE_SKILLS[i];
               const x = 64 + (i % 2) * 424;
               const y = 552 + Math.floor(i / 2) * 38;
-              optionBox(x, y, 398, 32, i, skill.name, skill.desc, "技能");
+              optionBox(x, y, 398, 32, i, skill.name, "", skill.role || "攻擊");
             }
           } else {
             ctx.fillStyle = "#fff7d7";
@@ -9176,8 +9201,6 @@
           const selectedSkill = battleSkillById(battle.selectedSkill);
           const question = normalizedBattleQuestion(battle.question);
           ctx.fillText(choosingSkill ? "選擇技能" : `${question.type}｜${selectedSkill.name} 命中判定`, 56, 525);
-          ctx.textAlign = "right";
-          ctx.fillText(`連答 x${battle.combo || 0}｜最佳 x${battle.bestCombo || 0}`, 900, 525);
           ctx.textAlign = "left";
           ctx.fillStyle = "rgba(143, 211, 255, 0.28)";
           ctx.fillRect(190, 514, 712, 2);
@@ -9191,14 +9214,12 @@
             ? BATTLE_SKILLS.map((skill, index) => ({
                 key: String(index + 1),
                 name: skill.name,
-                meta: "技能",
-                desc: skill.desc,
+                meta: skill.role || "攻擊",
               }))
             : question.options.map((option, index) => ({
                 key: String(index + 1),
                 name: option,
                 meta: "作答",
-                desc: "正確高傷害",
               }));
           for (let i = 0; i < options.length; i++) {
             const opt = options[i];
@@ -9220,11 +9241,7 @@
             ctx.fillStyle = "#0e314a";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "left";
-            drawFitted(opt.name, ox + 42, oy + 20, choosingSkill ? 220 : 290);
-            if (choosingSkill) {
-              ctx.font = "bold 11px sans-serif";
-              drawFitted(opt.desc, ox + 42, oy + 33, 300);
-            }
+            drawFitted(opt.name, ox + 42, oy + 20, choosingSkill ? 270 : 290);
             ctx.textAlign = "right";
             ctx.font = "bold 12px sans-serif";
             ctx.fillText(opt.meta, ox + 400, oy + 20);
@@ -9567,16 +9584,10 @@
                       <div class="status-label">分類完美</div>
                       <div class="status-value">${state.recycleStats.perfect}/${state.recycleStats.played}</div>
                     </div>
-                    <div class="status-tile">
-                      <div class="status-label">問答正確</div>
-                      <div class="status-value">${state.questionStats.correct}/${state.questionStats.answered}</div>
-                    </div>
                   </div>
-                  <div class="tip-list" style="margin-top: 8px;">
-                    <div class="tip-row">戰鬥已改為永續問答：正確答案高傷害並削弱下一擊，錯誤答案只造成低傷害。</div>
-                    <div class="tip-row">題庫 ${battleQuestionBank.length} 題；裝備、夥伴與完美分類會提高問答戰鬥表現。</div>
+                  ${perkRows ? `<div class="tip-list" style="margin-top: 8px;">
                     ${perkRows}
-                  </div>
+                  </div>` : ""}
                 </div>
               </details>
 
