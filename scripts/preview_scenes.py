@@ -20,6 +20,8 @@ for f in glob.glob(os.path.join(AV, "*.png")):
     A[n] = Image.open(f).convert("RGBA")
 ISL = json.load(open(os.path.join(ROOT, "build", "island.json"), encoding="utf-8"))
 PM = json.load(open(os.path.join(ROOT, "build", "assets_b64.json"), encoding="utf-8"))["meta"]["player"]
+if ISL["terr"] and isinstance(ISL["terr"][0], str):
+    ISL["terr"]=[[int(c) for c in r] for r in ISL["terr"]]; ISL["region"]=[[int(c) for c in r] for r in ISL["region"]]
 
 def font(sz):
     for p in ["/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
@@ -59,16 +61,17 @@ def render_lobby():
     paste(world,"window",176,14); paste(world,"clock",300,30)
     paste(world,"rug",172,182)
     furn=[("wardrobe",32,100,215),("bed",350,100,206),("desk",170,94,146),("laptop",182,78,114),
-          ("chair",192,126,172),("plant",370,250,308),("table",180,196,262)]
+          ("chair",192,110,156),("plant",370,250,308),("table",180,196,262)]
     bx,by=225,204
     items=[(b,n,x,y) for (n,x,y,b) in furn]; items.append((290,"__p__",225,290)); items.sort(key=lambda t:t[0])
     for (b,n,x,y) in items:
         if n=="__p__":
-            shadow(world,225,290,9,5); world.alpha_composite(player_frame("up"),(225-PM["footX"],290-PM["footY"]))
+            shadow(world,225,290,13,6)
+            pf=player_frame("up").resize((PM["frameW"]*2,PM["frameH"]*2),Image.NEAREST); world.alpha_composite(pf,(225-PM["footX"]*2,290-PM["footY"]*2))
         else:
             im=A[n]; shadow(world,x+im.width//2,b-2,int(im.width*0.30),5); world.alpha_composite(im,(x,y))
     bc=A["book_closed"]; world.alpha_composite(bc,(bx-bc.width//2,by-bc.height//2))
-    fd=ImageDraw.Draw(world); fd.text((bx,by-4),"番薯島",font=font(7),fill=(17,17,17,255),anchor="mm")
+    fd=ImageDraw.Draw(world); fd.text((bx+2,by-3),"番薯島",font=font(5),fill=(17,17,17,255),anchor="mm")
     # simulate in-game zoomed follow-cam (S~5 on 1080 => ~2.5x, centred on player)
     Z=2.5; big=world.resize((int(RW*Z),int(RH*Z)),Image.NEAREST)
     pcx,pcy=int(225*Z),int(290*Z)

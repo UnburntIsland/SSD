@@ -128,10 +128,10 @@ var SAVE_KEY="senxun_v3_saves";
 var BG="#0c1620";
 
 var TERR_IMG=["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow"];
-var WALKABLE={2:true,3:true,4:true,6:true};
+var WALKABLE={2:true,3:true,4:true,5:true,6:true};
 
 // ---- responsive device-resolution sizing ----
-var dpr=1, S=3, targetH=320, artW=480, artH=288, cssW=960, cssH=576;
+var dpr=1, S=3, PSCALE=1, targetH=320, artW=480, artH=288, cssW=960, cssH=576;
 function resize(){
   dpr=Math.min(window.devicePixelRatio||1, 3);
   cssW=canvas.clientWidth||window.innerWidth; cssH=canvas.clientHeight||window.innerHeight;
@@ -203,13 +203,14 @@ canvas.addEventListener("touchstart",function(e){e.preventDefault(); if(modalOpe
 
 // ---- player drawing (under world transform; integer art coords -> crisp) ----
 function drawPlayer(p){
-  var x=Math.round(p.x), y=Math.round(p.y);
+  var x=Math.round(p.x), y=Math.round(p.y), ps=PSCALE;
   ctx.fillStyle="rgba(20,28,20,.26)";
-  ctx.beginPath();ctx.ellipse(x,y-1,9,4,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x,y-1,7+ps*3,3+ps*1.5,0,0,Math.PI*2);ctx.fill();
   var row=PMETA.dirs.indexOf(p.facing); if(row<0)row=0;
   var frame=p.moving?(1+(Math.floor(p.animT/0.15)%3)):0;
-  ctx.drawImage(IMG.player_sheet, frame*PMETA.frameW,row*PMETA.frameH,PMETA.frameW,PMETA.frameH,
-                x-PMETA.footX, y-PMETA.footY, PMETA.frameW,PMETA.frameH);
+  var fw=PMETA.frameW, fh=PMETA.frameH;
+  ctx.drawImage(IMG.player_sheet, frame*fw,row*fh,fw,fh,
+                Math.round(x-PMETA.footX*ps), Math.round(y-PMETA.footY*ps), fw*ps, fh*ps);
 }
 function animate(p,vx,vy,dt){
   p.moving=(vx!==0||vy!==0);
@@ -231,14 +232,14 @@ var lobby={
     {img:"bed",     x:350,y:100, base:206, col:[350,130,60,72]},
     {img:"desk",    x:170,y:94,  base:146, col:[170,116,75,22]},
     {img:"laptop",  x:182,y:78,  base:114},
-    {img:"chair",   x:192,y:126, base:172, col:[194,130,32,26]},
+    {img:"chair",   x:192,y:110, base:156, col:[196,138,28,20]},
     {img:"plant",   x:370,y:250, base:308, col:[372,272,38,20]},
-    {img:"table",   x:180,y:196, base:262, col:[186,234,78,22]},
+    {img:"table",   x:180,y:196, base:262, col:[198,236,54,16]},
   ],
   decor:function(){
     ctx.drawImage(IMG.window,176,14); ctx.drawImage(IMG.clock,300,30);
   },
-  enter:function(){ targetH=230; resize();
+  enter:function(){ targetH=230; PSCALE=2; resize();
     this.player.x=225; this.player.y=290; this.player.facing="up"; this.near=false;
     this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-artH/2; clampCam(this.cam,ROOM_W,ROOM_H); },
   update:function(dt){
@@ -284,9 +285,9 @@ var lobby={
     ctx.save();ctx.globalAlpha=0.24+0.20*g;ctx.fillStyle="rgba(123,201,142,1)";
     ctx.beginPath();ctx.ellipse(this.book.x,this.book.y+10,14+2*g,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.drawImage(IMG.book_closed,this.book.x-IMG.book_closed.width/2,this.book.y-IMG.book_closed.height/2);
-    ctx.font='800 7px "Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif';
+    ctx.font='800 5px "Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif';
     ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillStyle="#111111";
-    ctx.fillText("番薯島", this.book.x, this.book.y-4);
+    ctx.fillText("番薯島", this.book.x+2, this.book.y-3);
   },
   render:function(){
     this.renderWorld();
@@ -414,10 +415,14 @@ var portal={
 
 // ===================================================================== ISLAND
 var island={
-  player:{x:0,y:0,facing:"up",animT:0,moving:false,spd:98},
+  player:{x:0,y:0,facing:"up",animT:0,moving:false,spd:150},
   cam:{x:0,y:0}, blocked:null, objByRow:null, mini:null, puffs:[], time:0, fade:0,
   worldW:ISLAND.w*TILE, worldH:ISLAND.h*TILE, saveIdx:-1,
   build:function(){
+    if(typeof ISLAND.terr[0]==="string"){
+      ISLAND.terr=ISLAND.terr.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
+      ISLAND.region=ISLAND.region.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
+    }
     var w=ISLAND.w,h=ISLAND.h; this.blocked=new Uint8Array(w*h); this.objByRow={};
     for(var y=0;y<h;y++)for(var x=0;x<w;x++){
       var t=ISLAND.terr[y][x], locked=(ISLAND.region[y][x]===0);
@@ -429,10 +434,13 @@ var island={
   },
   buildMini:function(){
     var w=ISLAND.w,h=ISLAND.h,c=document.createElement("canvas");c.width=w;c.height=h;var g=c.getContext("2d");
-    var pal={0:"#26607f",1:"#4ea2ba",2:"#e6d4a0",3:"#7caa50",4:"#50783a",5:"#8e8474",6:"#8ab65c"};
-    for(var y=0;y<h;y++)for(var x=0;x<w;x++){var t=ISLAND.terr[y][x];g.fillStyle=pal[t];g.fillRect(x,y,1,1);
-      if(ISLAND.region[y][x]===0&&t>=2){g.fillStyle="rgba(214,224,234,.85)";g.fillRect(x,y,1,1);} }
-    this.mini=c;
+    var img=g.createImageData(w,h),D=img.data,idx=0;
+    var pal={0:[38,96,128],1:[78,162,186],2:[230,212,160],3:[124,170,80],4:[80,120,58],5:[142,132,116],6:[138,182,92]};
+    for(var y=0;y<h;y++){var ty=ISLAND.terr[y],ry=ISLAND.region[y];
+      for(var x=0;x<w;x++){var t=ty[x],col=pal[t];
+        if(ry[x]===0&&t>=2){col=[(col[0]*0.18+175)|0,(col[1]*0.18+184)|0,(col[2]*0.18+192)|0];}
+        D[idx]=col[0];D[idx+1]=col[1];D[idx+2]=col[2];D[idx+3]=255;idx+=4;}}
+    g.putImageData(img,0,0); this.mini=c;
   },
   buildPuffs:function(){
     var w=ISLAND.w,minX=w,maxX=0,minY=ISLAND.h,maxY=0;
@@ -440,13 +448,13 @@ var island={
       if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y; } }
     this.fogBox={x0:minX*TILE,y0:minY*TILE,x1:(maxX+1)*TILE,y1:(maxY+1)*TILE};
     this.puffs=[]; var imgs=[IMG.fog1,IMG.fog2,IMG.fog3];
-    for(var i=0;i<80;i++) this.puffs.push({
+    for(var i=0;i<160;i++) this.puffs.push({
       x:this.fogBox.x0+Math.random()*(this.fogBox.x1-this.fogBox.x0),
       y:this.fogBox.y0+Math.random()*(this.fogBox.y1-this.fogBox.y0+TILE*2),
       s:0.7+Math.random()*0.9, v:4+Math.random()*8, img:imgs[(Math.random()*3)|0], a:0.5+Math.random()*0.4 });
   },
   enter:function(){
-    targetH=340; resize();
+    targetH=340; PSCALE=1; resize();
     if(!this.blocked) this.build();
     this.player.x=(ISLAND.spawn.x+0.5)*TILE; this.player.y=(ISLAND.spawn.y+0.9)*TILE;
     this.player.facing="up"; this.player.moving=false; this.player.animT=0; this.fade=0;

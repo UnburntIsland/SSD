@@ -576,7 +576,8 @@ def fog_puff(seed=40, tint=(214, 224, 234)):
 # Terrain codes: 0 deep sea, 1 shallow sea, 2 sand, 3 grass, 4 forest, 5 mountain, 6 meadow
 def gen_island():
     import random as _r
-    W,H=60,156
+    from collections import deque
+    W,H=420,1116                     # ~50x the previous area
     rng=_r.Random(2026)
     def smooth(n,amp,seed):
         r=_r.Random(seed); v=[r.uniform(-1,1) for _ in range(n)]; out=[]
@@ -584,24 +585,25 @@ def gen_island():
             t=i/(H-1)*(n-1); a=int(t); b=min(a+1,n-1); f=t-a; f=f*f*(3-2*f)
             out.append((v[a]*(1-f)+v[b]*f)*amp)
         return out
-    cwob=smooth(9,2.0,11); wwob=smooth(13,1.6,12); ewob=smooth(15,0.8,13)
+    cwob=smooth(16,3.0,11); wwob=smooth(26,4.0,12); ewob=smooth(22,1.6,13)
     land=[[False]*W for _ in range(H)]; cxs=[0.0]*H; maxHalf=W*0.40
     for y in range(H):
         t=y/(H-1)
         base=math.sin(min(max(t,0.0),1.0)*math.pi)
-        peak=math.exp(-((t-0.60)**2)/0.10)
-        north=0.32*math.exp(-((t-0.12)**2)/0.020)
-        hw=(0.36*base+0.66*peak+north)
-        if t<0.045: hw*=(t/0.045)*0.75+0.18
-        if t>0.90:  hw*=max(0.05,(1-(t-0.90)/0.10))*0.92+0.05
-        hw=max(0.04,hw)*maxHalf
-        cx=W*0.50+(0.5-t)*W*0.085+cwob[y]
-        lh=hw*1.06+wwob[y]*1.2; rh=hw*0.90+ewob[y]*0.6
+        peak=math.exp(-((t-0.58)**2)/0.11)
+        north=0.30*math.exp(-((t-0.12)**2)/0.022)
+        hw=(0.34*base+0.68*peak+north)
+        if t<0.05: hw*=(t/0.05)*0.78+0.16
+        if t>0.90:  hw*=max(0.04,(1-(t-0.90)/0.10))*0.92+0.05
+        hw=max(0.03,hw)*maxHalf
+        cx=W*0.50+(0.5-t)*W*0.08+cwob[y]
+        swbulge=maxHalf*0.12*math.exp(-((t-0.64)**2)/0.012)   # SW plain bulge (west)
+        lh=hw*1.04+swbulge+wwob[y]
+        rh=hw*0.90+ewob[y]                                    # straighter east
         cxs[y]=cx
         for x in range(W):
             if (cx-lh)<=x<=cx or cx<x<=(cx+rh): land[y][x]=True
     terr=[[0]*W for _ in range(H)]
-    from collections import deque
     INF=999; dist=[[INF]*W for _ in range(H)]; q=deque()
     for y in range(H):
         for x in range(W):
@@ -616,7 +618,7 @@ def gen_island():
     en=[[rng.uniform(-0.10,0.10) for _ in range(W)] for _ in range(H)]
     for y in range(H):
         t=y/(H-1); ridge=cxs[y]+W*0.10
-        crest=0.55+0.72*math.exp(-((t-0.62)**2)/0.10)
+        crest=0.55+0.72*math.exp(-((t-0.60)**2)/0.12)
         for x in range(W):
             if not land[y][x]: continue
             dx=x-ridge
@@ -639,11 +641,11 @@ def gen_island():
     def rowwidth(y): return sum(1 for x in range(W) if land[y][x])
     target_row=None
     for y in range(ymax,open_boundary,-1):
-        if rowwidth(y)>=11: target_row=y; break
-    if target_row is None: target_row=max(open_boundary+2,ymax-4)
+        if rowwidth(y)>=40: target_row=y; break
+    if target_row is None: target_row=max(open_boundary+2,ymax-8)
     xs=[x for x in range(W) if land[target_row][x]]; cx0=sum(xs)//len(xs)
     spawn=None
-    for dy in range(0,5):
+    for dy in range(0,8):
         yy=target_row+dy
         if yy>=H: break
         cand=[x for x in range(W) if land[yy][x] and terr[yy][x]==2]
@@ -652,21 +654,21 @@ def gen_island():
         cand=[x for x in xs if terr[target_row][x] in (2,3,4,6)]
         spawn=(min(cand,key=lambda x:abs(x-cx0)) if cand else cx0,target_row)
     objs=[]; occupied=set()
-    def clear_sp(x,y): return abs(x-spawn[0])+abs(y-spawn[1])>4
-    for y in range(ymin,ymax+1):
+    def clear_sp(x,y): return abs(x-spawn[0])+abs(y-spawn[1])>8
+    for y in range(open_boundary,ymax+1):
         for x in range(W):
             tt=terr[y][x]
             if region[y][x]!=1: continue
             if (x,y) in occupied or not clear_sp(x,y): continue
             r=rng.random(); kind=None
             if tt==4:
-                if r<0.46: kind="tree" if rng.random()<.7 else "pine"
+                if r<0.16: kind="tree" if rng.random()<.7 else "pine"
             elif tt in (3,6):
-                if r<0.10: kind="tree" if rng.random()<.5 else "bush"
+                if r<0.035: kind="tree" if rng.random()<.5 else "bush"
             elif tt==2:
-                if r<0.06: kind="palm" if rng.random()<.6 else "rock"
+                if r<0.02: kind="palm" if rng.random()<.6 else "rock"
             elif tt==5:
-                if r<0.12: kind="rock"
+                if r<0.05: kind="rock"
             if kind: objs.append({"k":kind,"x":x,"y":y}); occupied.add((x,y))
     return {"w":W,"h":H,"tile":TILE,"terr":terr,"region":region,"openBoundary":open_boundary,
             "spawn":{"x":spawn[0],"y":spawn[1]},"objects":objs,"ymin":ymin,"ymax":ymax}
@@ -684,29 +686,23 @@ def preview_tiles():
     sheet.save(os.path.join(OUT, "_preview_tiles.png"))
 
 def preview_island(data):
-    W, H = data["w"], data["h"]
-    palette = {0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),
-               4:(80,122,58),5:(142,132,116),6:(138,182,92)}
-    scale = 4
-    img = Image.new("RGBA", (W*scale, H*scale), (0,0,0,255))
-    d = ImageDraw.Draw(img)
+    W,H=data["w"],data["h"]
+    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
+    terr=data["terr"]; region=data["region"]
+    buf=bytearray(W*H*3); i=0
     for y in range(H):
+        ty=terr[y]; ry=region[y]
         for x in range(W):
-            col = palette[data["terr"][y][x]]
-            if data["region"][y][x] == 0 and data["terr"][y][x] not in (0,1):
-                col = tuple(int(c*0.45+150*0.55) for c in col)   # fogged look
-            d.rectangle([x*scale, y*scale, x*scale+scale-1, y*scale+scale-1], fill=col)
-    # boundary line
-    yb = data["openBoundary"]*scale
-    d.line([(0, yb),(W*scale, yb)], fill=(255,80,80,255))
-    # objects
-    for o in data["objects"]:
-        d.rectangle([o["x"]*scale, o["y"]*scale, o["x"]*scale+scale-1, o["y"]*scale+scale-1],
-                    fill=(30,60,30,255))
-    # spawn
-    sx, sy = data["spawn"]["x"], data["spawn"]["y"]
-    d.ellipse([sx*scale-3, sy*scale-3, sx*scale+3, sy*scale+3], fill=(255,40,200,255))
-    img.save(os.path.join(OUT, "_preview_island.png"))
+            t=ty[x]; col=pal[t]
+            if ry[x]==0 and t>=2:
+                col=(int(col[0]*0.45+150*0.55),int(col[1]*0.45+160*0.55),int(col[2]*0.45+170*0.55))
+            buf[i]=col[0]; buf[i+1]=col[1]; buf[i+2]=col[2]; i+=3
+    img=Image.frombytes("RGB",(W,H),bytes(buf))
+    d=ImageDraw.Draw(img); ob=data["openBoundary"]
+    d.line([(0,ob),(W,ob)],fill=(255,80,80))
+    sx,sy=data["spawn"]["x"],data["spawn"]["y"]; d.ellipse([sx-4,sy-4,sx+4,sy+4],fill=(255,40,200))
+    img.save(os.path.join(OUT,"_preview_island.png"))
+
 
 # ================================================================ MAIN
 def main():
@@ -740,8 +736,11 @@ def main():
 
     # island
     island = gen_island()
+    isl_json = dict(island)
+    isl_json["terr"]   = ["".join(str(v) for v in row) for row in island["terr"]]
+    isl_json["region"] = ["".join(str(v) for v in row) for row in island["region"]]
     with open(os.path.join(BUILD, "island.json"), "w", encoding="utf-8") as f:
-        json.dump(island, f, separators=(",", ":"))
+        json.dump(isl_json, f, separators=(",", ":"))
     preview_tiles(); preview_island(island)
 
     # base64 manifest
