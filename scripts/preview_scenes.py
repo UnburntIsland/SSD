@@ -21,7 +21,7 @@ for f in glob.glob(os.path.join(AV, "*.png")):
 ISL = json.load(open(os.path.join(ROOT, "build", "island.json"), encoding="utf-8"))
 PM = json.load(open(os.path.join(ROOT, "build", "assets_b64.json"), encoding="utf-8"))["meta"]["player"]
 if ISL["terr"] and isinstance(ISL["terr"][0], str):
-    ISL["terr"]=[[int(c) for c in r] for r in ISL["terr"]]; ISL["region"]=[[int(c) for c in r] for r in ISL["region"]]
+    ISL["terr"]=[[int(c) for c in r] for r in ISL["terr"]]
 
 def font(sz):
     for p in ["/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
@@ -85,107 +85,62 @@ def render_lobby():
 # ---------------------------------------------------------------- ISLAND
 TERR_IMG = ["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow"]
 def mini_image():
-    w, h = ISL["w"], ISL["h"]
-    c = Image.new("RGBA", (w, h)); px = c.load()
-    pal = {0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
+    w,h=ISL["w"],ISL["h"]
+    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
+    buf=bytearray(w*h*4); i=0
     for y in range(h):
+        ty=ISL["terr"][y]
         for x in range(w):
-            t = ISL["terr"][y][x]; px[x,y] = pal[t]+(255,)
-            if ISL["region"][y][x] == 0 and t >= 2:
-                base = pal[t]
-                px[x,y] = tuple(int(base[i]*0.18 + (214,224,234)[i]*0.82) for i in range(3))+(255,)
-    return c
+            c=pal[ty[x]]; buf[i]=c[0];buf[i+1]=c[1];buf[i+2]=c[2];buf[i+3]=255; i+=4
+    return Image.frombytes("RGBA",(w,h),bytes(buf))
 
 def render_island(camx, camy, tag, facing="up"):
-    w, h = ISL["w"], ISL["h"]
-    worldW, worldH = w*TILE, h*TILE
-    camx = max(0, min(camx, worldW-VW)); camy = max(0, min(camy, worldH-VH))
-    world = Image.new("RGBA", (VW, VH), (10,28,24,255))
-    x0, x1 = max(0, camx//TILE), min(w-1, (camx+VW)//TILE)
-    y0, y1 = max(0, camy//TILE), min(h-1, (camy+VH)//TILE)
-    # terrain
-    for ty in range(y0, y1+1):
-        for tx in range(x0, x1+1):
-            paste(world, TERR_IMG[ISL["terr"][ty][tx]], tx*TILE-camx, ty*TILE-camy)
-    # coastline foam
-    foam = Image.new("RGBA", (VW, VH), (0,0,0,0)); fd = ImageDraw.Draw(foam)
-    for ty in range(y0, y1+1):
-        for tx in range(x0, x1+1):
-            if ISL["terr"][ty][tx] != 2: continue
-            fx, fy = tx*TILE-camx, ty*TILE-camy
-            for dx,dy in ((0,1),(0,-1),(1,0),(-1,0)):
-                ax,ay = tx+dx, ty+dy
-                if 0<=ax<w and 0<=ay<h and ISL["terr"][ay][ax] <= 1:
-                    if dy==1:  fd.rectangle([fx+2,fy+TILE-3,fx+TILE-4,fy+TILE-2], fill=(226,244,242,150))
-                    elif dy==-1: fd.rectangle([fx+2,fy+1,fx+TILE-4,fy+2], fill=(226,244,242,150))
-                    elif dx==1: fd.rectangle([fx+TILE-3,fy+2,fx+TILE-2,fy+TILE-4], fill=(226,244,242,150))
-                    else: fd.rectangle([fx+1,fy+2,fx+2,fy+TILE-4], fill=(226,244,242,150))
-    world.alpha_composite(foam)
-    # objects + player by base y
-    px = (ISL["spawn"]["x"]+0.5)*TILE; py = (ISL["spawn"]["y"]+0.9)*TILE
-    rlist = []
+    w,h=ISL["w"],ISL["h"]; worldW,worldH=w*TILE,h*TILE
+    camx=max(0,min(camx,worldW-VW)); camy=max(0,min(camy,worldH-VH))
+    world=Image.new("RGBA",(VW,VH),(10,28,24,255))
+    x0,x1=max(0,camx//TILE),min(w-1,(camx+VW)//TILE)
+    y0,y1=max(0,camy//TILE),min(h-1,(camy+VH)//TILE)
+    for ty in range(y0,y1+1):
+        for tx in range(x0,x1+1):
+            paste(world,TERR_IMG[ISL["terr"][ty][tx]],tx*TILE-camx,ty*TILE-camy)
+    px=(ISL["spawn"]["x"]+0.5)*TILE; py=(ISL["spawn"]["y"]+0.9)*TILE
+    ptx,pty=ISL["spawn"]["x"],ISL["spawn"]["y"]; R=int(round((ISL["w"]*ISL["h"]/314.159)**0.5))
+    rlist=[]
     for o in ISL["objects"]:
-        if x0-2 <= o["x"] <= x1+2 and y0-2 <= o["y"] <= y1+2:
-            rlist.append(((o["y"]+1)*TILE, ("obj", o)))
-    rlist.append((py, ("player", None)))
-    rlist.sort(key=lambda t: t[0])
-    for by, (kind, o) in rlist:
-        if kind == "player":
-            shadow(world, px-camx, py-camy, 9, 4)
-            world.alpha_composite(player_frame(facing), (int(px-camx-PM["footX"]), int(py-camy-PM["footY"])))
+        if x0-2<=o["x"]<=x1+2 and y0-2<=o["y"]<=y1+2 and (o["x"]-ptx)**2+(o["y"]-pty)**2<=R*R:
+            rlist.append(((o["y"]+1)*TILE,("obj",o)))
+    rlist.append((py,("player",None))); rlist.sort(key=lambda t:t[0])
+    for by,(kind,o) in rlist:
+        if kind=="player":
+            shadow(world,px-camx,py-camy,9,4)
+            pf=player_frame(facing)
+            world.alpha_composite(pf,(int(px-camx-PM["footX"]),int(py-camy-PM["footY"])))
         else:
-            im = A[o["k"]]; bx=(o["x"]+0.5)*TILE-camx; byy=(o["y"]+1)*TILE+2-camy
-            shadow(world, bx, byy-2, int(im.width*0.3), 4)
-            world.alpha_composite(im, (int(bx-im.width/2), int(byy-im.height)))
-    # fog over locked land
-    fog = Image.new("RGBA", (VW, VH), (0,0,0,0)); gd = ImageDraw.Draw(fog)
-    for ty in range(y0, y1+1):
-        for tx in range(x0, x1+1):
-            if ISL["region"][ty][tx] != 0: continue
-            if ISL["terr"][ty][tx] < 2: continue
-            depth = ISL["openBoundary"]-ty
-            a = max(0, min(0.93, 0.40+depth*0.16))
-            gd.rectangle([tx*TILE-camx, ty*TILE-camy, tx*TILE-camx+TILE, ty*TILE-camy+TILE], fill=(223,231,240,int(a*255)))
+            im=A[o["k"]]; bx=(o["x"]+0.5)*TILE-camx; byy=(o["y"]+1)*TILE+2-camy
+            shadow(world,bx,byy-2,int(im.width*0.3),4); world.alpha_composite(im,(int(bx-im.width/2),int(byy-im.height)))
+    fog=Image.new("RGBA",(VW,VH),(0,0,0,0)); gd=ImageDraw.Draw(fog)
+    for ty in range(y0,y1+1):
+        for tx in range(x0,x1+1):
+            if (tx-ptx)**2+(ty-pty)**2<=R*R: continue
+            gd.rectangle([tx*TILE-camx,ty*TILE-camy,tx*TILE-camx+TILE,ty*TILE-camy+TILE],fill=(216,224,234,236))
     world.alpha_composite(fog)
-    # drifting fog puffs (matches in-game cloud layer)
-    prng = __import__("random").Random(7)
-    pimgs = [A["fog1"], A["fog2"], A["fog3"]]
-    for _ in range(110):
-        fx = prng.uniform(0, w*TILE); fy = prng.uniform(ISL["ymin"]*TILE, ISL["openBoundary"]*TILE+TILE)
-        if not (camx-90 < fx < camx+VW+90 and camy-100 < fy < camy+VH+100): continue
-        pim = pimgs[prng.randrange(3)]; sc = 0.7+prng.random()*0.9
-        iw, ih = max(1, int(pim.width*sc)), max(1, int(pim.height*sc))
-        pr = pim.resize((iw, ih)); al = 0.5+prng.random()*0.4
-        pr.putalpha(pr.split()[3].point(lambda v: int(v*al)))
-        world.alpha_composite(pr, (int(fx-camx-iw/2), int(fy-camy-ih/2)))
-    out = world.resize((CW, CH), Image.NEAREST)
-    d = ImageDraw.Draw(out, "RGBA")
-    # minimap panel
-    mh = 210; mw = round(mh*ISL["w"]/ISL["h"]); mpx = CW-mw-26; mpy = 22; pad = 10
-    rrect(d, [mpx-pad, mpy-pad-18, mpx+mw+pad, mpy+mh+pad], 10, fill=(243,231,198,255), outline=(60,74,43,255), width=3)
-    d.text((mpx+mw/2, mpy-9), "地  圖", font=font(14), fill=(60,74,43,255), anchor="mm")
-    mini = mini_image().resize((mw, mh), Image.NEAREST)
-    out.paste(mini, (mpx, mpy))
-    d.rectangle([mpx-1, mpy-1, mpx+mw, mpy+mh], outline=(60,74,43,255), width=2)
-    sx, sy = mw/worldW, mh/worldH
-    d.rectangle([mpx+camx*sx, mpy+camy*sy, mpx+(camx+VW)*sx, mpy+(camy+VH)*sy], outline=(255,255,255,230), width=2)
-    d.ellipse([mpx+px*sx-4, mpy+py*sy-4, mpx+px*sx+4, mpy+py*sy+4], fill=(228,74,142,255), outline=(255,255,255,255))
-    # HUD name plate
-    rrect(d, [20,20,216,72], 10, fill=(243,231,198,255), outline=(60,74,43,255), width=3)
-    d.text((36,40), "森循島民", font=font(17), fill=(58,51,38,255), anchor="lm")
-    d.text((36,60), "台灣島 · 南部沙灘", font=font(12), fill=(122,108,79,255), anchor="lm")
-    hint = "WASD / 方向鍵 移動 · 迷霧區域尚未開放 · Esc 返回大廳"; hf = font(13)
-    hw = d.textlength(hint, font=hf)
-    rrect(d, [CW/2-hw/2-12, CH-34, CW/2+hw/2+12, CH-10], 8, fill=(28,40,28,190))
-    d.text((CW/2, CH-22), hint, font=hf, fill=(244,234,208,235), anchor="mm")
-    out.convert("RGB").save(os.path.join(AV, f"_preview_island_{tag}.png"))
+    out=world.resize((CW,CH),Image.NEAREST)
+    d=ImageDraw.Draw(out,"RGBA")
+    src=mini_image(); mm=Image.new("RGBA",(w,h),(205,215,226,255))
+    for yy in range(max(0,pty-R),min(h,pty+R+1)):
+        for xx in range(max(0,ptx-R),min(w,ptx+R+1)):
+            if (xx-ptx)**2+(yy-pty)**2<=R*R: mm.putpixel((xx,yy),src.getpixel((xx,yy)))
+    mh=180; mw=mh; mr=mm.resize((mw,mh),Image.NEAREST)
+    out.alpha_composite(mr,(CW-mw-22,22)); d.rectangle([CW-mw-22,22,CW-22,22+mh],outline=(60,74,67,255),width=2)
+    sdx=CW-mw-22+int(ISL["spawn"]["x"]/w*mw); sdy=22+int(ISL["spawn"]["y"]/h*mh)
+    d.ellipse([sdx-3,sdy-3,sdx+3,sdy+3],fill=(228,74,142,255))
+    d.text((18,28),"番薯島 · 探索中",font=font(18),fill=(255,255,255,255),anchor="lm")
+    d.text((18,CH-20),"WASD/方向鍵 移動 · M 放大地圖 · Esc 返回",font=font(13),fill=(255,255,255,220),anchor="lm")
+    out.convert("RGB").save(os.path.join(AV,f"_preview_island_{tag}.png"))
 
 if __name__ == "__main__":
     render_lobby()
-    sp = ISL["spawn"]
-    sfx = int((sp["x"]+0.5)*TILE); sfy = int((sp["y"]+0.9)*TILE)
+    sp=ISL["spawn"]; sfx=int((sp["x"]+0.5)*TILE); sfy=int((sp["y"]+0.9)*TILE)
     render_island(sfx-VW//2, sfy-VH//2, "spawn", "up")
-    # boundary view: centre camera near the fog line
-    bx = ISL["w"]*TILE//2
-    render_island(bx-VW//2, ISL["openBoundary"]*TILE-120, "fog", "up")
-    print("previews written: _preview_lobby, _preview_island_spawn, _preview_island_fog")
+    render_island((ISL["w"]//2)*TILE-VW//2, 70*TILE, "fog", "up")
+    print("previews: _preview_lobby, _preview_island_spawn, _preview_island_fog")

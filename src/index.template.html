@@ -413,51 +413,44 @@ var portal={
   }
 };
 
-// ===================================================================== ISLAND
+// ===================================================================== ISLAND (fog-of-war exploration)
 var island={
   player:{x:0,y:0,facing:"up",animT:0,moving:false,spd:150},
-  cam:{x:0,y:0}, blocked:null, objByRow:null, mini:null, puffs:[], time:0, fade:0,
+  cam:{x:0,y:0}, blocked:null, objByRow:null, mini:null, miniCtx:null, revealed:null,
+  puffs:[], time:0, fade:0, mapOpen:false, ptx:-1, pty:-1,
   worldW:ISLAND.w*TILE, worldH:ISLAND.h*TILE, saveIdx:-1,
+  MINIPAL:["#26607f","#4ea2ba","#e6d4a0","#7caa50","#50783a","#8e8474","#8ab65c"],
   build:function(){
     if(typeof ISLAND.terr[0]==="string"){
       ISLAND.terr=ISLAND.terr.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
-      ISLAND.region=ISLAND.region.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
     }
-    var w=ISLAND.w,h=ISLAND.h; this.blocked=new Uint8Array(w*h); this.objByRow={};
-    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
-      var t=ISLAND.terr[y][x], locked=(ISLAND.region[y][x]===0);
-      this.blocked[y*w+x]=(locked||!WALKABLE[t])?1:0;
-    }
+    var w=ISLAND.w,h=ISLAND.h; this.blocked=new Uint8Array(w*h); this.objByRow={}; this.revealed=new Uint8Array(w*h);
+    for(var y=0;y<h;y++){var ty=ISLAND.terr[y]; for(var x=0;x<w;x++){ this.blocked[y*w+x]=WALKABLE[ty[x]]?0:1; }}
     for(var i=0;i<ISLAND.objects.length;i++){var o=ISLAND.objects[i];
       this.blocked[o.y*w+o.x]=1; (this.objByRow[o.y]=this.objByRow[o.y]||[]).push(o); }
     this.buildMini(); this.buildPuffs();
   },
   buildMini:function(){
     var w=ISLAND.w,h=ISLAND.h,c=document.createElement("canvas");c.width=w;c.height=h;var g=c.getContext("2d");
-    var img=g.createImageData(w,h),D=img.data,idx=0;
-    var pal={0:[38,96,128],1:[78,162,186],2:[230,212,160],3:[124,170,80],4:[80,120,58],5:[142,132,116],6:[138,182,92]};
-    for(var y=0;y<h;y++){var ty=ISLAND.terr[y],ry=ISLAND.region[y];
-      for(var x=0;x<w;x++){var t=ty[x],col=pal[t];
-        if(ry[x]===0&&t>=2){col=[(col[0]*0.18+175)|0,(col[1]*0.18+184)|0,(col[2]*0.18+192)|0];}
-        D[idx]=col[0];D[idx+1]=col[1];D[idx+2]=col[2];D[idx+3]=255;idx+=4;}}
-    g.putImageData(img,0,0); this.mini=c;
+    g.fillStyle="#cdd7e2"; g.fillRect(0,0,w,h); this.mini=c; this.miniCtx=g;
   },
-  buildPuffs:function(){
-    var w=ISLAND.w,minX=w,maxX=0,minY=ISLAND.h,maxY=0;
-    for(var y=0;y<ISLAND.openBoundary;y++)for(var x=0;x<w;x++){ if(ISLAND.terr[y][x]>=2){
-      if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y; } }
-    this.fogBox={x0:minX*TILE,y0:minY*TILE,x1:(maxX+1)*TILE,y1:(maxY+1)*TILE};
-    this.puffs=[]; var imgs=[IMG.fog1,IMG.fog2,IMG.fog3];
-    for(var i=0;i<160;i++) this.puffs.push({
-      x:this.fogBox.x0+Math.random()*(this.fogBox.x1-this.fogBox.x0),
-      y:this.fogBox.y0+Math.random()*(this.fogBox.y1-this.fogBox.y0+TILE*2),
-      s:0.7+Math.random()*0.9, v:4+Math.random()*8, img:imgs[(Math.random()*3)|0], a:0.5+Math.random()*0.4 });
+  buildPuffs:function(){ this.puffs=[]; var imgs=[IMG.fog1,IMG.fog2,IMG.fog3];
+    for(var i=0;i<140;i++) this.puffs.push({x:Math.random()*this.worldW,y:Math.random()*this.worldH,
+      s:0.8+Math.random()*0.9,v:4+Math.random()*8,img:imgs[(Math.random()*3)|0],a:0.5+Math.random()*0.4}); },
+  reveal:function(tx,ty,r){
+    var w=ISLAND.w,h=ISLAND.h,R2=r*r,g=this.miniCtx;
+    for(var dy=-r;dy<=r;dy++){var ny=ty+dy; if(ny<0||ny>=h)continue;
+      for(var dx=-r;dx<=r;dx++){ if(dx*dx+dy*dy>R2)continue; var nx=tx+dx; if(nx<0||nx>=w)continue;
+        var k=ny*w+nx; if(this.revealed[k])continue; this.revealed[k]=1;
+        g.fillStyle=this.MINIPAL[ISLAND.terr[ny][nx]]; g.fillRect(nx,ny,1,1); }}
   },
   enter:function(){
     targetH=340; PSCALE=1; resize();
     if(!this.blocked) this.build();
     this.player.x=(ISLAND.spawn.x+0.5)*TILE; this.player.y=(ISLAND.spawn.y+0.9)*TILE;
-    this.player.facing="up"; this.player.moving=false; this.player.animT=0; this.fade=0;
+    this.player.facing="up"; this.player.moving=false; this.player.animT=0; this.fade=0; this.mapOpen=false;
+    this.ptx=Math.floor(this.player.x/TILE); this.pty=Math.floor(this.player.y/TILE);
+    var R0=Math.round(Math.sqrt(ISLAND.w*ISLAND.h/(100*Math.PI))); this.reveal(this.ptx,this.pty,R0);
     this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-artH/2; clampCam(this.cam,this.worldW,this.worldH);
   },
   isBlocked:function(px,py){var tx=Math.floor(px/TILE),ty=Math.floor(py/TILE);
@@ -467,83 +460,90 @@ var island={
              this.isBlocked(cx+hw,cy+bot)||this.isBlocked(cx,cy-top)||this.isBlocked(cx,cy+bot));},
   update:function(dt){
     this.time+=dt; if(this.fade<1)this.fade=Math.min(1,this.fade+dt/0.5);
+    if(justPressed.KeyM) this.mapOpen=!this.mapOpen;
+    if(this.mapOpen){ if(justPressed.Escape) this.mapOpen=false; return; }
     var v=inputVec(),p=this.player;
     var nx=p.x+v.x*p.spd*dt, ny=p.y+v.y*p.spd*dt;
     if(this.free(nx,p.y))p.x=nx; if(this.free(p.x,ny))p.y=ny;
     p.x=clamp(p.x,4,this.worldW-4); p.y=clamp(p.y,12,this.worldH-2);
     animate(p,v.x,v.y,dt);
+    var tx=Math.floor(p.x/TILE),ty=Math.floor(p.y/TILE);
+    if(tx!==this.ptx||ty!==this.pty){this.ptx=tx;this.pty=ty;this.reveal(tx,ty,10);}
     this.cam.x=lerp(this.cam.x,p.x-artW/2,Math.min(1,dt*9));
     this.cam.y=lerp(this.cam.y,p.y-artH/2,Math.min(1,dt*9));
     clampCam(this.cam,this.worldW,this.worldH);
-    for(var i=0;i<this.puffs.length;i++){var pf=this.puffs[i];pf.x+=pf.v*dt;if(pf.x>this.fogBox.x1+60)pf.x=this.fogBox.x0-60;}
+    for(var i=0;i<this.puffs.length;i++){var pf=this.puffs[i];pf.x+=pf.v*dt;if(pf.x>this.worldW+60)pf.x=-60;}
   },
   render:function(){
     var c=worldBegin(this.cam), w=ISLAND.w,h=ISLAND.h;
     var x0=Math.max(0,Math.floor(c.cx/TILE)),x1=Math.min(w-1,Math.ceil((c.cx+artW)/TILE));
     var y0=Math.max(0,Math.floor(c.cy/TILE)),y1=Math.min(h-1,Math.ceil((c.cy+artH)/TILE));
-    for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++) ctx.drawImage(IMG[TERR_IMG[ISLAND.terr[ty][tx]]],tx*TILE,ty*TILE);
-    // coastline foam
-    var fa=0.5+0.3*Math.sin(this.time*2.2);
-    ctx.fillStyle="rgba(226,244,242,"+fa.toFixed(3)+")";
+    for(var ty=y0;ty<=y1;ty++){var row=ISLAND.terr[ty]; for(var tx=x0;tx<=x1;tx++) ctx.drawImage(IMG[TERR_IMG[row[tx]]],tx*TILE,ty*TILE);}
+    var fa=0.5+0.3*Math.sin(this.time*2.2); ctx.fillStyle="rgba(226,244,242,"+fa.toFixed(3)+")";
     var nb=[[0,1],[0,-1],[1,0],[-1,0]];
     for(var ay=y0;ay<=y1;ay++)for(var ax=x0;ax<=x1;ax++){ if(ISLAND.terr[ay][ax]!==2)continue;
       for(var k=0;k<4;k++){var bx=ax+nb[k][0],by=ay+nb[k][1]; if(bx<0||by<0||bx>=w||by>=h)continue;
         if(ISLAND.terr[by][bx]<=1){var fx=ax*TILE,fy=ay*TILE;
           if(nb[k][1]===1)ctx.fillRect(fx+2,fy+TILE-3,TILE-4,2); else if(nb[k][1]===-1)ctx.fillRect(fx+2,fy+1,TILE-4,2);
           else if(nb[k][0]===1)ctx.fillRect(fx+TILE-3,fy+2,2,TILE-4); else ctx.fillRect(fx+1,fy+2,2,TILE-4);} } }
-    // objects + player
-    var rl=[], p=this.player;
+    var rl=[],p=this.player;
     for(var ry=y0-2;ry<=y1+2;ry++){var arr=this.objByRow[ry]; if(!arr)continue;
-      for(var oi=0;oi<arr.length;oi++){var o=arr[oi]; if(o.x<x0-2||o.x>x1+2)continue; rl.push({by:(o.y+1)*TILE,o:o});}}
+      for(var oi=0;oi<arr.length;oi++){var o=arr[oi]; if(o.x<x0-2||o.x>x1+2)continue;
+        if(!this.revealed[o.y*w+o.x])continue; rl.push({by:(o.y+1)*TILE,o:o});}}
     rl.push({by:p.y,player:true}); rl.sort(function(a,b){return a.by-b.by;});
     for(var i=0;i<rl.length;i++){var it=rl[i];
       if(it.player) drawPlayer(p);
       else{var im=IMG[it.o.k],ox=(it.o.x+0.5)*TILE,oy=(it.o.y+1)*TILE+2;
         ctx.fillStyle="rgba(20,28,20,.2)";ctx.beginPath();ctx.ellipse(ox,oy-2,im.width*0.3,4,0,0,Math.PI*2);ctx.fill();
         ctx.drawImage(im,Math.round(ox-im.width/2),Math.round(oy-im.height));}}
-    // fog over locked land
-    for(var fy2=y0;fy2<=y1;fy2++)for(var fx2=x0;fx2<=x1;fx2++){ if(ISLAND.region[fy2][fx2]!==0)continue;
-      if(ISLAND.terr[fy2][fx2]<2)continue; var depth=ISLAND.openBoundary-fy2, a=clamp(0.40+depth*0.16,0,0.93);
-      ctx.fillStyle="rgba(223,231,240,"+a.toFixed(3)+")"; ctx.fillRect(fx2*TILE,fy2*TILE,TILE,TILE); }
+    for(var fy2=y0;fy2<=y1;fy2++)for(var fx2=x0;fx2<=x1;fx2++){
+      if(this.revealed[fy2*w+fx2])continue;
+      var edge=(fx2>0&&this.revealed[fy2*w+fx2-1])||(fx2<w-1&&this.revealed[fy2*w+fx2+1])||
+               (fy2>0&&this.revealed[(fy2-1)*w+fx2])||(fy2<h-1&&this.revealed[(fy2+1)*w+fx2]);
+      ctx.fillStyle="rgba(216,224,234,"+(edge?0.6:0.93)+")"; ctx.fillRect(fx2*TILE,fy2*TILE,TILE,TILE); }
     for(var pi=0;pi<this.puffs.length;pi++){var pf=this.puffs[pi];
       if(pf.x<c.cx-90||pf.x>c.cx+artW+90||pf.y<c.cy-100||pf.y>c.cy+artH+100)continue;
-      ctx.globalAlpha=pf.a; var iw=pf.img.width*pf.s,ih=pf.img.height*pf.s;
-      ctx.drawImage(pf.img,pf.x-iw/2,pf.y-ih/2,iw,ih);}
+      var ptx=Math.floor(pf.x/TILE),pty2=Math.floor(pf.y/TILE);
+      if(ptx<0||pty2<0||ptx>=w||pty2>=h||this.revealed[pty2*w+ptx])continue;
+      ctx.globalAlpha=pf.a; var iw=pf.img.width*pf.s,ih=pf.img.height*pf.s; ctx.drawImage(pf.img,pf.x-iw/2,pf.y-ih/2,iw,ih);}
     ctx.globalAlpha=1;
-    // UI
     uiBegin();
     this.drawMini(); this.drawHud();
     softVignette();
     if(this.fade<1){ ctx.fillStyle="rgba(255,255,255,"+(1-this.fade).toFixed(3)+")"; ctx.fillRect(0,0,cssW,cssH); }
+    if(this.mapOpen) this.drawBigMap();
   },
   drawMini:function(){
-    var mh=Math.min(214, cssH*0.42), mw=Math.round(mh*ISLAND.w/ISLAND.h), pad=10;
-    var px=cssW-mw-26, py=24;
-    panel(px-pad,py-pad-20,mw+pad*2,mh+pad*2+20,12);
-    txt("地  圖",px+mw/2,py-9,13,"#3a4452","center","800");
-    ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(this.mini,px,py,mw,mh);
-    ctx.imageSmoothingEnabled=true;
+    var mh=Math.min(170,cssH*0.34), mw=mh, pad=10, px=cssW-mw-22, py=22;
+    panel(px-pad,py-pad-18,mw+pad*2,mh+pad*2+18,12);
+    txt("地圖（M 放大）",px+mw/2,py-9,12,"#3a4452","center","800");
+    ctx.imageSmoothingEnabled=false; ctx.drawImage(this.mini,px,py,mw,mh); ctx.imageSmoothingEnabled=true;
     ctx.lineWidth=2;ctx.strokeStyle="#3a4452";ctx.strokeRect(px-.5,py-.5,mw+1,mh+1);
-    var sx=mw/this.worldW, sy=mh/this.worldH;
-    ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=1.4;
-    ctx.strokeRect(px+Math.max(0,this.cam.x)*sx,py+Math.max(0,this.cam.y)*sy,artW*sx,artH*sy);
-    var dx=px+this.player.x*sx, dy=py+this.player.y*sy, pulse=1+0.3*Math.sin(this.time*5);
-    ctx.fillStyle="#e44a8e";ctx.beginPath();ctx.arc(dx,dy,3.2*pulse,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();
+    var sx=mw/this.worldW,sy=mh/this.worldH;
+    ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=1.2;ctx.strokeRect(px+this.cam.x*sx,py+this.cam.y*sy,artW*sx,artH*sy);
+    var dx=px+this.player.x*sx,dy=py+this.player.y*sy,pulse=1+0.3*Math.sin(this.time*5);
+    ctx.fillStyle="#e44a8e";ctx.beginPath();ctx.arc(dx,dy,3*pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();
+  },
+  drawBigMap:function(){
+    ctx.fillStyle="rgba(8,14,20,.8)"; ctx.fillRect(0,0,cssW,cssH);
+    var mh=Math.min(cssH*0.82,cssW*0.82), mw=mh, px=(cssW-mw)/2, py=(cssH-mh)/2+10;
+    panel(px-14,py-44,mw+28,mh+60,16);
+    txt("番薯島 · 全圖",cssW/2,py-22,20,"#2c7a48","center","800");
+    ctx.imageSmoothingEnabled=false; ctx.drawImage(this.mini,px,py,mw,mh); ctx.imageSmoothingEnabled=true;
+    ctx.lineWidth=2;ctx.strokeStyle="#3a4452";ctx.strokeRect(px-.5,py-.5,mw+1,mh+1);
+    var sx=mw/this.worldW,sy=mh/this.worldH, dx=px+this.player.x*sx,dy=py+this.player.y*sy,pulse=1+0.3*Math.sin(this.time*5);
+    ctx.fillStyle="#e44a8e";ctx.beginPath();ctx.arc(dx,dy,5*pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();
+    txt("按 M 或 Esc 關閉",cssW/2,py+mh+22,13,"rgba(255,255,255,.9)","center","700");
   },
   drawHud:function(){
     var s=loadSaves()[this.saveIdx], nm=(s&&s.name)||"森循島民";
-    panel(20,20,206,56,12);
-    txt(nm,38,42,16,"#222a33","left","800");
-    txt("台灣島 · 南部沙灘",38,62,12,"#5d6b78","left","600");
-    var hint="WASD / 方向鍵 移動 · 北方迷霧尚未開放 · Esc 返回房間";
-    ctx.font='600 13px "Noto Sans TC",system-ui,sans-serif';
-    var w=ctx.measureText(hint).width+26;
+    panel(20,20,210,56,12); txt(nm,38,42,16,"#222a33","left","800"); txt("番薯島 · 探索中",38,62,12,"#5d6b78","left","600");
+    var hint="WASD/方向鍵 移動 · M 放大地圖 · Esc 返回房間";
+    ctx.font='600 13px "Noto Sans TC",system-ui,sans-serif'; var w=ctx.measureText(hint).width+26;
     ctx.fillStyle="rgba(20,28,24,.72)"; rr(ctx,cssW/2-w/2,cssH-34,w,24,8);ctx.fill();
     txt(hint,cssW/2,cssH-22,13,"rgba(255,255,255,.92)","center","600");
   },
-  onKey:function(e){ if(e.key==="Escape") setScene(lobby); }
+  onKey:function(e){ if(e.key==="Escape" && !this.mapOpen) setScene(lobby); }
 };
 
 function softVignette(){

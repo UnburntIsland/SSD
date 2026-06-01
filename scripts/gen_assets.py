@@ -577,7 +577,7 @@ def fog_puff(seed=40, tint=(214, 224, 234)):
 def gen_island():
     import random as _r
     from collections import deque
-    W,H=420,1116                     # ~50x the previous area
+    W=H=760                              # square map
     rng=_r.Random(2026)
     def smooth(n,amp,seed):
         r=_r.Random(seed); v=[r.uniform(-1,1) for _ in range(n)]; out=[]
@@ -585,25 +585,39 @@ def gen_island():
             t=i/(H-1)*(n-1); a=int(t); b=min(a+1,n-1); f=t-a; f=f*f*(3-2*f)
             out.append((v[a]*(1-f)+v[b]*f)*amp)
         return out
-    cwob=smooth(16,3.0,11); wwob=smooth(26,4.0,12); ewob=smooth(22,1.6,13)
-    land=[[False]*W for _ in range(H)]; cxs=[0.0]*H; maxHalf=W*0.40
+    # Taiwan coast profile: (t north->south, west half, east half) as fraction of maxHalf
+    prof=[(0.00,0.10,0.08),(0.04,0.34,0.42),(0.10,0.50,0.50),(0.18,0.56,0.54),
+          (0.28,0.72,0.60),(0.40,0.88,0.64),(0.50,0.98,0.66),(0.60,0.94,0.60),
+          (0.70,0.80,0.52),(0.80,0.62,0.40),(0.88,0.44,0.27),(0.94,0.24,0.16),
+          (0.98,0.10,0.08),(1.00,0.03,0.03)]
+    def prof_at(t):
+        for i in range(len(prof)-1):
+            t0,l0,r0=prof[i]; t1,l1,r1=prof[i+1]
+            if t0<=t<=t1:
+                f=(t-t0)/(t1-t0) if t1>t0 else 0; f=f*f*(3-2*f)
+                return l0+(l1-l0)*f, r0+(r1-r0)*f
+        return prof[-1][1],prof[-1][2]
+    cwob=smooth(20,4.0,11); wwob=smooth(30,6.0,12); ewob=smooth(26,3.0,13)
+    YT0,YT1=0.055*H,0.93*H; maxHalf=W*0.20
+    land=[[False]*W for _ in range(H)]; main=[[False]*W for _ in range(H)]; cxs=[None]*H
     for y in range(H):
-        t=y/(H-1)
-        base=math.sin(min(max(t,0.0),1.0)*math.pi)
-        peak=math.exp(-((t-0.58)**2)/0.11)
-        north=0.30*math.exp(-((t-0.12)**2)/0.022)
-        hw=(0.34*base+0.68*peak+north)
-        if t<0.05: hw*=(t/0.05)*0.78+0.16
-        if t>0.90:  hw*=max(0.04,(1-(t-0.90)/0.10))*0.92+0.05
-        hw=max(0.03,hw)*maxHalf
-        cx=W*0.50+(0.5-t)*W*0.08+cwob[y]
-        swbulge=maxHalf*0.12*math.exp(-((t-0.64)**2)/0.012)   # SW plain bulge (west)
-        lh=hw*1.04+swbulge+wwob[y]
-        rh=hw*0.90+ewob[y]                                    # straighter east
-        cxs[y]=cx
+        ty=(y-YT0)/(YT1-YT0)
+        if ty<0 or ty>1: continue
+        L,R=prof_at(ty)
+        cx=W*0.50+(0.5-ty)*W*0.05+cwob[y]
+        lh=L*maxHalf+wwob[y]; rh=R*maxHalf+ewob[y]; cxs[y]=cx
         for x in range(W):
-            if (cx-lh)<=x<=cx or cx<x<=(cx+rh): land[y][x]=True
-    terr=[[0]*W for _ in range(H)]
+            if (cx-lh)<=x<=cx or cx<x<=(cx+rh): land[y][x]=True; main[y][x]=True
+    # offshore islands (Penghu west, Lanyu/Green SE, Guishan NE, Liuqiu SW)
+    smalls=[(0.155*W,0.46*H,8),(0.125*W,0.40*H,4.5),(0.175*W,0.52*H,5.5),(0.10*W,0.49*H,3.5),
+            (0.84*W,0.74*H,7),(0.80*W,0.66*H,4.5),(0.665*W,0.155*H,3.5),(0.305*W,0.85*H,4.5)]
+    for (scx,scy,r) in smalls:
+        for y in range(int(scy-r-2),int(scy+r+3)):
+            for x in range(int(scx-r-2),int(scx+r+3)):
+                if 0<=x<W and 0<=y<H:
+                    dd=((x-scx)**2+(y-scy)**2)/(r*r)
+                    if dd<=1.0+0.18*math.sin(x*1.2+y*0.8): land[y][x]=True
+    # distance to sea
     INF=999; dist=[[INF]*W for _ in range(H)]; q=deque()
     for y in range(H):
         for x in range(W):
@@ -614,64 +628,59 @@ def gen_island():
             nx,ny=x+dx,y+dy
             if 0<=nx<W and 0<=ny<H and dist[ny][nx]>dist[y][x]+1:
                 dist[ny][nx]=dist[y][x]+1; q.append((nx,ny))
-    elev=[[0.0]*W for _ in range(H)]
     en=[[rng.uniform(-0.10,0.10) for _ in range(W)] for _ in range(H)]
+    terr=[[0]*W for _ in range(H)]
     for y in range(H):
-        t=y/(H-1); ridge=cxs[y]+W*0.10
-        crest=0.55+0.72*math.exp(-((t-0.60)**2)/0.12)
-        for x in range(W):
-            if not land[y][x]: continue
-            dx=x-ridge
-            e=(1.0+dx/(W*0.34)) if dx<=0 else (1.0-dx/(W*0.16))
-            elev[y][x]=max(0.0,e)*crest+en[y][x]
-    for y in range(H):
+        ty=(y-YT0)/(YT1-YT0)
+        ridge=(cxs[y]+maxHalf*0.25) if cxs[y] is not None else W*0.5
+        crest=0.55+0.72*math.exp(-((ty-0.5)**2)/0.13) if 0<=ty<=1 else 0.0
         for x in range(W):
             if not land[y][x]:
                 adj=any(0<=x+dx<W and 0<=y+dy<H and land[y+dy][x+dx] for dx in(-1,0,1) for dy in(-1,0,1))
                 terr[y][x]=1 if adj else 0
             else:
-                d2=dist[y][x]; e=elev[y][x]
+                d2=dist[y][x]
                 if d2<=1: terr[y][x]=2
-                elif e>0.66: terr[y][x]=5
-                elif e>0.40: terr[y][x]=4
-                else: terr[y][x]=3 if (x+y)%7 else 6
-    land_rows=[y for y in range(H) if any(land[y])]; ymin,ymax=land_rows[0],land_rows[-1]
-    open_boundary=int(ymax-(ymax-ymin)*0.30)
-    region=[[1 if y>=open_boundary else 0 for x in range(W)] for y in range(H)]
-    def rowwidth(y): return sum(1 for x in range(W) if land[y][x])
-    target_row=None
-    for y in range(ymax,open_boundary,-1):
-        if rowwidth(y)>=40: target_row=y; break
-    if target_row is None: target_row=max(open_boundary+2,ymax-8)
-    xs=[x for x in range(W) if land[target_row][x]]; cx0=sum(xs)//len(xs)
+                elif main[y][x]:
+                    dx=x-ridge
+                    e=(1.0+dx/(W*0.20)) if dx<=0 else (1.0-dx/(W*0.09))
+                    e=max(0.0,e)*crest+en[y][x]
+                    terr[y][x]=5 if e>0.66 else (4 if e>0.40 else (3 if (x+y)%7 else 6))
+                else:
+                    terr[y][x]=3 if (x+y)%5 else 6
+    land_rows=[y for y in range(H) if any(main[y])]; ymin,ymax=land_rows[0],land_rows[-1]
+    def rowwidth(y): return sum(1 for x in range(W) if main[y][x])
+    target=None
+    for y in range(ymax,ymin,-1):
+        if rowwidth(y)>=34: target=y; break
+    if target is None: target=ymax-6
+    xs=[x for x in range(W) if main[target][x]]; cx0=sum(xs)//len(xs)
     spawn=None
     for dy in range(0,8):
-        yy=target_row+dy
+        yy=target+dy
         if yy>=H: break
-        cand=[x for x in range(W) if land[yy][x] and terr[yy][x]==2]
+        cand=[x for x in range(W) if main[yy][x] and terr[yy][x]==2]
         if cand: spawn=(min(cand,key=lambda x:abs(x-cx0)),yy); break
     if spawn is None:
-        cand=[x for x in xs if terr[target_row][x] in (2,3,4,6)]
-        spawn=(min(cand,key=lambda x:abs(x-cx0)) if cand else cx0,target_row)
-    objs=[]; occupied=set()
-    def clear_sp(x,y): return abs(x-spawn[0])+abs(y-spawn[1])>8
-    for y in range(open_boundary,ymax+1):
+        cand=[x for x in xs if terr[target][x] in (2,3,4,6)]
+        spawn=(min(cand,key=lambda x:abs(x-cx0)) if cand else cx0,target)
+    objs=[]; occ=set()
+    def clr(x,y): return abs(x-spawn[0])+abs(y-spawn[1])>9
+    for y in range(ymin,ymax+1):
         for x in range(W):
-            tt=terr[y][x]
-            if region[y][x]!=1: continue
-            if (x,y) in occupied or not clear_sp(x,y): continue
-            r=rng.random(); kind=None
+            if not land[y][x] or (x,y) in occ or not clr(x,y): continue
+            tt=terr[y][x]; r=rng.random(); kind=None
             if tt==4:
-                if r<0.16: kind="tree" if rng.random()<.7 else "pine"
+                if r<0.11: kind="tree" if rng.random()<.7 else "pine"
             elif tt in (3,6):
-                if r<0.035: kind="tree" if rng.random()<.5 else "bush"
+                if r<0.02: kind="tree" if rng.random()<.5 else "bush"
             elif tt==2:
-                if r<0.02: kind="palm" if rng.random()<.6 else "rock"
+                if r<0.015: kind="palm" if rng.random()<.6 else "rock"
             elif tt==5:
-                if r<0.05: kind="rock"
-            if kind: objs.append({"k":kind,"x":x,"y":y}); occupied.add((x,y))
-    return {"w":W,"h":H,"tile":TILE,"terr":terr,"region":region,"openBoundary":open_boundary,
-            "spawn":{"x":spawn[0],"y":spawn[1]},"objects":objs,"ymin":ymin,"ymax":ymax}
+                if r<0.03: kind="rock"
+            if kind: objs.append({"k":kind,"x":x,"y":y}); occ.add((x,y))
+    return {"w":W,"h":H,"tile":TILE,"terr":terr,"objects":objs,
+            "spawn":{"x":spawn[0],"y":spawn[1]},"ymin":ymin,"ymax":ymax}
 
 # ================================================================ PREVIEW
 def preview_tiles():
@@ -686,22 +695,18 @@ def preview_tiles():
     sheet.save(os.path.join(OUT, "_preview_tiles.png"))
 
 def preview_island(data):
-    W,H=data["w"],data["h"]
+    W,H=data["w"],data["h"]; terr=data["terr"]
     pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
-    terr=data["terr"]; region=data["region"]
     buf=bytearray(W*H*3); i=0
     for y in range(H):
-        ty=terr[y]; ry=region[y]
+        ty=terr[y]
         for x in range(W):
-            t=ty[x]; col=pal[t]
-            if ry[x]==0 and t>=2:
-                col=(int(col[0]*0.45+150*0.55),int(col[1]*0.45+160*0.55),int(col[2]*0.45+170*0.55))
-            buf[i]=col[0]; buf[i+1]=col[1]; buf[i+2]=col[2]; i+=3
+            col=pal[ty[x]]; buf[i]=col[0]; buf[i+1]=col[1]; buf[i+2]=col[2]; i+=3
     img=Image.frombytes("RGB",(W,H),bytes(buf))
-    d=ImageDraw.Draw(img); ob=data["openBoundary"]
-    d.line([(0,ob),(W,ob)],fill=(255,80,80))
-    sx,sy=data["spawn"]["x"],data["spawn"]["y"]; d.ellipse([sx-4,sy-4,sx+4,sy+4],fill=(255,40,200))
+    d=ImageDraw.Draw(img); sx,sy=data["spawn"]["x"],data["spawn"]["y"]
+    d.ellipse([sx-5,sy-5,sx+5,sy+5],fill=(255,40,200))
     img.save(os.path.join(OUT,"_preview_island.png"))
+
 
 
 # ================================================================ MAIN
@@ -737,8 +742,7 @@ def main():
     # island
     island = gen_island()
     isl_json = dict(island)
-    isl_json["terr"]   = ["".join(str(v) for v in row) for row in island["terr"]]
-    isl_json["region"] = ["".join(str(v) for v in row) for row in island["region"]]
+    isl_json["terr"] = ["".join(str(v) for v in row) for row in island["terr"]]
     with open(os.path.join(BUILD, "island.json"), "w", encoding="utf-8") as f:
         json.dump(isl_json, f, separators=(",", ":"))
     preview_tiles(); preview_island(island)
@@ -753,7 +757,7 @@ def main():
 
     total = sum(len(v) for v in manifest.values())
     print(f"assets: {len(ASSETS)}  b64 bytes: {total}")
-    print(f"island: {island['w']}x{island['h']} open_boundary={island['openBoundary']} spawn={island['spawn']} objects={len(island['objects'])}")
+    print(f"island: {island['w']}x{island['h']} spawn={island['spawn']} objects={len(island['objects'])}")
     print("done")
 
 if __name__ == "__main__":
