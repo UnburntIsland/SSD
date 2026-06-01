@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>森循島</title>
+<style>
+  :root{
+    --ink:#222a33; --ink-soft:#5d6b78; --line:#cdd6df;
+    --magic:#3a9d5d; --magic-d:#2c7a48; --magic-l:#7bc98e;
+    --gold:#e8ce86; --accent:#3ea6a0; --warm:#e88a5a;
+    --card:#ffffff; --paper:#f6f4ef;
+    --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Hiragino Sans",system-ui,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;width:100%;overflow:hidden;background:#0c1620;font-family:var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  #game{position:fixed;inset:0;width:100%;height:100%;display:block;background:#0c1620;
+    touch-action:none;cursor:default;}
+
+  /* loader */
+  #loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:20px;z-index:30;background:radial-gradient(130% 130% at 50% 28%, #243b52, #0e1a26 70%);color:#dfe8f2;}
+  #loader h1{font-size:38px;letter-spacing:10px;font-weight:800;color:#fff;}
+  #loader .bar{width:280px;height:10px;border-radius:8px;background:#13202e;border:1px solid #2f4257;overflow:hidden;}
+  #loader .fill{height:100%;width:0;background:linear-gradient(90deg,var(--magic-l),var(--accent));transition:width .12s;}
+  #loader .sub{font-size:13px;color:#9fb2c6;letter-spacing:3px;}
+
+  /* book / world-select overlay */
+  #book{position:fixed;inset:0;z-index:25;display:none;align-items:center;justify-content:center;
+    background:radial-gradient(120% 120% at 50% 35%, rgba(40,28,72,.55), rgba(8,12,22,.82));
+    backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+  #book.show{display:flex;}
+  #book .sheet{width:min(880px,94vw);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#fbfaf7,#f1eee7);
+    border-radius:22px;padding:30px 30px 26px;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.4) inset;
+    position:relative;}
+  #book .crest{width:54px;height:54px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 38% 32%, var(--magic-l), var(--magic-d));
+    box-shadow:0 0 28px rgba(122,90,200,.6), 0 4px 10px rgba(0,0,0,.25);color:#fff;font-size:26px;}
+  #book h2{text-align:center;font-size:23px;color:var(--ink);font-weight:800;letter-spacing:1px;}
+  #book .tag{text-align:center;font-size:13px;color:var(--ink-soft);margin:4px 0 20px;}
+  #book .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:620px){#book .grid{grid-template-columns:repeat(2,1fr);}}
+  .card{position:relative;border-radius:16px;padding:16px;min-height:128px;cursor:pointer;
+    border:1.5px solid var(--line);background:var(--card);transition:transform .12s,box-shadow .12s,border-color .12s;
+    display:flex;flex-direction:column;}
+  .card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(40,40,70,.16);border-color:var(--magic-l);}
+  .card.empty{border-style:dashed;align-items:center;justify-content:center;color:#9aa6b2;background:#fbfafe;}
+  .card.empty .plus{font-size:30px;line-height:1;color:var(--magic);font-weight:700;}
+  .card.empty .ctext{font-size:13px;margin-top:8px;font-weight:600;}
+  .card .ribbon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;
+    background:linear-gradient(160deg,#efe9ff,#dccdfb);color:var(--magic-d);margin-bottom:10px;}
+  .card .cname{font-size:17px;font-weight:800;color:var(--ink);}
+  .card .cmeta{font-size:12px;color:var(--ink-soft);margin-top:3px;flex:1;}
+  .card .enter{margin-top:10px;border:none;border-radius:10px;padding:9px;font-family:var(--font);font-size:14px;font-weight:800;
+    color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--magic),var(--magic-d));box-shadow:0 4px 12px rgba(122,90,200,.35);}
+  .card .enter:hover{filter:brightness(1.07);}
+  .card .del{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;
+    background:#eef1f4;color:#8a98a6;font-size:13px;line-height:1;}
+  .card .del:hover{background:var(--warm);color:#fff;}
+  #book .close{position:absolute;top:14px;right:16px;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+    background:#eceef1;color:#5d6b78;font-size:18px;}
+  #book .close:hover{background:#dde1e6;}
+  #book .hint{text-align:center;font-size:12px;color:#9aa6b2;margin-top:18px;}
+
+  /* modal (naming / delete) */
+  #modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(8,14,22,.6);backdrop-filter:blur(3px);}
+  #modal .m{width:min(360px,86vw);background:#fff;border-radius:18px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  #modal h3{font-size:18px;color:var(--ink);}
+  #modal p{font-size:13px;color:var(--ink-soft);margin:6px 0 16px;}
+  #modal input{width:100%;font-family:var(--font);font-size:16px;color:var(--ink);padding:11px 13px;
+    border:1.5px solid var(--line);border-radius:11px;background:#fafbfc;outline:none;}
+  #modal input:focus{border-color:var(--magic);}
+  #modal .row{display:flex;gap:10px;margin-top:18px;}
+  #modal button{flex:1;font-family:var(--font);font-size:15px;font-weight:700;padding:11px;border-radius:11px;border:none;cursor:pointer;}
+  #modal .ok{background:linear-gradient(135deg,var(--magic),var(--magic-d));color:#fff;}
+  #modal .danger{background:linear-gradient(135deg,#e8705a,#c94a36);color:#fff;}
+  #modal .cancel{background:#eef1f4;color:var(--ink);}
+</style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="loader">
+    <h1>森循島</h1>
+    <div class="bar"><div class="fill" id="loadfill"></div></div>
+    <div class="sub" id="loadsub">正在準備房間…</div>
+  </div>
+
+  <div id="book">
+    <div class="sheet">
+      <button class="close" id="bookClose">✕</button>
+      <div class="crest"><svg width="30" height="30" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 22c0-6 1-10 6-13-1 7-4 11-6 13z"/><path d="M12 22C5 22 3 14 4 8c6 1 9 6 8 14z"/></svg></div>
+      <h2>番薯島</h2>
+      <div class="tag">永續生態考察圖鑑 · 選擇你的考察進度</div>
+      <div class="grid" id="cards"></div>
+      <div class="hint">點空白頁開始新的考察 · 已有的紀錄可進入或刪除 · Esc 關閉</div>
+    </div>
+  </div>
+
+  <div id="modal">
+    <div class="m">
+      <h3 id="mTitle">命名你的世界</h3>
+      <p id="mDesc">為這段旅程取個名字吧。</p>
+      <input id="mInput" maxlength="12" placeholder="森循島民">
+      <div class="row">
+        <button class="cancel" id="mCancel">取消</button>
+        <button class="ok" id="mOk">建立</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================================
+   森循島 — 現代學生房間 → 翻開《番薯島》圖鑑 → 番薯島（台灣化島嶼）
+   設備解析度 + 整數縮放渲染（消除移動閃爍），文字以向量繪製（非像素）。
+   ========================================================================= */
+var GAME_DATA = __GAME_DATA__;
+
+(function(){
+"use strict";
+
+var TILE=32;
+var canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
+var IMG={}, PMETA=GAME_DATA.meta.player, ISLAND=GAME_DATA.island;
+var SAVE_KEY="senxun_v3_saves";
+var BG="#0c1620";
+
+var TERR_IMG=["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow"];
+var WALKABLE={2:true,3:true,4:true,6:true};
+
+// ---- responsive device-resolution sizing ----
+var dpr=1, S=3, targetH=320, artW=480, artH=288, cssW=960, cssH=576;
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1, 3);
+  cssW=canvas.clientWidth||window.innerWidth; cssH=canvas.clientHeight||window.innerHeight;
+  canvas.width=Math.max(2,Math.floor(cssW*dpr));
+  canvas.height=Math.max(2,Math.floor(cssH*dpr));
+  S=Math.max(2, Math.min(10, Math.round(canvas.height/targetH)));  // integer device px per art px
+  artW=Math.ceil(canvas.width/S); artH=Math.ceil(canvas.height/S);
+}
+window.addEventListener("resize",resize);
+
+// ---- utils ----
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+function lerp(a,b,t){return a+(b-a)*t;}
+function aabb(ax,ay,aw,ah,bx,by,bw,bh){return ax<bx+bw&&ax+aw>bx&&ay<by+bh&&ay+ah>by;}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function now(){return (performance&&performance.now)?performance.now():Date.now();}
+
+// world render transform (integer scale + floored camera -> zero shimmer)
+function worldBegin(cam){
+  var cx=Math.floor(cam.x), cy=Math.floor(cam.y);
+  ctx.setTransform(S,0,0,S, -cx*S, -cy*S);
+  ctx.imageSmoothingEnabled=false;
+  return {cx:cx,cy:cy};
+}
+// UI in CSS pixels, crisp anti-aliased text
+function uiBegin(){ ctx.setTransform(dpr,0,0,dpr,0,0); ctx.imageSmoothingEnabled=true; }
+function txt(s,x,y,size,col,align,weight){
+  ctx.fillStyle=col; ctx.textAlign=align||"left"; ctx.textBaseline="middle";
+  ctx.font=(weight||600)+" "+size+'px "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif';
+  ctx.fillText(s,x,y);
+}
+function panel(x,y,w,h,r){
+  r=r||12;
+  ctx.fillStyle="rgba(18,26,34,.16)"; rr(ctx,x+2,y+4,w,h,r); ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.94)"; rr(ctx,x,y,w,h,r); ctx.fill();
+  ctx.lineWidth=1.5; ctx.strokeStyle="rgba(120,135,150,.5)"; rr(ctx,x+.75,y+.75,w-1.5,h-1.5,r-1); ctx.stroke();
+}
+function clampCam(cam,worldW,worldH){
+  cam.x = worldW<=artW ? (worldW-artW)/2 : clamp(cam.x,0,worldW-artW);
+  cam.y = worldH<=artH ? (worldH-artH)/2 : clamp(cam.y,0,worldH-artH);
+}
+
+// ---- input ----
+var keys={}, justPressed={};
+window.addEventListener("keydown",function(e){
+  if(modalOpen) return;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].indexOf(e.key)>=0) e.preventDefault();
+  if(!keys[e.code]) justPressed[e.code]=true;
+  keys[e.code]=true;
+  if(scene&&scene.onKey) scene.onKey(e);
+});
+window.addEventListener("keyup",function(e){keys[e.code]=false;});
+function inputVec(){
+  var dx=0,dy=0;
+  if(keys.ArrowLeft||keys.KeyA)dx-=1; if(keys.ArrowRight||keys.KeyD)dx+=1;
+  if(keys.ArrowUp||keys.KeyW)dy-=1; if(keys.ArrowDown||keys.KeyS)dy+=1;
+  if(dx&&dy){dx*=0.7071;dy*=0.7071;}
+  return {x:dx,y:dy};
+}
+var mouse={x:0,y:0};
+function toCss(e){var r=canvas.getBoundingClientRect();
+  var cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left, cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  return {x:cx*(cssW/r.width), y:cy*(cssH/r.height)};}
+function cssToWorld(p,cam){return {x:p.x*dpr/S+Math.floor(cam.x), y:p.y*dpr/S+Math.floor(cam.y)};}
+canvas.addEventListener("mousemove",function(e){var p=toCss(e);mouse.x=p.x;mouse.y=p.y;});
+canvas.addEventListener("mousedown",function(e){ if(modalOpen)return; var p=toCss(e); if(scene&&scene.onDown)scene.onDown(p.x,p.y); });
+canvas.addEventListener("touchstart",function(e){e.preventDefault(); if(modalOpen)return; var p=toCss(e); if(scene&&scene.onDown)scene.onDown(p.x,p.y);},{passive:false});
+
+// ---- player drawing (under world transform; integer art coords -> crisp) ----
+function drawPlayer(p){
+  var x=Math.round(p.x), y=Math.round(p.y);
+  ctx.fillStyle="rgba(20,28,20,.26)";
+  ctx.beginPath();ctx.ellipse(x,y-1,9,4,0,0,Math.PI*2);ctx.fill();
+  var row=PMETA.dirs.indexOf(p.facing); if(row<0)row=0;
+  var frame=p.moving?(1+(Math.floor(p.animT/0.15)%3)):0;
+  ctx.drawImage(IMG.player_sheet, frame*PMETA.frameW,row*PMETA.frameH,PMETA.frameW,PMETA.frameH,
+                x-PMETA.footX, y-PMETA.footY, PMETA.frameW,PMETA.frameH);
+}
+function animate(p,vx,vy,dt){
+  p.moving=(vx!==0||vy!==0);
+  if(p.moving){ if(Math.abs(vy)>=Math.abs(vx)) p.facing=vy<0?"up":"down"; else p.facing=vx<0?"left":"right"; p.animT+=dt; }
+  else p.animT=0;
+}
+
+// ===================================================================== LOBBY (small 雅房, big furniture, zoomed-in)
+var ROOM_W=448, ROOM_H=352;
+var FX0=32, FY0=96, FX1=416, FY1=320;
+var lobby={
+  player:{x:225,y:290,facing:"up",animT:0,moving:false,spd:80},
+  cam:{x:0,y:0}, near:false, t:0,
+  book:{x:225,y:204}, tableC:{x:225,y:230},
+  bx:38, by:102, bw:340, bh:200,
+  furniture:[
+    {img:"rug",     x:172,y:182, flat:true},
+    {img:"wardrobe",x:32, y:100, base:215, col:[36,114,56,96]},
+    {img:"bed",     x:350,y:100, base:206, col:[350,130,60,72]},
+    {img:"desk",    x:170,y:94,  base:146, col:[170,116,75,22]},
+    {img:"laptop",  x:182,y:78,  base:114},
+    {img:"chair",   x:192,y:126, base:172, col:[194,130,32,26]},
+    {img:"plant",   x:370,y:250, base:308, col:[372,272,38,20]},
+    {img:"table",   x:180,y:196, base:262, col:[186,234,78,22]},
+  ],
+  decor:function(){
+    ctx.drawImage(IMG.window,176,14); ctx.drawImage(IMG.clock,300,30);
+  },
+  enter:function(){ targetH=230; resize();
+    this.player.x=225; this.player.y=290; this.player.facing="up"; this.near=false;
+    this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-artH/2; clampCam(this.cam,ROOM_W,ROOM_H); },
+  update:function(dt){
+    this.t+=dt;
+    var v=inputVec(), p=this.player, hw=6, top=11, bot=2, self=this;
+    function free(tx,ty){
+      if(tx-hw<self.bx||tx+hw>self.bx+self.bw||ty-top<self.by||ty>self.by+self.bh) return false;
+      for(var i=0;i<self.furniture.length;i++){var c=self.furniture[i].col; if(!c)continue;
+        if(aabb(tx-hw,ty-top,hw*2,top+bot,c[0],c[1],c[2],c[3])) return false;}
+      return true;
+    }
+    var nx=p.x+v.x*p.spd*dt, ny=p.y+v.y*p.spd*dt;
+    if(free(nx,p.y))p.x=nx; if(free(p.x,ny))p.y=ny;
+    animate(p,v.x,v.y,dt);
+    this.cam.x=lerp(this.cam.x,p.x-artW/2,Math.min(1,dt*10));
+    this.cam.y=lerp(this.cam.y,p.y-artH/2,Math.min(1,dt*10));
+    clampCam(this.cam,ROOM_W,ROOM_H);
+    var dx=p.x-this.tableC.x, dy=p.y-this.tableC.y;
+    this.near=(dx*dx+dy*dy)<58*58;
+    if(this.near&&(justPressed.KeyE||justPressed.Enter||justPressed.Space)) openBook();
+  },
+  onDown:function(ux,uy){ var w=cssToWorld({x:ux,y:uy},this.cam);
+    var dx=w.x-this.tableC.x, dy=w.y-this.tableC.y; if(dx*dx+dy*dy<50*50) openBook(); },
+  renderWorld:function(){
+    var c=worldBegin(this.cam);
+    var tx0=Math.floor(c.cx/TILE)-1, tx1=Math.ceil((c.cx+artW)/TILE)+1;
+    var ty0=Math.floor(c.cy/TILE)-1, ty1=Math.ceil((c.cy+artH)/TILE)+1;
+    for(var ty=ty0;ty<=ty1;ty++)for(var tx=tx0;tx<=tx1;tx++) ctx.drawImage(IMG.wall,tx*TILE,ty*TILE);
+    for(var fy=FY0/TILE;fy<FY1/TILE;fy++)for(var fx=FX0/TILE;fx<FX1/TILE;fx++) ctx.drawImage(IMG.floor,fx*TILE,fy*TILE);
+    ctx.fillStyle="rgba(40,52,64,.20)"; ctx.fillRect(FX0,FY0,FX1-FX0,3);
+    ctx.fillStyle="rgba(0,0,0,.08)"; ctx.fillRect(FX0,FY0,3,FY1-FY0); ctx.fillRect(FX1-3,FY0,3,FY1-FY0);
+    this.decor();
+    var list=[], p=this.player;
+    for(var i=0;i<this.furniture.length;i++){var f=this.furniture[i];
+      if(f.flat){ctx.drawImage(IMG[f.img],f.x,f.y);continue;} list.push({by:f.base,f:f});}
+    list.push({by:p.y,player:true}); list.sort(function(a,b){return a.by-b.by;});
+    for(var k=0;k<list.length;k++){var it=list[k];
+      if(it.player) drawPlayer(p);
+      else{var im=IMG[it.f.img];
+        ctx.fillStyle="rgba(20,28,20,.16)";ctx.beginPath();ctx.ellipse(it.f.x+im.width/2,it.f.base-2,im.width*0.30,5,0,0,Math.PI*2);ctx.fill();
+        ctx.drawImage(im,it.f.x,it.f.y);}}
+    var g=0.5+0.5*Math.sin(this.t*3);
+    ctx.save();ctx.globalAlpha=0.24+0.20*g;ctx.fillStyle="rgba(123,201,142,1)";
+    ctx.beginPath();ctx.ellipse(this.book.x,this.book.y+10,14+2*g,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.drawImage(IMG.book_closed,this.book.x-IMG.book_closed.width/2,this.book.y-IMG.book_closed.height/2);
+    ctx.font='800 7px "Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif';
+    ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillStyle="#111111";
+    ctx.fillText("番薯島", this.book.x, this.book.y-4);
+  },
+  render:function(){
+    this.renderWorld();
+    uiBegin();
+    txt("我的房間",18,30,17,"#ffffff","left","800");
+    txt("WASD / 方向鍵 移動 · 走到桌前按 E 翻開《番薯島》",18,cssH-20,13,"rgba(255,255,255,.82)","left","600");
+    if(this.near){
+      var s="翻開《番薯島》  (E)"; ctx.font='800 15px "Noto Sans TC",system-ui,sans-serif';
+      var w=ctx.measureText(s).width+30, px=cssW/2, py=cssH*0.40;
+      ctx.fillStyle="rgba(44,122,72,.95)"; rr(ctx,px-w/2,py-18,w,34,10); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.22)"; rr(ctx,px-w/2,py-18,w,16,10); ctx.fill();
+      txt(s,px,py,15,"#fff","center","800");
+      ctx.fillStyle="rgba(44,122,72,.95)";ctx.beginPath();ctx.moveTo(px-7,py+15);ctx.lineTo(px+7,py+15);ctx.lineTo(px,py+23);ctx.fill();
+    }
+    softVignette();
+  },
+  onKey:function(){}
+};
+
+// ===================================================================== BOOK (DOM world-select)
+var book={
+  enter:function(){ renderBookDOM(); },
+  update:function(){},
+  render:function(){ lobby.renderWorld(); softVignette(); },   // room visible behind DOM overlay
+  onKey:function(e){ if(e.key==="Escape") closeBook(); }
+};
+function openBook(){ setScene(book); }
+function closeBook(){ setScene(lobby); }
+
+function loadSaves(){
+  var a; try{a=JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){a=null;}
+  if(!Array.isArray(a)) a=[null,null,null,null,null,null];
+  while(a.length<6)a.push(null); return a.slice(0,6);
+}
+function storeSaves(a){ try{localStorage.setItem(SAVE_KEY,JSON.stringify(a));}catch(e){} }
+function fmtDate(){var d=new Date();return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
+
+function renderBookDOM(){
+  var saves=loadSaves(), grid=document.getElementById("cards"); grid.innerHTML="";
+  for(var i=0;i<6;i++){ (function(idx){
+    var s=saves[idx], card=document.createElement("div");
+    card.className="card"+(s?"":" empty");
+    if(s){
+      card.innerHTML='<div class="ribbon">✦</div><div class="cname"></div><div class="cmeta"></div>'+
+                     '<button class="enter">出發前往</button><button class="del">✕</button>';
+      card.querySelector(".cname").textContent=s.name;
+      card.querySelector(".cmeta").textContent="建立 "+s.created+" · 考察 "+(s.playCount||0)+" 次";
+      card.querySelector(".enter").onclick=function(){enterWorld(idx);};
+      card.querySelector(".del").onclick=function(e){e.stopPropagation();confirmDelete(idx);};
+    }else{
+      card.innerHTML='<div class="plus">＋</div><div class="ctext">開始新考察</div>';
+      card.onclick=function(){createSave(idx);};
+    }
+    grid.appendChild(card);
+  })(i); }
+}
+function createSave(i){
+  showModal({title:"命名你的考察",desc:"為這段旅程取個名字吧。",value:"森循島民",ok:"建立",onOk:function(name){
+    var a=loadSaves(); a[i]={name:(name||"森循島民").slice(0,12),created:fmtDate(),playCount:0};
+    storeSaves(a); renderBookDOM();
+  }});
+}
+function confirmDelete(i){
+  var a=loadSaves(); if(!a[i])return;
+  showModal({title:"刪除這份紀錄？",desc:"「"+a[i].name+"」將永久消失，無法復原。",danger:true,ok:"刪除",hideInput:true,onOk:function(){
+    var b=loadSaves(); b[i]=null; storeSaves(b); renderBookDOM();
+  }});
+}
+document.getElementById("bookClose").onclick=closeBook;
+
+// direct enter (used by tests/debug); UI path goes through the portal
+function enterIsland(i){ island.saveIdx=i; var a=loadSaves(); if(a[i]){a[i].playCount=(a[i].playCount||0)+1;storeSaves(a);} setScene(island); }
+function enterWorld(i){ island.saveIdx=i; var a=loadSaves(); if(a[i]){a[i].playCount=(a[i].playCount||0)+1;storeSaves(a);}
+  document.getElementById("book").classList.remove("show"); setScene(portal); }
+
+// ---- DOM modal ----
+var modalOpen=false, modalCb=null, modalEl=document.getElementById("modal");
+function showModal(o){
+  modalOpen=true;
+  document.getElementById("mTitle").textContent=o.title;
+  document.getElementById("mDesc").textContent=o.desc;
+  var inp=document.getElementById("mInput"); inp.style.display=o.hideInput?"none":"block"; inp.value=o.value||"";
+  var ok=document.getElementById("mOk"); ok.textContent=o.ok||"確定"; ok.className=o.danger?"danger":"ok";
+  modalEl.style.display="flex"; modalCb=o.onOk;
+  if(!o.hideInput) setTimeout(function(){inp.focus();inp.select();},30);
+}
+function hideModal(){modalOpen=false;modalEl.style.display="none";modalCb=null;}
+document.getElementById("mOk").onclick=function(){var v=document.getElementById("mInput").value.trim();var cb=modalCb;hideModal();if(cb)cb(v);};
+document.getElementById("mCancel").onclick=hideModal;
+document.getElementById("mInput").addEventListener("keydown",function(e){
+  if(e.key==="Enter")document.getElementById("mOk").click();
+  if(e.key==="Escape")hideModal(); e.stopPropagation();
+});
+
+// ===================================================================== PORTAL (book -> island world)
+var portal={
+  t:0, dur:1.85,
+  enter:function(){ this.t=0; },
+  update:function(dt){ this.t+=dt; if(this.t>=this.dur){ setScene(island); } },
+  render:function(){
+    lobby.renderWorld();
+    uiBegin();
+    var p=clamp(this.t/this.dur,0,1);
+    var cx=cssW/2, cy=cssH/2, maxR=Math.hypot(cssW,cssH)/2;
+    ctx.fillStyle="rgba(10,22,16,"+(0.15+0.5*p).toFixed(3)+")"; ctx.fillRect(0,0,cssW,cssH);
+    var ease=p*p*(3-2*p), R=ease*maxR*1.05;
+    var g=ctx.createRadialGradient(cx,cy,Math.max(1,R*0.05),cx,cy,Math.max(2,R));
+    g.addColorStop(0,"rgba(255,255,255,0.95)");
+    g.addColorStop(0.34,"rgba(168,228,188,0.85)");
+    g.addColorStop(0.72,"rgba(58,157,93,0.42)");
+    g.addColorStop(1,"rgba(58,157,93,0)");
+    ctx.fillStyle=g; ctx.beginPath();ctx.arc(cx,cy,Math.max(2,R),0,Math.PI*2);ctx.fill();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(this.t*2.0);
+    ctx.strokeStyle="rgba(232,206,134,"+(0.5*ease).toFixed(3)+")"; ctx.lineWidth=3; ctx.setLineDash([14,12]);
+    ctx.beginPath();ctx.arc(0,0,40+ease*120,0,Math.PI*2);ctx.stroke();
+    ctx.rotate(-this.t*3.0); ctx.strokeStyle="rgba(120,200,150,"+(0.6*ease).toFixed(3)+")"; ctx.setLineDash([7,9]);
+    ctx.beginPath();ctx.arc(0,0,22+ease*72,0,Math.PI*2);ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+    for(var i=0;i<22;i++){ var a=i/22*Math.PI*2+this.t*1.4, rr2=(1-ease)*maxR*0.7+18;
+      var sx=cx+Math.cos(a)*rr2, sy=cy+Math.sin(a)*rr2;
+      ctx.fillStyle="rgba(235,255,240,"+(0.7*ease).toFixed(3)+")"; ctx.beginPath();ctx.arc(sx,sy,2.2,0,Math.PI*2);ctx.fill(); }
+    if(p>0.82){ ctx.fillStyle="rgba(255,255,255,"+((p-0.82)/0.18).toFixed(3)+")"; ctx.fillRect(0,0,cssW,cssH); }
+    txt("前往番薯島…", cx, cy+maxR*0.5, 16, "rgba(255,255,255,"+(0.6*ease).toFixed(3)+")","center","700");
+  }
+};
+
+// ===================================================================== ISLAND
+var island={
+  player:{x:0,y:0,facing:"up",animT:0,moving:false,spd:98},
+  cam:{x:0,y:0}, blocked:null, objByRow:null, mini:null, puffs:[], time:0, fade:0,
+  worldW:ISLAND.w*TILE, worldH:ISLAND.h*TILE, saveIdx:-1,
+  build:function(){
+    var w=ISLAND.w,h=ISLAND.h; this.blocked=new Uint8Array(w*h); this.objByRow={};
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+      var t=ISLAND.terr[y][x], locked=(ISLAND.region[y][x]===0);
+      this.blocked[y*w+x]=(locked||!WALKABLE[t])?1:0;
+    }
+    for(var i=0;i<ISLAND.objects.length;i++){var o=ISLAND.objects[i];
+      this.blocked[o.y*w+o.x]=1; (this.objByRow[o.y]=this.objByRow[o.y]||[]).push(o); }
+    this.buildMini(); this.buildPuffs();
+  },
+  buildMini:function(){
+    var w=ISLAND.w,h=ISLAND.h,c=document.createElement("canvas");c.width=w;c.height=h;var g=c.getContext("2d");
+    var pal={0:"#26607f",1:"#4ea2ba",2:"#e6d4a0",3:"#7caa50",4:"#50783a",5:"#8e8474",6:"#8ab65c"};
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){var t=ISLAND.terr[y][x];g.fillStyle=pal[t];g.fillRect(x,y,1,1);
+      if(ISLAND.region[y][x]===0&&t>=2){g.fillStyle="rgba(214,224,234,.85)";g.fillRect(x,y,1,1);} }
+    this.mini=c;
+  },
+  buildPuffs:function(){
+    var w=ISLAND.w,minX=w,maxX=0,minY=ISLAND.h,maxY=0;
+    for(var y=0;y<ISLAND.openBoundary;y++)for(var x=0;x<w;x++){ if(ISLAND.terr[y][x]>=2){
+      if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y; } }
+    this.fogBox={x0:minX*TILE,y0:minY*TILE,x1:(maxX+1)*TILE,y1:(maxY+1)*TILE};
+    this.puffs=[]; var imgs=[IMG.fog1,IMG.fog2,IMG.fog3];
+    for(var i=0;i<80;i++) this.puffs.push({
+      x:this.fogBox.x0+Math.random()*(this.fogBox.x1-this.fogBox.x0),
+      y:this.fogBox.y0+Math.random()*(this.fogBox.y1-this.fogBox.y0+TILE*2),
+      s:0.7+Math.random()*0.9, v:4+Math.random()*8, img:imgs[(Math.random()*3)|0], a:0.5+Math.random()*0.4 });
+  },
+  enter:function(){
+    targetH=340; resize();
+    if(!this.blocked) this.build();
+    this.player.x=(ISLAND.spawn.x+0.5)*TILE; this.player.y=(ISLAND.spawn.y+0.9)*TILE;
+    this.player.facing="up"; this.player.moving=false; this.player.animT=0; this.fade=0;
+    this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-artH/2; clampCam(this.cam,this.worldW,this.worldH);
+  },
+  isBlocked:function(px,py){var tx=Math.floor(px/TILE),ty=Math.floor(py/TILE);
+    if(tx<0||ty<0||tx>=ISLAND.w||ty>=ISLAND.h)return true; return this.blocked[ty*ISLAND.w+tx]===1;},
+  free:function(cx,cy){var hw=6,top=11,bot=1;
+    return !(this.isBlocked(cx-hw,cy-top)||this.isBlocked(cx+hw,cy-top)||this.isBlocked(cx-hw,cy+bot)||
+             this.isBlocked(cx+hw,cy+bot)||this.isBlocked(cx,cy-top)||this.isBlocked(cx,cy+bot));},
+  update:function(dt){
+    this.time+=dt; if(this.fade<1)this.fade=Math.min(1,this.fade+dt/0.5);
+    var v=inputVec(),p=this.player;
+    var nx=p.x+v.x*p.spd*dt, ny=p.y+v.y*p.spd*dt;
+    if(this.free(nx,p.y))p.x=nx; if(this.free(p.x,ny))p.y=ny;
+    p.x=clamp(p.x,4,this.worldW-4); p.y=clamp(p.y,12,this.worldH-2);
+    animate(p,v.x,v.y,dt);
+    this.cam.x=lerp(this.cam.x,p.x-artW/2,Math.min(1,dt*9));
+    this.cam.y=lerp(this.cam.y,p.y-artH/2,Math.min(1,dt*9));
+    clampCam(this.cam,this.worldW,this.worldH);
+    for(var i=0;i<this.puffs.length;i++){var pf=this.puffs[i];pf.x+=pf.v*dt;if(pf.x>this.fogBox.x1+60)pf.x=this.fogBox.x0-60;}
+  },
+  render:function(){
+    var c=worldBegin(this.cam), w=ISLAND.w,h=ISLAND.h;
+    var x0=Math.max(0,Math.floor(c.cx/TILE)),x1=Math.min(w-1,Math.ceil((c.cx+artW)/TILE));
+    var y0=Math.max(0,Math.floor(c.cy/TILE)),y1=Math.min(h-1,Math.ceil((c.cy+artH)/TILE));
+    for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++) ctx.drawImage(IMG[TERR_IMG[ISLAND.terr[ty][tx]]],tx*TILE,ty*TILE);
+    // coastline foam
+    var fa=0.5+0.3*Math.sin(this.time*2.2);
+    ctx.fillStyle="rgba(226,244,242,"+fa.toFixed(3)+")";
+    var nb=[[0,1],[0,-1],[1,0],[-1,0]];
+    for(var ay=y0;ay<=y1;ay++)for(var ax=x0;ax<=x1;ax++){ if(ISLAND.terr[ay][ax]!==2)continue;
+      for(var k=0;k<4;k++){var bx=ax+nb[k][0],by=ay+nb[k][1]; if(bx<0||by<0||bx>=w||by>=h)continue;
+        if(ISLAND.terr[by][bx]<=1){var fx=ax*TILE,fy=ay*TILE;
+          if(nb[k][1]===1)ctx.fillRect(fx+2,fy+TILE-3,TILE-4,2); else if(nb[k][1]===-1)ctx.fillRect(fx+2,fy+1,TILE-4,2);
+          else if(nb[k][0]===1)ctx.fillRect(fx+TILE-3,fy+2,2,TILE-4); else ctx.fillRect(fx+1,fy+2,2,TILE-4);} } }
+    // objects + player
+    var rl=[], p=this.player;
+    for(var ry=y0-2;ry<=y1+2;ry++){var arr=this.objByRow[ry]; if(!arr)continue;
+      for(var oi=0;oi<arr.length;oi++){var o=arr[oi]; if(o.x<x0-2||o.x>x1+2)continue; rl.push({by:(o.y+1)*TILE,o:o});}}
+    rl.push({by:p.y,player:true}); rl.sort(function(a,b){return a.by-b.by;});
+    for(var i=0;i<rl.length;i++){var it=rl[i];
+      if(it.player) drawPlayer(p);
+      else{var im=IMG[it.o.k],ox=(it.o.x+0.5)*TILE,oy=(it.o.y+1)*TILE+2;
+        ctx.fillStyle="rgba(20,28,20,.2)";ctx.beginPath();ctx.ellipse(ox,oy-2,im.width*0.3,4,0,0,Math.PI*2);ctx.fill();
+        ctx.drawImage(im,Math.round(ox-im.width/2),Math.round(oy-im.height));}}
+    // fog over locked land
+    for(var fy2=y0;fy2<=y1;fy2++)for(var fx2=x0;fx2<=x1;fx2++){ if(ISLAND.region[fy2][fx2]!==0)continue;
+      if(ISLAND.terr[fy2][fx2]<2)continue; var depth=ISLAND.openBoundary-fy2, a=clamp(0.40+depth*0.16,0,0.93);
+      ctx.fillStyle="rgba(223,231,240,"+a.toFixed(3)+")"; ctx.fillRect(fx2*TILE,fy2*TILE,TILE,TILE); }
+    for(var pi=0;pi<this.puffs.length;pi++){var pf=this.puffs[pi];
+      if(pf.x<c.cx-90||pf.x>c.cx+artW+90||pf.y<c.cy-100||pf.y>c.cy+artH+100)continue;
+      ctx.globalAlpha=pf.a; var iw=pf.img.width*pf.s,ih=pf.img.height*pf.s;
+      ctx.drawImage(pf.img,pf.x-iw/2,pf.y-ih/2,iw,ih);}
+    ctx.globalAlpha=1;
+    // UI
+    uiBegin();
+    this.drawMini(); this.drawHud();
+    softVignette();
+    if(this.fade<1){ ctx.fillStyle="rgba(255,255,255,"+(1-this.fade).toFixed(3)+")"; ctx.fillRect(0,0,cssW,cssH); }
+  },
+  drawMini:function(){
+    var mh=Math.min(214, cssH*0.42), mw=Math.round(mh*ISLAND.w/ISLAND.h), pad=10;
+    var px=cssW-mw-26, py=24;
+    panel(px-pad,py-pad-20,mw+pad*2,mh+pad*2+20,12);
+    txt("地  圖",px+mw/2,py-9,13,"#3a4452","center","800");
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(this.mini,px,py,mw,mh);
+    ctx.imageSmoothingEnabled=true;
+    ctx.lineWidth=2;ctx.strokeStyle="#3a4452";ctx.strokeRect(px-.5,py-.5,mw+1,mh+1);
+    var sx=mw/this.worldW, sy=mh/this.worldH;
+    ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=1.4;
+    ctx.strokeRect(px+Math.max(0,this.cam.x)*sx,py+Math.max(0,this.cam.y)*sy,artW*sx,artH*sy);
+    var dx=px+this.player.x*sx, dy=py+this.player.y*sy, pulse=1+0.3*Math.sin(this.time*5);
+    ctx.fillStyle="#e44a8e";ctx.beginPath();ctx.arc(dx,dy,3.2*pulse,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();
+  },
+  drawHud:function(){
+    var s=loadSaves()[this.saveIdx], nm=(s&&s.name)||"森循島民";
+    panel(20,20,206,56,12);
+    txt(nm,38,42,16,"#222a33","left","800");
+    txt("台灣島 · 南部沙灘",38,62,12,"#5d6b78","left","600");
+    var hint="WASD / 方向鍵 移動 · 北方迷霧尚未開放 · Esc 返回房間";
+    ctx.font='600 13px "Noto Sans TC",system-ui,sans-serif';
+    var w=ctx.measureText(hint).width+26;
+    ctx.fillStyle="rgba(20,28,24,.72)"; rr(ctx,cssW/2-w/2,cssH-34,w,24,8);ctx.fill();
+    txt(hint,cssW/2,cssH-22,13,"rgba(255,255,255,.92)","center","600");
+  },
+  onKey:function(e){ if(e.key==="Escape") setScene(lobby); }
+};
+
+function softVignette(){
+  var g=ctx.createRadialGradient(cssW/2,cssH/2,cssH*0.36,cssW/2,cssH/2,cssH*0.82);
+  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(8,14,20,.30)");
+  ctx.fillStyle=g; ctx.fillRect(0,0,cssW,cssH);
+}
+
+// ---- scene manager + loop ----
+var scene=null;
+function setScene(s){
+  if(scene&&scene.exit)scene.exit();
+  scene=s;
+  document.getElementById("book").classList.toggle("show", s===book);
+  if(s.enter)s.enter();
+}
+var lastT=now(), acc=0, STEP=1/60;
+function frame(){
+  requestAnimationFrame(frame);
+  var t=now(), dt=(t-lastT)/1000; lastT=t; if(dt>0.25)dt=0.25;
+  ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=BG; ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(scene&&scene.update){ acc+=dt; var n=0; while(acc>=STEP&&n<5){scene.update(STEP);acc-=STEP;n++;} if(acc>STEP)acc=0; }
+  if(scene&&scene.render) scene.render();
+  justPressed={};
+}
+
+// ---- boot ----
+function boot(){
+  resize();
+  var names=Object.keys(GAME_DATA.img), total=names.length, done=0;
+  var fill=document.getElementById("loadfill"), sub=document.getElementById("loadsub");
+  function finish(){ document.getElementById("loader").style.display="none"; setScene(lobby); requestAnimationFrame(frame); }
+  names.forEach(function(n){ var im=new Image();
+    im.onload=im.onerror=function(){done++; fill.style.width=Math.round(done/total*100)+"%";
+      if(done===total){sub.textContent="準備就緒";setTimeout(finish,160);}};
+    im.src=GAME_DATA.img[n]; IMG[n]=im; });
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
+<!-- END_OF_GAME -->
