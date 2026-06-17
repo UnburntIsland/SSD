@@ -122,13 +122,14 @@ var GAME_DATA = __GAME_DATA__;
 "use strict";
 
 var TILE=32;
+var ELEV_STEP=3;
 var canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 var IMG={}, PMETA=GAME_DATA.meta.player, ISLAND=GAME_DATA.island;
 var SAVE_KEY="senxun_v3_saves";
 var BG="#0c1620";
 
-var TERR_IMG=["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow"];
-var WALKABLE={2:true,3:true,4:true,5:true,6:true};
+var TERR_IMG=["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow","moon_badland","siziwan_shore","shoushan_hill"];
+var WALKABLE={2:true,3:true,4:true,5:true,6:true,7:true,8:true,9:true};
 
 // ---- responsive device-resolution sizing ----
 var dpr=1, S=3, PSCALE=1, targetH=320, artW=480, artH=288, cssW=960, cssH=576;
@@ -419,10 +420,18 @@ var island={
   cam:{x:0,y:0}, blocked:null, objByRow:null, mini:null, miniCtx:null, revealed:null,
   puffs:[], time:0, fade:0, mapOpen:false, ptx:-1, pty:-1,
   worldW:ISLAND.w*TILE, worldH:ISLAND.h*TILE, saveIdx:-1,
-  MINIPAL:["#26607f","#4ea2ba","#e6d4a0","#7caa50","#50783a","#8e8474","#8ab65c"],
+  MINIPAL:["#26607f","#4ea2ba","#e6d4a0","#7caa50","#50783a","#8e8474","#8ab65c","#c0c4c3","#e2c684","#4e8044"],
+  BASEPAL:["#205975","#4291a6","#c9ae74","#658c45","#416b37","#6f675d","#70964f","#acb2b2","#b99a5d","#386936"],
   build:function(){
     if(typeof ISLAND.terr[0]==="string"){
       ISLAND.terr=ISLAND.terr.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
+    }
+    if(ISLAND.height&&typeof ISLAND.height[0]==="string"){
+      ISLAND.height=ISLAND.height.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
+    }
+    if(!ISLAND.height){
+      ISLAND.height=ISLAND.terr.map(function(row){var out=new Uint8Array(row.length);
+        for(var i=0;i<row.length;i++){var t=row[i]; out[i]=(t===0||t===1||t===2||t===8)?0:(t===5?4:(t===7?3:(t===9?3:1)));} return out;});
     }
     var w=ISLAND.w,h=ISLAND.h; this.blocked=new Uint8Array(w*h); this.objByRow={}; this.revealed=new Uint8Array(w*h);
     for(var y=0;y<h;y++){var ty=ISLAND.terr[y]; for(var x=0;x<w;x++){ this.blocked[y*w+x]=WALKABLE[ty[x]]?0:1; }}
@@ -455,6 +464,12 @@ var island={
   },
   isBlocked:function(px,py){var tx=Math.floor(px/TILE),ty=Math.floor(py/TILE);
     if(tx<0||ty<0||tx>=ISLAND.w||ty>=ISLAND.h)return true; return this.blocked[ty*ISLAND.w+tx]===1;},
+  hAt:function(tx,ty){
+    if(tx<0||ty<0||tx>=ISLAND.w||ty>=ISLAND.h||!ISLAND.height)return 0;
+    return ISLAND.height[ty][tx]||0;
+  },
+  elevAt:function(tx,ty){return this.hAt(tx,ty)*ELEV_STEP;},
+  elevAtPixel:function(px,py){return this.elevAt(Math.floor(px/TILE),Math.floor(py/TILE));},
   free:function(cx,cy){var hw=6,top=11,bot=1;
     return !(this.isBlocked(cx-hw,cy-top)||this.isBlocked(cx+hw,cy-top)||this.isBlocked(cx-hw,cy+bot)||
              this.isBlocked(cx+hw,cy+bot)||this.isBlocked(cx,cy-top)||this.isBlocked(cx,cy+bot));},
@@ -477,24 +492,38 @@ var island={
   render:function(){
     var c=worldBegin(this.cam), w=ISLAND.w,h=ISLAND.h;
     var x0=Math.max(0,Math.floor(c.cx/TILE)),x1=Math.min(w-1,Math.ceil((c.cx+artW)/TILE));
-    var y0=Math.max(0,Math.floor(c.cy/TILE)),y1=Math.min(h-1,Math.ceil((c.cy+artH)/TILE));
-    for(var ty=y0;ty<=y1;ty++){var row=ISLAND.terr[ty]; for(var tx=x0;tx<=x1;tx++) ctx.drawImage(IMG[TERR_IMG[row[tx]]],tx*TILE,ty*TILE);}
+    var y0=Math.max(0,Math.floor((c.cy-32)/TILE)-1),y1=Math.min(h-1,Math.ceil((c.cy+artH+18)/TILE));
+    for(var by0=y0;by0<=y1;by0++){var brow=ISLAND.terr[by0]; for(var bx0=x0;bx0<=x1;bx0++){
+      if(this.hAt(bx0,by0)<=0)continue;
+      ctx.fillStyle=this.BASEPAL[brow[bx0]]||"#5c7548"; ctx.fillRect(bx0*TILE,by0*TILE,TILE,TILE);
+    }}
+    for(var ty=y0;ty<=y1;ty++){var row=ISLAND.terr[ty]; for(var tx=x0;tx<=x1;tx++){
+      ctx.drawImage(IMG[TERR_IMG[row[tx]]],tx*TILE,ty*TILE-this.elevAt(tx,ty));
+    }}
+    for(var cy2=y0;cy2<=y1;cy2++){for(var cx2=x0;cx2<=x1;cx2++){
+      var ht=this.hAt(cx2,cy2); if(ht<=0)continue;
+      var terr=ISLAND.terr[cy2][cx2], px=cx2*TILE, py=cy2*TILE-ht*ELEV_STEP;
+      var side=(terr===5)?"rgba(76,67,58,.12)":(terr===7)?"rgba(116,109,92,.16)":(terr===9)?"rgba(40,82,42,.12)":"rgba(58,82,48,.08)";
+      var south=this.hAt(cx2,cy2+1), diff=ht-south;
+      if(diff>0&&(terr===7||terr===9||(terr===5&&diff>=2))){ctx.fillStyle=side;ctx.fillRect(px,py+TILE,TILE,diff*ELEV_STEP);
+        if(diff>1){ctx.fillStyle="rgba(255,255,255,.06)";ctx.fillRect(px+2,py+TILE,TILE-4,1);}}
+    }}
     var fa=0.5+0.3*Math.sin(this.time*2.2); ctx.fillStyle="rgba(226,244,242,"+fa.toFixed(3)+")";
     var nb=[[0,1],[0,-1],[1,0],[-1,0]];
-    for(var ay=y0;ay<=y1;ay++)for(var ax=x0;ax<=x1;ax++){ if(ISLAND.terr[ay][ax]!==2)continue;
+    for(var ay=y0;ay<=y1;ay++)for(var ax=x0;ax<=x1;ax++){ if(ISLAND.terr[ay][ax]!==2&&ISLAND.terr[ay][ax]!==8)continue;
       for(var k=0;k<4;k++){var bx=ax+nb[k][0],by=ay+nb[k][1]; if(bx<0||by<0||bx>=w||by>=h)continue;
-        if(ISLAND.terr[by][bx]<=1){var fx=ax*TILE,fy=ay*TILE;
+        if(ISLAND.terr[by][bx]<=1){var fx=ax*TILE,fy=ay*TILE-this.elevAt(ax,ay);
           if(nb[k][1]===1)ctx.fillRect(fx+2,fy+TILE-3,TILE-4,2); else if(nb[k][1]===-1)ctx.fillRect(fx+2,fy+1,TILE-4,2);
           else if(nb[k][0]===1)ctx.fillRect(fx+TILE-3,fy+2,2,TILE-4); else ctx.fillRect(fx+1,fy+2,2,TILE-4);} } }
     var rl=[],p=this.player;
     for(var ry=y0-2;ry<=y1+2;ry++){var arr=this.objByRow[ry]; if(!arr)continue;
       for(var oi=0;oi<arr.length;oi++){var o=arr[oi]; if(o.x<x0-2||o.x>x1+2)continue;
-        if(!this.revealed[o.y*w+o.x])continue; rl.push({by:(o.y+1)*TILE,o:o});}}
-    rl.push({by:p.y,player:true}); rl.sort(function(a,b){return a.by-b.by;});
+        if(!this.revealed[o.y*w+o.x])continue; var oe=this.elevAt(o.x,o.y); rl.push({by:(o.y+1)*TILE-oe,o:o,elev:oe});}}
+    var pe=this.elevAtPixel(p.x,p.y); rl.push({by:p.y-pe,player:true,elev:pe}); rl.sort(function(a,b){return a.by-b.by;});
     for(var i=0;i<rl.length;i++){var it=rl[i];
-      if(it.player) drawPlayer(p);
+      if(it.player) drawPlayer({x:p.x,y:p.y-it.elev,facing:p.facing,animT:p.animT,moving:p.moving});
       else{var im=IMG[it.o.k],ox=(it.o.x+0.5)*TILE,oy=(it.o.y+1)*TILE+2;
-        ctx.fillStyle="rgba(20,28,20,.2)";ctx.beginPath();ctx.ellipse(ox,oy-2,im.width*0.3,4,0,0,Math.PI*2);ctx.fill();
+        oy-=it.elev; ctx.fillStyle="rgba(20,28,20,.2)";ctx.beginPath();ctx.ellipse(ox,oy-2,im.width*0.3,4,0,0,Math.PI*2);ctx.fill();
         ctx.drawImage(im,Math.round(ox-im.width/2),Math.round(oy-im.height));}}
     for(var fy2=y0;fy2<=y1;fy2++)for(var fx2=x0;fx2<=x1;fx2++){
       if(this.revealed[fy2*w+fx2])continue;

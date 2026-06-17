@@ -83,10 +83,23 @@ def render_lobby():
     out.convert("RGB").save(os.path.join(AV,"_preview_lobby.png"))
 
 # ---------------------------------------------------------------- ISLAND
-TERR_IMG = ["sea_deep","sea_shallow","sand","grass","forest_floor","mountain","meadow"]
+TERR_IMG = ["sea_deep","sea_shallow","sand","grass","forest_floor","mountain",
+            "meadow","moon_badland","siziwan_shore","shoushan_hill"]
+BASEPAL = [(0x20,0x59,0x75),(0x42,0x91,0xa6),(0xc9,0xae,0x74),(0x65,0x8c,0x45),
+           (0x41,0x6b,0x37),(0x6f,0x67,0x5d),(0x70,0x96,0x4f),(0xac,0xb2,0xb2),
+           (0xb9,0x9a,0x5d),(0x38,0x69,0x36)]
+ELEV_STEP = 3
+if ISL.get("height") and isinstance(ISL["height"][0], str):
+    ISL["height"] = [[int(c) for c in r] for r in ISL["height"]]
+HEIGHT = ISL.get("height")
+def hAt(tx, ty):
+    if not HEIGHT or tx<0 or ty<0 or tx>=ISL["w"] or ty>=ISL["h"]: return 0
+    return HEIGHT[ty][tx]
+
 def mini_image():
     w,h=ISL["w"],ISL["h"]
-    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
+    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),
+         5:(142,132,116),6:(138,182,92),7:(192,196,195),8:(226,198,132),9:(78,128,68)}
     buf=bytearray(w*h*4); i=0
     for y in range(h):
         ty=ISL["terr"][y]
@@ -97,26 +110,59 @@ def mini_image():
 def render_island(camx, camy, tag, facing="up"):
     w,h=ISL["w"],ISL["h"]; worldW,worldH=w*TILE,h*TILE
     camx=max(0,min(camx,worldW-VW)); camy=max(0,min(camy,worldH-VH))
-    world=Image.new("RGBA",(VW,VH),(10,28,24,255))
+    world=Image.new("RGBA",(VW,VH),(10,28,24,255)); wd=ImageDraw.Draw(world,"RGBA")
     x0,x1=max(0,camx//TILE),min(w-1,(camx+VW)//TILE)
     y0,y1=max(0,camy//TILE),min(h-1,(camy+VH)//TILE)
+    # base-palette skirt under raised tiles
     for ty in range(y0,y1+1):
         for tx in range(x0,x1+1):
-            paste(world,TERR_IMG[ISL["terr"][ty][tx]],tx*TILE-camx,ty*TILE-camy)
+            if hAt(tx,ty)<=0: continue
+            c=BASEPAL[ISL["terr"][ty][tx]]
+            wd.rectangle([tx*TILE-camx,ty*TILE-camy,tx*TILE-camx+TILE-1,ty*TILE-camy+TILE-1],fill=c+(255,))
+    # terrain tiles raised by elevation
+    for ty in range(y0,y1+1):
+        for tx in range(x0,x1+1):
+            e=hAt(tx,ty)*ELEV_STEP
+            paste(world,TERR_IMG[ISL["terr"][ty][tx]],tx*TILE-camx,ty*TILE-camy-e)
+    # side walls (mountain/badland/hill)
+    for ty in range(y0,y1+1):
+        for tx in range(x0,x1+1):
+            ht=hAt(tx,ty)
+            if ht<=0: continue
+            t=ISL["terr"][ty][tx]; pxv=tx*TILE-camx; pyv=ty*TILE-camy-ht*ELEV_STEP
+            diff=ht-hAt(tx,ty+1)
+            if diff>0 and (t==7 or t==9 or (t==5 and diff>=2)):
+                col=(76,67,58,31) if t==5 else (116,109,92,41) if t==7 else (40,82,42,31) if t==9 else (58,82,48,20)
+                world.alpha_composite(Image.new("RGBA",(TILE,diff*ELEV_STEP),col),(pxv,pyv+TILE))
+    # sand / siziwan foam at the waterline
+    for ay in range(y0,y1+1):
+        for ax in range(x0,x1+1):
+            if ISL["terr"][ay][ax] not in (2,8): continue
+            for dx,dy in ((0,1),(0,-1),(1,0),(-1,0)):
+                bx,by=ax+dx,ay+dy
+                if bx<0 or by<0 or bx>=w or by>=h: continue
+                if ISL["terr"][by][bx]<=1:
+                    fx=ax*TILE-camx; fy=ay*TILE-camy-hAt(ax,ay)*ELEV_STEP
+                    if dy==1: wd.rectangle([fx+2,fy+TILE-3,fx+TILE-2,fy+TILE-1],fill=(226,244,242,200))
+                    elif dy==-1: wd.rectangle([fx+2,fy+1,fx+TILE-2,fy+2],fill=(226,244,242,200))
+                    elif dx==1: wd.rectangle([fx+TILE-3,fy+2,fx+TILE-1,fy+TILE-2],fill=(226,244,242,200))
+                    else: wd.rectangle([fx+1,fy+2,fx+2,fy+TILE-2],fill=(226,244,242,200))
     px=(ISL["spawn"]["x"]+0.5)*TILE; py=(ISL["spawn"]["y"]+0.9)*TILE
     ptx,pty=ISL["spawn"]["x"],ISL["spawn"]["y"]; R=int(round((ISL["w"]*ISL["h"]/314.159)**0.5))
+    pe=hAt(ptx,pty)*ELEV_STEP
     rlist=[]
     for o in ISL["objects"]:
         if x0-2<=o["x"]<=x1+2 and y0-2<=o["y"]<=y1+2 and (o["x"]-ptx)**2+(o["y"]-pty)**2<=R*R:
-            rlist.append(((o["y"]+1)*TILE,("obj",o)))
-    rlist.append((py,("player",None))); rlist.sort(key=lambda t:t[0])
-    for by,(kind,o) in rlist:
+            oe=hAt(o["x"],o["y"])*ELEV_STEP
+            rlist.append(((o["y"]+1)*TILE-oe,("obj",o,oe)))
+    rlist.append((py-pe,("player",None,pe))); rlist.sort(key=lambda t:t[0])
+    for by,(kind,o,e) in rlist:
         if kind=="player":
-            shadow(world,px-camx,py-camy,9,4)
+            shadow(world,px-camx,py-camy-e,9,4)
             pf=player_frame(facing)
-            world.alpha_composite(pf,(int(px-camx-PM["footX"]),int(py-camy-PM["footY"])))
+            world.alpha_composite(pf,(int(px-camx-PM["footX"]),int(py-camy-e-PM["footY"])))
         else:
-            im=A[o["k"]]; bx=(o["x"]+0.5)*TILE-camx; byy=(o["y"]+1)*TILE+2-camy
+            im=A[o["k"]]; bx=(o["x"]+0.5)*TILE-camx; byy=(o["y"]+1)*TILE+2-camy-e
             shadow(world,bx,byy-2,int(im.width*0.3),4); world.alpha_composite(im,(int(bx-im.width/2),int(byy-im.height)))
     fog=Image.new("RGBA",(VW,VH),(0,0,0,0)); gd=ImageDraw.Draw(fog)
     for ty in range(y0,y1+1):

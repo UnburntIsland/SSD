@@ -48,6 +48,12 @@ GRASS     = (124, 170, 80); GRASS_D = (104, 150, 66); GRASS_L = (148, 191, 101)
 MEADOW    = (138, 182, 92)
 FOREST    = (80, 122, 58); FOREST_D = (62, 102, 47); FOREST_L = (100, 144, 73)
 MOUNT     = (142, 132, 116); MOUNT_D = (112, 103, 90); MOUNT_L = (172, 162, 145)
+BADLAND   = (192, 196, 195); BADLAND_D = (146, 153, 156); BADLAND_L = (213, 217, 216)
+BADLAND_W = (231, 235, 235); BADLAND_SH = (168, 175, 177); DRY_GRASS = (150, 146, 104)
+SIZIWAN_SAND = (226, 198, 132); SIZIWAN_SAND_L = (245, 222, 164); SIZIWAN_REEF = (112, 111, 103)
+SIZIWAN_WATER = (72, 166, 178); SIZIWAN_FOAM = (226, 246, 236)
+SHOUSHAN     = (74, 128, 68); SHOUSHAN_D = (50, 96, 54); SHOUSHAN_L = (106, 158, 82)
+LIMESTONE    = (178, 178, 162); LIMESTONE_D = (128, 126, 112); LIMESTONE_L = (218, 216, 196)
 SNOW      = (235, 238, 238)
 TRUNK     = (112, 76, 45); TRUNK_D = (84, 55, 32)
 CANOPY    = (74, 124, 60); CANOPY_D = (56, 100, 46); CANOPY_L = (104, 156, 80)
@@ -154,6 +160,60 @@ def tile_mountain(seed=5):
     for _ in range(4):  # cracks
         x, y = rng.randint(2, TILE-4), rng.randint(2, TILE-6)
         d.line([(x, y), (x+rng.randint(-2,2), y+rng.randint(3,6))], fill=C(MOUNT_D))
+    return img
+
+def tile_moon_badland(seed=6):
+    # 田寮/草山月世界:青灰色泥岩/砂岩/頁岩惡地(白堊土感)。冷灰底 + 近垂直的雨蝕溝,
+    # 不含任何三角形(原本每格烤入的三角外框是「滿地灰三角」的元兇)。
+    rng = random.Random(seed)
+    img = fill(TILE, TILE, BADLAND)
+    noise(img, rng, [(BADLAND_L, 0.14), (BADLAND_D, 0.07), (BADLAND_SH, 0.06)])
+    d = ImageDraw.Draw(img)
+    # 近垂直的雨蝕溝:暗溝 + 西側脊高光;接近全高,平鋪後縱向相連成連續溝紋
+    for _ in range(7):
+        x = rng.randint(0, TILE-1)
+        pts = []
+        for y in range(-2, TILE+3, rng.randint(3, 5)):
+            x = max(0, min(TILE-1, x + rng.randint(-1, 1)))
+            pts.append((x, y))
+        if len(pts) > 1:
+            d.line([(px+1, py) for px, py in pts], fill=C(BADLAND_W), width=1)
+            d.line(pts, fill=C(BADLAND_D), width=1)
+    # 風化顆粒
+    for _ in range(8):
+        x, y = rng.randint(0, TILE-1), rng.randint(0, TILE-1)
+        d.point((x, y), fill=C(rng.choice([BADLAND_L, BADLAND_SH])))
+    # 谷地零星枯草(極少、偏冷)
+    for _ in range(3):
+        x, y = rng.randint(1, TILE-2), rng.randint(3, TILE-1)
+        d.line([(x, y), (x, y-2)], fill=C(DRY_GRASS))
+    return img
+
+def tile_siziwan_shore(seed=8):
+    # 西子灣金沙灘:乾淨、可無縫平鋪的金色沙面。不再把方向性海浪弧烤進貼圖,
+    # 否則寬沙灘整片平鋪會變成重複的條紋。真正的浪花白沫改由遊戲端水陸交界
+    # 的 foam 程式(只畫在實際水線上)即時繪製。
+    rng = random.Random(seed)
+    img = fill(TILE, TILE, SIZIWAN_SAND)
+    noise(img, rng, [(SIZIWAN_SAND_L, 0.16), (SAND_D, 0.06), (SIZIWAN_REEF, 0.016)])
+    d = ImageDraw.Draw(img)
+    for _ in range(4):                              # 細微風吹沙紋(短線,平鋪不接縫)
+        x, y = rng.randint(0, TILE-9), rng.randint(2, TILE-3)
+        d.line([(x, y), (x+rng.randint(4, 8), y)], fill=C(SIZIWAN_SAND_L))
+    for _ in range(3):                              # 幾顆貝殼/小石
+        x, y = rng.randint(1, TILE-2), rng.randint(1, TILE-2)
+        d.point((x, y), fill=C(SIZIWAN_REEF))
+    return img
+
+def tile_shoushan_hill(seed=9):
+    # 壽山:森林綠丘陵。移除原本每格烤入的灰色石灰岩三角形(平鋪會變滿地三角);
+    # 石灰岩特徵改由地圖上零星的 rock 物件呈現,地表保持乾淨的綠丘草紋。
+    rng = random.Random(seed)
+    img = tile_grass(seed, base=SHOUSHAN, dark=SHOUSHAN_D, light=SHOUSHAN_L)
+    d = ImageDraw.Draw(img)
+    for _ in range(12):
+        x, y = rng.randint(1, TILE-2), rng.randint(2, TILE-1)
+        d.line([(x, y), (x+rng.choice([-1, 0, 1]), y-2)], fill=C(SHOUSHAN_D))
     return img
 
 # ================================================================ OBJECTS
@@ -573,7 +633,7 @@ def fog_puff(seed=40, tint=(214, 224, 234)):
     return img
 
 # ================================================================ ISLAND MAP
-# Terrain codes: 0 deep sea, 1 shallow sea, 2 sand, 3 grass, 4 forest, 5 mountain, 6 meadow
+# Terrain codes: 0 deep sea, 1 shallow sea, 2 sand, 3 grass, 4 forest, 5 mountain, 6 meadow, 7 badland, 8 bay shore, 9 coastal hill
 def gen_island():
     import random as _r
     from collections import deque
@@ -628,26 +688,124 @@ def gen_island():
             nx,ny=x+dx,y+dy
             if 0<=nx<W and 0<=ny<H and dist[ny][nx]>dist[y][x]+1:
                 dist[ny][nx]=dist[y][x]+1; q.append((nx,ny))
-    en=[[rng.uniform(-0.10,0.10) for _ in range(W)] for _ in range(H)]
+    en=[[rng.uniform(-1.0,1.0) for _ in range(W)] for _ in range(H)]
     terr=[[0]*W for _ in range(H)]
+    height=[[0]*W for _ in range(H)]
     for y in range(H):
         ty=(y-YT0)/(YT1-YT0)
-        ridge=(cxs[y]+maxHalf*0.25) if cxs[y] is not None else W*0.5
-        crest=0.55+0.72*math.exp(-((ty-0.5)**2)/0.13) if 0<=ty<=1 else 0.0
+        cxrow=cxs[y] if cxs[y] is not None else W*0.5
         for x in range(W):
             if not land[y][x]:
                 adj=any(0<=x+dx<W and 0<=y+dy<H and land[y+dy][x+dx] for dx in(-1,0,1) for dy in(-1,0,1))
                 terr[y][x]=1 if adj else 0
+                height[y][x]=0
             else:
                 d2=dist[y][x]
-                if d2<=1: terr[y][x]=2
+                if d2<=1:
+                    terr[y][x]=2
+                    height[y][x]=0
                 elif main[y][x]:
-                    dx=x-ridge
-                    e=(1.0+dx/(W*0.20)) if dx<=0 else (1.0-dx/(W*0.09))
-                    e=max(0.0,e)*crest+en[y][x]
-                    terr[y][x]=5 if e>0.66 else (4 if e>0.40 else (3 if (x+y)%7 else 6))
+                    ridge_main=cxrow+maxHalf*(0.10+0.04*math.sin(ty*math.pi*5.2))
+                    ridge_west=cxrow-maxHalf*(0.24+0.05*math.sin(ty*math.pi*4.1))
+                    ridge_east=cxrow+maxHalf*(0.34+0.03*math.sin(ty*math.pi*6.0))
+                    spine=math.exp(-((x-ridge_main)/(W*0.078))**2)*(0.52+0.42*math.exp(-((ty-0.50)**2)/0.16))
+                    foothill=0.38*math.exp(-((x-ridge_west)/(W*0.15))**2)*math.exp(-((ty-0.52)**2)/0.42)
+                    east_hill=0.30*math.exp(-((x-ridge_east)/(W*0.105))**2)*math.exp(-((ty-0.48)**2)/0.30)
+                    north_peak=0.30*math.exp(-((ty-0.20)**2)/0.030)*math.exp(-((x-ridge_main)/(W*0.12))**2)
+                    south_peak=0.28*math.exp(-((ty-0.82)**2)/0.026)*math.exp(-((x-(cxrow+maxHalf*0.05))/(W*0.12))**2)
+                    coast=max(0.0,min(1.0,(d2-1)/18.0))
+                    texture=0.08*math.sin(x*0.075+y*0.045)+0.05*math.sin(x*0.19-y*0.11)+en[y][x]*0.055
+                    e=max(0.0,(spine+foothill+east_hill+north_peak+south_peak)*coast*0.60+texture)
+                    if e>0.76:
+                        terr[y][x]=5; height[y][x]=5 if e<0.92 else 6
+                    elif e>0.58:
+                        terr[y][x]=5 if (x+y)%7==0 else 4; height[y][x]=4
+                    elif e>0.40:
+                        terr[y][x]=4; height[y][x]=3
+                    elif e>0.25:
+                        terr[y][x]=4 if (x*3+y)%9==0 else 3; height[y][x]=2
+                    else:
+                        terr[y][x]=6 if ((x+y)%11==0 and d2>8) else 3; height[y][x]=1
                 else:
                     terr[y][x]=3 if (x+y)%5 else 6
+                    height[y][x]=1
+    def in_moon_world(x, y):
+        cx, cy = 374, 594
+        dx = (x-cx) / 58.0
+        dy = (y-cy) / 42.0
+        ridge = dx*dx + dy*dy
+        waviness = 0.10*math.sin(x*0.17+y*0.08) + 0.07*math.sin(y*0.23)
+        south_spur = ((x-350)/24.0)**2 + ((y-622)/12.0)**2 < 1.0
+        east_spur = ((x-418)/25.0)**2 + ((y-581)/15.0)**2 < 1.0
+        return ridge + waviness < 1.0 or south_spur or east_spur
+    def in_moon_pool(x, y):
+        return ((x-361)/9.5)**2 + ((y-592)/5.0)**2 < 1.0
+    for y in range(max(0, 540), min(H, 636)):
+        for x in range(max(0, 305), min(W, 445)):
+            if main[y][x] and terr[y][x] in (3,4,5,6) and in_moon_world(x,y):
+                terr[y][x]=7
+                core=max(0.0,1.0-(((x-374)/58.0)**2+((y-594)/42.0)**2))
+                height[y][x]=max(height[y][x],3+int(core*2.4))
+    _pool_cells=[]
+    for y in range(max(0, 584), min(H, 601)):
+        for x in range(max(0, 350), min(W, 373)):
+            if main[y][x] and terr[y][x]==7 and in_moon_pool(x,y):
+                terr[y][x]=1
+                height[y][x]=0                 # 沉入盆地的惡地池塘(原本浮在 h5 山頂)
+                _pool_cells.append((x,y))
+    # 在池塘四周做漸層池壁,讓惡地一階一階下降到水面,而非一面垂直陡壁
+    for (px,py) in _pool_cells:
+        for dy in range(-4,5):
+            for dx in range(-4,5):
+                x,y=px+dx,py+dy
+                if 0<=x<W and 0<=y<H and main[y][x] and terr[y][x]==7:
+                    ring=max(abs(dx),abs(dy))
+                    if height[y][x]>ring: height[y][x]=ring
+    west_edge = {}
+    for y in range(max(0, 628), min(H, 684)):
+        xs=[x for x in range(W) if main[y][x]]
+        if xs:
+            west_edge[y]=min(xs)
+    for y, wx in west_edge.items():
+        c = (y-656) / 23.0
+        bite = max(0, int(8*(1-c*c))) if abs(c) < 1 else 0
+        beach_w = 6 + max(0, int(3*(1-c*c))) if abs(c) < 1 else 5
+        for x in range(wx, min(W, wx+bite)):
+            if main[y][x] and terr[y][x] in (2,3,4,5,6):
+                terr[y][x]=1
+                height[y][x]=0
+        for x in range(wx+bite, min(W, wx+bite+beach_w)):
+            if main[y][x] and terr[y][x] in (2,3,4,5,6):
+                terr[y][x]=8
+                height[y][x]=0
+    def in_shoushan(x, y):
+        return ((x-358)/34.0)**2 + ((y-652)/30.0)**2 < 1.0 or ((x-374)/23.0)**2 + ((y-632)/18.0)**2 < 1.0
+    for y in range(max(0, 612), min(H, 679)):
+        for x in range(max(0, 320), min(W, 405)):
+            if main[y][x] and terr[y][x] in (3,4,5,6) and in_shoushan(x,y):
+                terr[y][x]=9
+                rise=max(0.0,1.0-(((x-358)/34.0)**2+((y-652)/30.0)**2))
+                height[y][x]=max(height[y][x],2+int(rise*2.8))
+    for _ in range(3):
+        nxt=[row[:] for row in height]
+        for y in range(1,H-1):
+            for x in range(1,W-1):
+                if not main[y][x] or terr[y][x] in (0,1,2,7,8,9):
+                    continue
+                low=min(height[y-1][x],height[y+1][x],height[y][x-1],height[y][x+1])
+                if height[y][x]>low+1:
+                    nxt[y][x]=low+1
+        height=nxt
+    for y in range(H):
+        for x in range(W):
+            if not main[y][x] or terr[y][x] in (0,1,2,7,8,9):
+                continue
+            if height[y][x]>=5:
+                terr[y][x]=5
+            elif height[y][x]>=3:
+                terr[y][x]=4
+            elif height[y][x]<=1 and terr[y][x] in (4,5):
+                terr[y][x]=3
     land_rows=[y for y in range(H) if any(main[y])]; ymin,ymax=land_rows[0],land_rows[-1]
     def rowwidth(y): return sum(1 for x in range(W) if main[y][x])
     target=None
@@ -678,14 +836,20 @@ def gen_island():
                 if r<0.015: kind="palm" if rng.random()<.6 else "rock"
             elif tt==5:
                 if r<0.03: kind="rock"
+            elif tt==7:
+                if r<0.025: kind="rock"
+            elif tt==8:
+                if r<0.014: kind="palm" if rng.random()<.45 else "rock"
+            elif tt==9:
+                if r<0.055: kind="tree" if rng.random()<.55 else ("pine" if rng.random()<.7 else "rock")
             if kind: objs.append({"k":kind,"x":x,"y":y}); occ.add((x,y))
-    return {"w":W,"h":H,"tile":TILE,"terr":terr,"objects":objs,
+    return {"w":W,"h":H,"tile":TILE,"terr":terr,"height":height,"objects":objs,
             "spawn":{"x":spawn[0],"y":spawn[1]},"ymin":ymin,"ymax":ymax}
 
 # ================================================================ PREVIEW
 def preview_tiles():
     names = ["sea_deep","sea_shallow","sand","grass","meadow","forest_floor","mountain",
-             "floor","wall"]
+             "moon_badland","siziwan_shore","shoushan_hill","floor","wall"]
     cols = len(names)
     sheet = Image.new("RGBA", (cols*(TILE+4)+4, TILE+24), (40,44,40,255))
     d = ImageDraw.Draw(sheet)
@@ -695,13 +859,17 @@ def preview_tiles():
     sheet.save(os.path.join(OUT, "_preview_tiles.png"))
 
 def preview_island(data):
-    W,H=data["w"],data["h"]; terr=data["terr"]
-    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92)}
+    W,H=data["w"],data["h"]; terr=data["terr"]; height=data.get("height")
+    pal={0:(38,96,128),1:(78,162,186),2:(230,212,160),3:(124,170,80),4:(80,120,58),5:(142,132,116),6:(138,182,92),7:(192,196,195),8:(226,198,132),9:(78,128,68)}
     buf=bytearray(W*H*3); i=0
     for y in range(H):
         ty=terr[y]
         for x in range(W):
-            col=pal[ty[x]]; buf[i]=col[0]; buf[i+1]=col[1]; buf[i+2]=col[2]; i+=3
+            col=pal[ty[x]]
+            if height:
+                shade=1.0+height[y][x]*0.045
+                col=(min(255,int(col[0]*shade)),min(255,int(col[1]*shade)),min(255,int(col[2]*shade)))
+            buf[i]=col[0]; buf[i+1]=col[1]; buf[i+2]=col[2]; i+=3
     img=Image.frombytes("RGB",(W,H),bytes(buf))
     d=ImageDraw.Draw(img); sx,sy=data["spawn"]["x"],data["spawn"]["y"]
     d.ellipse([sx-5,sy-5,sx+5,sy+5],fill=(255,40,200))
@@ -719,6 +887,9 @@ def main():
     reg("meadow", tile_meadow(105))
     reg("forest_floor", tile_forestfloor(106))
     reg("mountain", tile_mountain(107))
+    reg("moon_badland", tile_moon_badland(110))
+    reg("siziwan_shore", tile_siziwan_shore(111))
+    reg("shoushan_hill", tile_shoushan_hill(112))
     reg("floor", tile_floor(108))
     reg("wall", tile_wall(109))
     # objects
@@ -743,6 +914,7 @@ def main():
     island = gen_island()
     isl_json = dict(island)
     isl_json["terr"] = ["".join(str(v) for v in row) for row in island["terr"]]
+    isl_json["height"] = ["".join(str(v) for v in row) for row in island["height"]]
     with open(os.path.join(BUILD, "island.json"), "w", encoding="utf-8") as f:
         json.dump(isl_json, f, separators=(",", ":"))
     preview_tiles(); preview_island(island)
