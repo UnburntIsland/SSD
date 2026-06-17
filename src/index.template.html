@@ -122,7 +122,7 @@ var GAME_DATA = __GAME_DATA__;
 "use strict";
 
 var TILE=32;
-var ELEV_STEP=3;
+var ELEV_STEP=8;   // 立體高低落差(斜視感)
 var canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 var IMG={}, PMETA=GAME_DATA.meta.player, ISLAND=GAME_DATA.island;
 var SAVE_KEY="senxun_v3_saves";
@@ -422,6 +422,7 @@ var island={
   worldW:ISLAND.w*TILE, worldH:ISLAND.h*TILE, saveIdx:-1,
   MINIPAL:["#26607f","#4ea2ba","#e6d4a0","#7caa50","#50783a","#8e8474","#8ab65c","#c0c4c3","#e2c684","#4e8044"],
   BASEPAL:["#205975","#4291a6","#c9ae74","#658c45","#416b37","#6f675d","#70964f","#acb2b2","#b99a5d","#386936"],
+  FACE:[[32,72,96],[60,120,140],[198,178,132],[120,98,60],[92,76,50],[100,94,84],[128,106,66],[150,154,156],[198,178,132],[82,86,56]],
   build:function(){
     if(typeof ISLAND.terr[0]==="string"){
       ISLAND.terr=ISLAND.terr.map(function(s){return Uint8Array.from(s,function(c){return c.charCodeAt(0)-48;});});
@@ -460,7 +461,7 @@ var island={
     this.player.facing="up"; this.player.moving=false; this.player.animT=0; this.fade=0; this.mapOpen=false;
     this.ptx=Math.floor(this.player.x/TILE); this.pty=Math.floor(this.player.y/TILE);
     var R0=Math.round(Math.sqrt(ISLAND.w*ISLAND.h/(100*Math.PI))); this.reveal(this.ptx,this.pty,R0);
-    this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-artH/2; clampCam(this.cam,this.worldW,this.worldH);
+    this.cam.x=this.player.x-artW/2; this.cam.y=this.player.y-this.elevAtPixel(this.player.x,this.player.y)-artH/2; clampCam(this.cam,this.worldW,this.worldH);
   },
   isBlocked:function(px,py){var tx=Math.floor(px/TILE),ty=Math.floor(py/TILE);
     if(tx<0||ty<0||tx>=ISLAND.w||ty>=ISLAND.h)return true; return this.blocked[ty*ISLAND.w+tx]===1;},
@@ -485,28 +486,31 @@ var island={
     var tx=Math.floor(p.x/TILE),ty=Math.floor(p.y/TILE);
     if(tx!==this.ptx||ty!==this.pty){this.ptx=tx;this.pty=ty;this.reveal(tx,ty,10);}
     this.cam.x=lerp(this.cam.x,p.x-artW/2,Math.min(1,dt*9));
-    this.cam.y=lerp(this.cam.y,p.y-artH/2,Math.min(1,dt*9));
+    this.cam.y=lerp(this.cam.y,p.y-this.elevAtPixel(p.x,p.y)-artH/2,Math.min(1,dt*9));
     clampCam(this.cam,this.worldW,this.worldH);
     for(var i=0;i<this.puffs.length;i++){var pf=this.puffs[i];pf.x+=pf.v*dt;if(pf.x>this.worldW+60)pf.x=-60;}
   },
   render:function(){
     var c=worldBegin(this.cam), w=ISLAND.w,h=ISLAND.h;
     var x0=Math.max(0,Math.floor(c.cx/TILE)),x1=Math.min(w-1,Math.ceil((c.cx+artW)/TILE));
-    var y0=Math.max(0,Math.floor((c.cy-32)/TILE)-1),y1=Math.min(h-1,Math.ceil((c.cy+artH+18)/TILE));
+    var y0=Math.max(0,Math.floor((c.cy-96)/TILE)-1),y1=Math.min(h-1,Math.ceil((c.cy+artH+96)/TILE));
     for(var by0=y0;by0<=y1;by0++){var brow=ISLAND.terr[by0]; for(var bx0=x0;bx0<=x1;bx0++){
       if(this.hAt(bx0,by0)<=0)continue;
       ctx.fillStyle=this.BASEPAL[brow[bx0]]||"#5c7548"; ctx.fillRect(bx0*TILE,by0*TILE,TILE,TILE);
     }}
+    // 地表(依高度抬升)+ 南向立體崖面/斜坡面 -> 由上往下逐列繪製,後列覆蓋前列,形成 2.5D 斜視高低差
     for(var ty=y0;ty<=y1;ty++){var row=ISLAND.terr[ty]; for(var tx=x0;tx<=x1;tx++){
-      ctx.drawImage(IMG[TERR_IMG[row[tx]]],tx*TILE,ty*TILE-this.elevAt(tx,ty));
-    }}
-    for(var cy2=y0;cy2<=y1;cy2++){for(var cx2=x0;cx2<=x1;cx2++){
-      var ht=this.hAt(cx2,cy2); if(ht<=0)continue;
-      var terr=ISLAND.terr[cy2][cx2], px=cx2*TILE, py=cy2*TILE-ht*ELEV_STEP;
-      var side=(terr===5)?"rgba(76,67,58,.12)":(terr===7)?"rgba(116,109,92,.16)":(terr===9)?"rgba(40,82,42,.12)":"rgba(58,82,48,.08)";
-      var south=this.hAt(cx2,cy2+1), diff=ht-south;
-      if(diff>0&&(terr===7||terr===9||(terr===5&&diff>=2))){ctx.fillStyle=side;ctx.fillRect(px,py+TILE,TILE,diff*ELEV_STEP);
-        if(diff>1){ctx.fillStyle="rgba(255,255,255,.06)";ctx.fillRect(px+2,py+TILE,TILE-4,1);}}
+      var py=ty*TILE-this.elevAt(tx,ty);
+      ctx.drawImage(IMG[TERR_IMG[row[tx]]],tx*TILE,py);
+      var ht=this.hAt(tx,ty); if(ht<=0)continue;
+      var diff=ht-this.hAt(tx,ty+1);
+      if(diff>0){
+        var fb=this.FACE[row[tx]]||this.FACE[3], fh=diff*ELEV_STEP, lo=(fh*0.5)|0, fx=tx*TILE, fyb=py+TILE;
+        ctx.fillStyle="rgb("+fb[0]+","+fb[1]+","+fb[2]+")"; ctx.fillRect(fx,fyb,TILE,fh);   // 崖面
+        ctx.fillStyle="rgba(0,0,0,.24)"; ctx.fillRect(fx,fyb+lo,TILE,fh-lo);                // 下半較暗
+        ctx.fillStyle="rgba(255,255,255,.16)"; ctx.fillRect(fx,fyb,TILE,1);                 // 崖頂受光
+        ctx.fillStyle="rgba(0,0,0,.20)"; ctx.fillRect(fx,fyb+fh-1,TILE,1);                  // 崖底接觸陰影
+      }
     }}
     var fa=0.5+0.3*Math.sin(this.time*2.2); ctx.fillStyle="rgba(226,244,242,"+fa.toFixed(3)+")";
     var nb=[[0,1],[0,-1],[1,0],[-1,0]];

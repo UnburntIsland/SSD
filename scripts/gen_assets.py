@@ -745,7 +745,11 @@ def gen_island():
             if main[y][x] and terr[y][x] in (3,4,5,6) and in_moon_world(x,y):
                 terr[y][x]=7
                 core=max(0.0,1.0-(((x-374)/58.0)**2+((y-594)/42.0)**2))
-                height[y][x]=max(height[y][x],3+int(core*2.4))
+                # 疊加稜脊/雨溝雜訊(以縱向為主),讓惡地表面崎嶇起伏而非平滑圓頂
+                ridge=(0.55*math.sin(x*0.85)+0.45*math.sin(x*0.33+y*0.05)
+                       +0.35*math.sin(x*1.70+y*0.09))
+                hh=2.0+core*4.2+ridge*1.7
+                height[y][x]=max(height[y][x], max(1, int(round(hh))))
     _pool_cells=[]
     for y in range(max(0, 584), min(H, 601)):
         for x in range(max(0, 350), min(W, 373)):
@@ -785,7 +789,8 @@ def gen_island():
             if main[y][x] and terr[y][x] in (3,4,5,6) and in_shoushan(x,y):
                 terr[y][x]=9
                 rise=max(0.0,1.0-(((x-358)/34.0)**2+((y-652)/30.0)**2))
-                height[y][x]=max(height[y][x],2+int(rise*2.8))
+                bump=0.5*math.sin(x*0.40+y*0.30)+0.4*math.sin(x*0.70)
+                height[y][x]=max(height[y][x], max(1, int(round(1.5+rise*3.0+bump*1.2))))
     for _ in range(3):
         nxt=[row[:] for row in height]
         for y in range(1,H-1):
