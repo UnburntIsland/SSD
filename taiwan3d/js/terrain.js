@@ -17,6 +17,7 @@
 
   function colorFor(s) {
     var c = C.COL[s.biome] || C.COL.grass;
+    if (C.groundRich) return richColor(s, c);   // 南部:地表交融(patch 混色),全台版維持原樣
     // mild elevation lift + tiny noise for texture
     var sh = 0.86 + 0.04 * Math.min(6, s.elev * 0.02);
     var nz = (U.hash2((s._x * 13) | 0, (s._y * 7) | 0) - 0.5) * 0.05;
@@ -24,6 +25,33 @@
       U.clamp(c[0] / 255 * sh + nz, 0, 1),
       U.clamp(c[1] / 255 * sh + nz, 0, 1),
       U.clamp(c[2] / 255 * sh + nz, 0, 1)
+    ];
+  }
+  // 地表交融:用低頻 patch 噪聲在生態色裡混入泥土/濃綠/落葉/濕沙/苔/碎石,破除均勻色塊
+  function richColor(s, base) {
+    var x = s._x, y = s._y, elev = s.elev || 0, b = s.biome;
+    var p = U.fbm(x * 0.035, y * 0.035, 3);          // 大塊 patch
+    var p2 = U.noise2(x * 0.14 + 5, y * 0.14 + 2);    // 細粒
+    var mix = base, amt = 0;
+    if (b === "broadleaf") {
+      if (p < 0.42) { mix = [122, 96, 58]; amt = (0.42 - p) * 0.8; }        // 泥土斑
+      else if (p > 0.6) { mix = [40, 74, 38]; amt = (p - 0.6) * 0.9; }      // 濃綠濃林
+      if (p2 > 0.82) { mix = [150, 120, 66]; amt = 0.32; }                  // 落葉點
+    } else if (b === "sand") {
+      if (p < 0.46) { mix = [150, 122, 86]; amt = (0.46 - p) * 0.65; }      // 濕沙
+    } else if (b === "reef" || b === "karst") {
+      if (p > 0.66) { mix = [112, 140, 92]; amt = (p - 0.66) * 0.55; }      // 苔綠
+      else if (p < 0.34) { mix = [152, 150, 142]; amt = (0.34 - p) * 0.45; } // 深淺岩
+    } else if (b === "trail") {
+      mix = (p > 0.5) ? [152, 130, 98] : [118, 98, 70]; amt = 0.38;          // 泥土/碎石混
+    }
+    amt = U.clamp(amt, 0, 0.65);
+    var sh = 0.80 + 0.06 * Math.min(6, elev * 0.02) + (p - 0.5) * 0.14;     // 大塊明暗起伏
+    var nz = (p2 - 0.5) * 0.10;
+    return [
+      U.clamp((base[0] + (mix[0] - base[0]) * amt) / 255 * sh + nz, 0, 1),
+      U.clamp((base[1] + (mix[1] - base[1]) * amt) / 255 * sh + nz, 0, 1),
+      U.clamp((base[2] + (mix[2] - base[2]) * amt) / 255 * sh + nz, 0, 1)
     ];
   }
 

@@ -152,6 +152,39 @@
     var gblade = new THREE.ConeGeometry(0.32, 1.2, 4); gblade.translate(0, 0.6, 0);
     instStatic(gblade, matGrass, grass);
 
+    /* ---------- 8. 水岸過渡:淺水色帶 + 雙排泡沫 + 濕沙 + 潮間濕石(沙→礁→海漸變) ---------- */
+    var foam = [], shallow = [], wetsand = [], tide = [], wetrock = [];
+    function shoreSouth(sx2, yShore) {
+      if (!isFinite(yShore)) return;
+      var hh = U.hash2((sx2 * 5) | 0, (yShore * 3) | 0);
+      foam.push([wx(sx2), -0.08, wz(yShore + (hh - 0.5) * 1.4), 1.5 + hh * 1.6, hh * 6.28]);       // 貼水線泡沫
+      foam.push([wx(sx2 + 1.4), -0.08, wz(yShore + 2.2 + hh * 1.6), 1.0 + hh * 1.0, hh * 5]);       // 外海第二排泡沫
+      shallow.push([wx(sx2), -0.34, wz(yShore + 5 + hh * 5), 4.6 + hh * 3, hh * 6.28]);             // 淺水色帶(外海側)
+      var ws = yShore - 1.4 - hh * 2.6;
+      if (Hm.terrAt(Math.round(sx2), Math.round(ws)) >= 2) wetsand.push([wx(sx2), gY(sx2, ws) + 0.04, wz(ws), 1.7 + hh * 1.4, hh * 6.28]); // 濕沙
+      if (hh > 0.55) tide.push([wx(sx2), -0.22, wz(yShore + 0.9 + hh), 0.5 + hh * 0.7, hh * 6.28]); // 潮間小石
+      if (hh > 0.8) wetrock.push([wx(sx2), -0.12, wz(yShore + 0.4), 1.0 + hh, hh * 4]);              // 濕潤礁石(反光)
+    }
+    for (var sx2 = 58; sx2 < 262; sx2 += 3.0) shoreSouth(sx2, S.southShoreY(sx2));
+    for (var sy2 = 114; sy2 < 250; sy2 += 3.2) {
+      var wsx = S.westShoreX(sy2), hw = U.hash2(sy2 | 0, 2);
+      foam.push([wx(wsx + (hw - 0.5) * 1.4), -0.08, wz(sy2), 1.4 + hw * 1.4, 0]);
+      shallow.push([wx(wsx - 5 - hw * 5), -0.34, wz(sy2), 4.3 + hw * 3, 0]);                         // 西岸外海=x 更小
+      if (hw > 0.55) tide.push([wx(wsx - 0.9 - hw), -0.22, wz(sy2), 0.5 + hw * 0.7, hw * 6]);
+    }
+    var flatGeo = new THREE.CircleGeometry(1, 8); flatGeo.rotateX(-Math.PI / 2);
+    instStatic(flatGeo, new THREE.MeshBasicMaterial({ color: 0x9fd8d6, transparent: true, opacity: 0.4, depthWrite: false }), shallow); // 淺水色帶
+    instStatic(flatGeo, new THREE.MeshBasicMaterial({ color: 0xeef6f3, transparent: true, opacity: 0.62, depthWrite: false }), foam);   // 泡沫(亮、雙排)
+    instStatic(flatGeo, new THREE.MeshStandardMaterial({ color: 0xb6986a, roughness: 0.6, flatShading: true }), wetsand);               // 濕沙
+    instStatic(new THREE.IcosahedronGeometry(1.0, 0), matLime, tide);                                                                    // 潮間小石
+    instStatic(new THREE.IcosahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: 0xc2c4bd, roughness: 0.32, flatShading: true }), wetrock); // 濕礁(低粗糙反光)
+
+    /* ---------- 9. 地標接觸陰影(壓住地面) ---------- */
+    var lmShadow = new THREE.CircleGeometry(1, 12); lmShadow.rotateX(-Math.PI / 2);
+    var matShadow = new THREE.MeshBasicMaterial({ color: 0x100c06, transparent: true, opacity: 0.32, depthWrite: false });
+    var lm = [[332, 44, 7.5], [232, 214, 5.2], [266, 168, 4.6], [300, 250, 6.2], [70, 250, 4], [58, 270, 4]];
+    instStatic(lmShadow, matShadow, lm.map(function (a) { return [wx(a[0]), gY(a[0], a[1]) + 0.07, wz(a[1]), a[2], 0]; }));
+
     EA.count = n;
     return n;
   };

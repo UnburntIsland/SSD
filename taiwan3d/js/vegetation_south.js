@@ -124,6 +124,22 @@
     var pg = new THREE.ConeGeometry(1.0, 4.5, 6); pg.translate(0, 2.4, 0);
     im(pg, palmMat, pMats); counts.palm = palms.length;
 
+    /* ---- 接觸陰影:物件底部暗色貼地圓盤(無 shadow map,純貼地 AO 感,壓住地面) ---- */
+    var shadowGeo = new THREE.CircleGeometry(1, 10); shadowGeo.rotateX(-Math.PI / 2);
+    function discs(list, r, op) {
+      if (!list.length) return;
+      var mat = new THREE.MeshBasicMaterial({ color: 0x120d07, transparent: true, opacity: op, depthWrite: false });
+      var m = new THREE.InstancedMesh(shadowGeo, mat, list.length);
+      for (var i = 0; i < list.length; i++) {
+        var o = list[i], sc = r * (0.8 + o[2] * 0.5);
+        P.set(o[0] - W / 2, Hm.groundY(o[0], o[1]) + 0.06, o[1] - MH / 2);
+        Q.identity(); M.compose(P, Q, Sc.set(sc, 1, sc)); m.setMatrixAt(i, M);
+      }
+      m.instanceMatrix.needsUpdate = true; m.renderOrder = -1; scene.add(m);
+    }
+    discs(trees, 1.9, 0.34); discs(shrubs, 1.2, 0.3); discs(coastal, 1.3, 0.28);
+    discs(banyans, 3.6, 0.36); discs(reefrocks, 1.25, 0.3); discs(palms, 1.0, 0.26);
+
     V.counts = counts; V.meshes = meshes;
     return meshes;
   };

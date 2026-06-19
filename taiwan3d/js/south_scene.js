@@ -14,6 +14,7 @@
     C.bbox = { x0: 28, x1: 376, y0: 0, y1: 400, sub: 1.5 };
     C.detail = null;          // 不需要全台版的南部挖洞+貼片
     C.cullSea = true;         // 裁掉海面三角形,露出海平面
+    C.groundRich = true;      // 地表交融:terrain.colorFor 用 patch 混色(Art Pass 3)
     C.vegBounds = { x0: 30, x1: 374, y0: 2, y1: 398 };
     C.maxStep = 3.0;          // 玩家坡度上限(避免陡崖垂直瞬移)
     C.MAXH = 64; C.HS = 1.0;  // 固定高度,不再由 slider 調整

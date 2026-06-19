@@ -6,6 +6,28 @@
 
 ---
 
+## 2026-06-19 #11 — Environment Art Pass 3：沉浸感升級（5 維皆 ≥8，達標收束）
+
+**角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。只做環境美術，不動玩法。
+
+**Round 1 — 地表交融 + 接觸陰影 + 水岸初版**
+- `terrain.colorFor`：南部 gated `richColor`（`C.groundRich`），低頻 patch 在生態色裡混泥土/濃綠/落葉/濕沙/苔/碎石 → 破除均勻色塊（全台版維持原樣）。
+- `vegetation_south`：樹/灌木/礁岩/榕底部加暗色貼地圓盤（接觸陰影 AO 感，不再像浮在地面）。
+- `environment_art`：近岸泡沫 + 濕沙 + 潮間小石 + 地標接觸陰影。
+- 玩家評分：地表 8、貼地 8、道路森林 8、**水岸 7（最低）**、沉浸 8。
+
+**Round 2 — 修最低分（水岸）**
+- `environment_art §8` 重做：**淺水色帶（外海漸變）+ 亮雙排泡沫 + 濕沙 + 濕礁（低粗糙反光）** → 沙→淺水→海自然漸變，水線不再硬切。
+- 玩家評分：地表 8、貼地 8、道路森林 8、**水岸 8.5**、沉浸 8.5 → **五維皆 ≥8 達標**。
+
+**測試（每輪 `npm run playtest`）**：兩輪皆 `logic_smoke PASS · slice_logic 39/39 · playwright 11/11` → ALL GREEN。截圖 `tests/shots/06-beach.png`(淺水帶+泡沫)、`07-trail.png`、`08-summit.png` 已更新。效能：新增物件皆 InstancedMesh/貼地薄片，未犧牲 playtest 穩定性。
+
+**改了哪些檔案**：`js/terrain.js`(gated richColor)、`js/south_scene.js`(`groundRich`)、`js/vegetation_south.js`(接觸陰影)、`js/environment_art_south.js`(水岸/濕沙/潮間/地標陰影)。詳細評分見 `ART_PASS_LOG.md`(Pass 3 R1/R2)。
+
+**狀態**：Environment Art Pass 3 完成條件達成（playtest 全綠 + 五維 ≥8）。未併回 main。
+
+---
+
 ## 2026-06-19 #10 — 條件 10：最終彙整文件（目標達成 10/10，收束）
 
 依 /goal 完成條件，將「修改檔案清單 / 測試方式 / 已知限制 / 下一階段建議」**集中成文** → `FINAL_REPORT.md`。
@@ -334,3 +356,5 @@ E. 地標 / 地名解析
 - `2026-06-19 07:25:22 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
 - `2026-06-19 07:46:55 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(8P/3F) → FAIL ❌
 - `2026-06-19 07:55:21 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 09:12:25 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 09:19:23 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
