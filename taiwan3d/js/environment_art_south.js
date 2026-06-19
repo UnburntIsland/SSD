@@ -33,29 +33,36 @@
       im.instanceMatrix.needsUpdate = true; scene.add(im); n += list.length;
     }
 
-    /* ---------- 1. 柴山步道:石階 + 兩側邊石 + 灌木(沿上山 polyline) ---------- */
-    var path = [[186, 276], [206, 250], [224, 228], [246, 205], [270, 176], [294, 140], [314, 96], [330, 58], [332, 46]];
-    var steps = [], edges = [], shrubs = [];
-    for (var p = 0; p < path.length - 1; p++) {
-      var ax = path[p][0], ay = path[p][1], bx = path[p + 1][0], by = path[p + 1][1];
-      var dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len, perpx = -uy, perpy = ux;
-      var stepN = Math.max(1, Math.round(len / 3.6));
-      for (var s = 0; s < stepN; s++) {
-        var f = s / stepN, x = ax + dx * f, y = ay + dy * f, h = U.hash2(p * 7 + s, p + 3);
-        steps.push([wx(x), gY(x, y) + 0.12, wz(y), 0.95 + h * 0.2, h * 6.28]);
-        var e1x = x + perpx * 3.0, e1y = y + perpy * 3.0, e2x = x - perpx * 3.0, e2y = y - perpy * 3.0;
-        edges.push([wx(e1x), gY(e1x, e1y) + 0.25, wz(e1y), 0.5 + h * 0.5, h * 6.28]);
-        edges.push([wx(e2x), gY(e2x, e2y) + 0.25, wz(e2y), 0.5 + U.hash2(s, p) * 0.5, U.hash2(p, s) * 6.28]);
-        if (s % 3 === 0) {
-          var sgx = x + perpx * 4.8 * (h > 0.5 ? 1 : -1), sgy = y + perpy * 4.8 * (h > 0.5 ? 1 : -1);
-          shrubs.push([wx(sgx), gY(sgx, sgy) + 1.0, wz(sgy), 0.8 + h * 0.7, 0]);
-        }
-      }
+    /* ---------- 1. 柴山步道:沿「實際可走步道中心線」鋪土徑+石階+碎石+柔邊草 ----------
+       中心線取 x=trailX(d)、y=southShoreY(x)-d(與 heightmap 的 trail 同一套座標)→ 視覺路與可走路合一。 */
+    var steps = [], earth = [], edges = [], pgrass = [], litter = [], prev = null;
+    for (var d = 12; d < 252; d += 2.6) {
+      var tx = S.trailX(d), ty = S.southShoreY(tx) - d;
+      if (!isFinite(ty) || ty < 8 || ty > 322 || Hm.terrAt(Math.round(tx), Math.round(ty)) <= 1) { prev = null; continue; }
+      var gy = gY(tx, ty), hh = U.hash2((d * 4) | 0, 7);
+      var dirx = 0, diry = 1;
+      if (prev) { dirx = tx - prev[0]; diry = ty - prev[1]; var L = Math.hypot(dirx, diry) || 1; dirx /= L; diry /= L; }
+      var perpx = -diry, perpy = dirx;
+      earth.push([wx(tx), gy + 0.05, wz(ty), 1.0 + hh * 0.35, hh * 6.28]);      // 土徑(寬度隨機)
+      steps.push([wx(tx), gy + 0.12, wz(ty), 0.9 + hh * 0.3, hh * 6.28]);        // 石階踏石
+      var o1 = 2.5 + hh * 0.9;                                                    // 兩側灰白碎石礫(柔邊)
+      edges.push([wx(tx + perpx * o1), gY(tx + perpx * o1, ty + perpy * o1) + 0.18, wz(ty + perpy * o1), 0.4 + hh * 0.5, hh * 6.28]);
+      edges.push([wx(tx - perpx * o1), gY(tx - perpx * o1, ty - perpy * o1) + 0.18, wz(ty - perpy * o1), 0.4 + U.hash2(d | 0, 3) * 0.5, hh * 3]);
+      var o2 = 3.8 + hh * 1.3;                                                    // 路邊草叢(過渡到森林)
+      pgrass.push([wx(tx + perpx * o2), gY(tx + perpx * o2, ty + perpy * o2), wz(ty + perpy * o2), 0.7 + hh * 0.7, 0]);
+      pgrass.push([wx(tx - perpx * o2), gY(tx - perpx * o2, ty - perpy * o2), wz(ty - perpy * o2), 0.7 + U.hash2(d | 0, 9) * 0.7, 0]);
+      if (hh > 0.62) litter.push([wx(tx + perpx * 1.3), gy + 0.03, wz(ty + perpy * 1.3), 1.0 + hh, hh * 6.28]);
+      prev = [tx, ty];
     }
-    instStatic(new THREE.BoxGeometry(3.2, 0.4, 3.0), matStone, steps);   // 石階板
-    instStatic(new THREE.DodecahedronGeometry(1.0, 0), matLime, edges);  // 灰白邊石
-    var bushGeo = new THREE.SphereGeometry(1.4, 8, 6); bushGeo.scale(1, 0.8, 1);
-    instStatic(bushGeo, matLeaf, shrubs);
+    var matEarth = new THREE.MeshStandardMaterial({ color: 0x8a6b46, roughness: 1, flatShading: true });    // 土徑
+    var matStepStone = new THREE.MeshStandardMaterial({ color: 0xa9a190, roughness: 1, flatShading: true }); // 石階(灰褐)
+    var matLitter = new THREE.MeshStandardMaterial({ color: 0x9a7b42, roughness: 1, flatShading: true });    // 落葉色塊
+    instStatic(new THREE.CylinderGeometry(1.9, 2.1, 0.16, 8), matEarth, earth);
+    instStatic(new THREE.BoxGeometry(2.4, 0.32, 2.2), matStepStone, steps);
+    instStatic(new THREE.DodecahedronGeometry(0.9, 0), matLime, edges);
+    var gblade1 = new THREE.ConeGeometry(0.34, 1.25, 4); gblade1.translate(0, 0.62, 0);
+    instStatic(gblade1, matLeaf, pgrass);
+    instStatic(new THREE.BoxGeometry(2.6, 0.06, 2.6), matLitter, litter);
 
     /* ---------- 2. 海岸:漂流木 + 卵石堆 + 灰白珊瑚礁石灰岩塊 ---------- */
     var drift = [], peb = [], reefs = [];
@@ -136,7 +143,7 @@
     /* ---------- 7. 森林草叢:打破地表均勻感(只長在闊葉林帶) ---------- */
     var matGrass = new THREE.MeshStandardMaterial({ color: 0x6fa84a, roughness: 0.95, flatShading: true });
     var grass = [];
-    for (var gi = 0; gi < 900; gi++) {
+    for (var gi = 0; gi < 480; gi++) {
       var gx = 120 + U.hash2(gi, 11) * 224, gyt = 38 + U.hash2(gi, 23) * 236;
       var ss = Hm.at(gx, gyt);
       if (ss.biome !== "broadleaf" || ss.sea) continue;

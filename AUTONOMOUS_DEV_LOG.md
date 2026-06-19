@@ -6,6 +6,31 @@
 
 ---
 
+## 2026-06-19 #9 — 環境美術升級 Round 1：樹木重做 + 自然步道（玩家確認）
+
+**角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。依使用者確認的計畫，本輪只做環境美術、優先樹木與道路，不動玩法。
+
+**遊玩測試員 — 本輪 3 問題**：1. 樹像綠色柱子（單錐無樹幹）；2. 道路像貼上去的線（等寬硬切、與石階錯位）；3. 森林與道路硬邊、無過渡。
+
+**主程式/美術 — 修 1+2+3**
+- **樹木重做**：新增 `js/vegetation_south.js`（**取代 `vegetation.js` 給 south.html**，全台版 `taiwan.html` 不動）。每棵＝樹幹（漸縮圓柱、棕）＋ 2 層 Icosahedron 樹冠，`instanceColor` 給每棵不同綠、尺寸/傾斜變化；**3 樹種**：海岸低矮灌木／山坡闊葉樹／老榕大樹。**非均勻分布**（高坡密、林緣矮灌、步道兩側留空、不長在步道上）。全 InstancedMesh。
+- **道路自然化**：`environment_art_south.js` 步道改沿「**實際可走中心線**」(`trailX(d)`、`southShoreY(x)-d`，與 heightmap trail 同座標) 蜿蜒鋪：土徑圓塊＋灰褐踏石＋兩側灰白石灰岩碎石礫＋路邊草叢＋落葉 → 視覺路與可走路合一、與森林柔邊。
+- 森林草叢數量下修（perf）。
+
+**玩家 4 維評分（目標 ≥7）**：樹木真實感 **7**、道路自然度 **7**、森林層次 **7**、場景沉浸感 **7**。皆達標。
+
+**效能事件（重要）**：初版樹 ~13k 棵全樹冠（~10× 舊圓錐三角形）→ **headless 軟體渲染 FPS 崩潰**，#3 移動/#9 任務/#11 截圖 3 項失敗、跑 10.1 分。修正：**step-2 取樣 + 樹冠 2 層 + 密度上限 0.42 + banyan 降細分 + 草叢減量** → 恢復。真機 GPU 本就無虞（問題只在 CPU SwiftShader 測試環境）。
+
+**測試（`npm run playtest`）**：`logic_smoke PASS · slice_logic 39/39 · playwright 11/11` → **ALL GREEN ✅**（遊戲可正常開啟、無 console error、移動/任務/UI 皆過）。
+
+**截圖（已更新）**：`tests/shots/07-trail.png`（蜿蜒土石步道＋分層變色森林＋白榕）、`08-summit.png`、`06-beach.png`。
+
+**改了哪些檔案**：新增 `js/vegetation_south.js`；改 `south.html`（換載 vegetation_south）、`js/environment_art_south.js`（步道重鋪＋草叢減量）。
+
+**下一輪（Pass 3）要修什麼**（沉浸感最弱項）：地表頂點色變化/相鄰生態交融（破除樹間均勻色塊）、樹與岩接觸陰影感、近岸浪花泡沫、沙灘→礁岩過渡。
+
+---
+
 ## 2026-06-19 #8 — 條件 8 環境回饋 + 森林草叢
 
 **角色/範圍**：Environment / Technical Artist + Playtester；分支 `vertical-slice`。
@@ -295,3 +320,5 @@ E. 地標 / 地名解析
 - `2026-06-19 07:06:05 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(10P/1F) → FAIL ❌
 - `2026-06-19 07:14:14 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
 - `2026-06-19 07:25:22 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 07:46:55 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(8P/3F) → FAIL ❌
+- `2026-06-19 07:55:21 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
