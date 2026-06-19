@@ -229,9 +229,14 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     const cards = await page.evaluate(() => window.SENXUN.debug.cards());
     expect(cards.length, '4 張知識卡全解鎖').toBe(4);
     expect(await page.evaluate(() => window.SENXUN.debug.quest().done), '任務全部完成').toBe(true);
+    expect(await page.evaluate(() => window.SENXUN.debug.restoreApplied()), '環境修復回饋應觸發(條件8)').toBe(true);
     await expect(page.locator('#complete'), '完成畫面應出現').toHaveClass(/show/);
     await page.waitForTimeout(450);
     await shot(page, '04-complete.png');
+    // 復育後的山頂(環境回饋):關完成畫面、瞬移到山頂截圖
+    await page.evaluate(() => { var c = document.getElementById('complete'); if (c) c.classList.remove('show'); window.SENXUN.debug.warp(332, 47); });
+    await page.waitForTimeout(1200);
+    await shot(page, '09-restored.png');
   });
 
   test('10. 世界中有 NPC/敘事引導物 + 巡守員對話可開啟', async ({ page }) => {

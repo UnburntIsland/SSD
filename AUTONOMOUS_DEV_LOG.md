@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-06-19 #8 — 條件 8 環境回饋 + 森林草叢
+
+**角色/範圍**：Environment / Technical Artist + Playtester；分支 `vertical-slice`。
+
+**玩家視角 3 問題**：1. 環境修復無「環境回饋」（條件 8）；2. 地表質感均勻；3. 鏡頭/時長（後續）。
+
+**修 #1+#2**
+- 新增 `js/restore_south.js`（`SENXUN.restore`）：山頂復育點完成前＝外來種銀合歡枯黃叢；完成 `kind==='restore'` 互動 → **銀合歡縮退、原生白榕長出**（~1.4s 可見動畫）。`main.js` 觸發 reveal。→ 條件 8 完整：接任務→前往→互動→知識卡→**環境回饋(可見)**→完成畫面。
+- `environment_art_south.js` 加森林草叢 InstancedMesh（只長闊葉林帶），打破地表均勻。
+
+**playtest**：`logic_smoke PASS · slice_logic 39/39 · playwright 11/11` → **ALL GREEN**。#8 新增 `restoreApplied` 斷言 + `09-restored.png`（復育後山頂）。
+
+**改檔**：新增 `js/restore_south.js`；改 `js/main.js`、`js/environment_art_south.js`、`south.html`、`tests/playtest.spec.mjs`。
+
+**下一輪**：依使用者新指示轉純「環境美術品質」（樹/道路/森林過渡）；先提修正計畫、待確認再改。
+
+---
+
 ## 2026-06-19 #7 — Environment Art Pass 1（環境美術優先，平均 4.0→6.3）
 
 **角色/範圍**：Environment Art Director / Level Artist / Technical Artist / Playtester；分支 `vertical-slice`。依指示「環境美術優先」，不加玩法/背包/戰鬥。
@@ -276,3 +294,4 @@ E. 地標 / 地名解析
 - `2026-06-19 06:09:22 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(10P) → ALL GREEN ✅
 - `2026-06-19 07:06:05 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(10P/1F) → FAIL ❌
 - `2026-06-19 07:14:14 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 07:25:22 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅

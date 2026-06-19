@@ -133,6 +133,18 @@
     halo.position.copy(sun.position); halo.lookAt(0, 40, 0); scene.add(halo);
     n += 2;
 
+    /* ---------- 7. 森林草叢:打破地表均勻感(只長在闊葉林帶) ---------- */
+    var matGrass = new THREE.MeshStandardMaterial({ color: 0x6fa84a, roughness: 0.95, flatShading: true });
+    var grass = [];
+    for (var gi = 0; gi < 900; gi++) {
+      var gx = 120 + U.hash2(gi, 11) * 224, gyt = 38 + U.hash2(gi, 23) * 236;
+      var ss = Hm.at(gx, gyt);
+      if (ss.biome !== "broadleaf" || ss.sea) continue;
+      grass.push([wx(gx), gY(gx, gyt), wz(gyt), 0.7 + U.hash2(gi, 5) * 0.9, U.hash2(gi, 7) * 6.28]);
+    }
+    var gblade = new THREE.ConeGeometry(0.32, 1.2, 4); gblade.translate(0, 0.6, 0);
+    instStatic(gblade, matGrass, grass);
+
     EA.count = n;
     return n;
   };

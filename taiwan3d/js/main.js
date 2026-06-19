@@ -26,6 +26,7 @@
     SENXUN.vegetation.build(THREE, scene);
     if (SENXUN.props && SENXUN.props.build) SENXUN.props.build(THREE, scene); // 場景道具(洞穴/峭壁),南部專用
     if (SENXUN.envart && SENXUN.envart.build) SENXUN.envart.build(THREE, scene); // 環境美術陳設(步道/海岸/平台/地標/夕陽)
+    if (SENXUN.restore && SENXUN.restore.build) SENXUN.restore.build(THREE, scene); // 環境修復前後狀態(條件8回饋)
     if (SENXUN.markers && SENXUN.markers.build) SENXUN.markers.build(THREE, scene); // 互動點發光標記
     if (SENXUN.npc && SENXUN.npc.build) SENXUN.npc.build(THREE, scene); // 嚮導 NPC + 解說牌(敘事引導)
     SENXUN.player.build(THREE, scene, ISL.spawn);
@@ -38,6 +39,7 @@
       if (!SENXUN.interactions) return;
       var t = SENXUN.player.tile();
       var r = SENXUN.interactions.tryInteract(t.x, t.y);
+      if (r.ok && r.point && r.point.kind === "restore" && SENXUN.restore) SENXUN.restore.reveal(); // 環境回饋:山頂復育
       if (r.ok && SENXUN.ui.onInteract) SENXUN.ui.onInteract(r);
     }
     window.addEventListener("keydown", function (e) {
@@ -81,6 +83,7 @@
       markersActive: function () { return SENXUN.markers ? SENXUN.markers.activeCount() : 0; },
       npcCount: function () { return SENXUN.npc ? (SENXUN.npc.count || 0) : 0; },
       envCount: function () { return SENXUN.envart ? (SENXUN.envart.count || 0) : 0; },
+      restoreApplied: function () { return SENXUN.restore ? SENXUN.restore.applied() : false; },
       warp: function (x, y) { SENXUN.player.setTile(x, y); return SENXUN.player.tile(); },
       talk: function () { var ts = SENXUN.interactions.talks(); if (ts[0] && ts[0].dialogue) { SENXUN.ui.showPanel("💬 對話", ts[0].dialogue.title, ts[0].dialogue.body); return true; } return false; },
       interact: function () { onInteract(); return SENXUN.quest.state(); }
@@ -96,6 +99,7 @@
       SENXUN.ui.update(dt, SENXUN.player, SENXUN.interactions);
       if (SENXUN.markers) SENXUN.markers.update(dt);
       if (SENXUN.npc) SENXUN.npc.update(dt);
+      if (SENXUN.restore) SENXUN.restore.update(dt);
       updateGuide();
       renderer.render(scene, cam);
     }
