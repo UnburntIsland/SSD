@@ -174,6 +174,7 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     const before = await debugState(page);
     expect(before.inRange.length, '第一個互動點應在出生點範圍內').toBeGreaterThan(0);
     expect(before.quest.progress, '初始進度為 0').toBe(0);
+    expect(await page.evaluate(() => window.SENXUN.debug.markersActive()), '當前目標應有世界中發光標記').toBeGreaterThan(0);
     await expect(page.locator('#prompt'), '提示 UI 應顯示').toHaveClass(/show/);
     await pressE(page);
     const after = await debugState(page);
@@ -231,5 +232,30 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     await expect(page.locator('#complete'), '完成畫面應出現').toHaveClass(/show/);
     await page.waitForTimeout(450);
     await shot(page, '04-complete.png');
+  });
+
+  test('10. 世界中有 NPC/敘事引導物 + 巡守員對話可開啟', async ({ page }) => {
+    await page.goto(PAGE);
+    await waitReadyDebug(page);
+    await startGame(page);
+    const n = await page.evaluate(() => window.SENXUN.debug.npcCount());
+    expect(n, '世界中應有 NPC + 解說牌(敘事引導物)').toBeGreaterThan(0);
+    await page.evaluate(() => window.SENXUN.debug.talk());
+    await expect(page.locator('#card'), '巡守員對話面板應出現').toHaveClass(/show/);
+    await expect(page.locator('#card-tag')).toContainText('對話');
+    await page.waitForTimeout(350);
+    await shot(page, '05-npc-dialogue.png');
+  });
+
+  test('11. 環境美術物件已建立 + 各區截圖(海岸/步道/山頂)', async ({ page }) => {
+    test.setTimeout(120000);
+    await page.goto(PAGE);
+    await waitReadyDebug(page);
+    await startGame(page);
+    const env = await page.evaluate(() => window.SENXUN.debug.envCount());
+    expect(env, '環境美術物件數應 > 50').toBeGreaterThan(50);
+    await page.waitForTimeout(400); await shot(page, '06-beach.png');
+    await page.evaluate(() => window.SENXUN.debug.warp(250, 205)); await page.waitForTimeout(900); await shot(page, '07-trail.png');
+    await page.evaluate(() => window.SENXUN.debug.warp(332, 48)); await page.waitForTimeout(900); await shot(page, '08-summit.png');
   });
 });

@@ -5,7 +5,7 @@
   var SENXUN = (root.SENXUN = root.SENXUN || {});
   var UI = (SENXUN.ui = {});
   var plate, elRegion, elEn, elLoc, elGoal, elProg, elCards, elPrompt, elToast,
-    elCard, elCardTitle, elCardBody, elMark, elMarkLab, elStart, elComplete, elCompleteCards;
+    elCard, elCardTag, elCardTitle, elCardBody, elMark, elMarkLab, elStart, elComplete, elCompleteCards;
   var acc = 0, lastName = "", hideTimer = 0, toastTimer = 0;
   var cardShown = false, startShown = true, pendingComplete = false;
 
@@ -15,7 +15,7 @@
     plate = $("nameplate"); elRegion = $("region"); elEn = $("region-en");
     elLoc = $("hud-loc"); elGoal = $("hud-goal"); elProg = $("hud-prog"); elCards = $("hud-cards");
     elPrompt = $("prompt"); elToast = $("toast");
-    elCard = $("card"); elCardTitle = $("card-title"); elCardBody = $("card-body");
+    elCard = $("card"); elCardTag = $("card-tag"); elCardTitle = $("card-title"); elCardBody = $("card-body");
     elMark = $("goalmark"); elMarkLab = $("goalmark-lab");
     elStart = $("start"); elComplete = $("complete"); elCompleteCards = $("complete-cards");
     if (elCard) elCard.addEventListener("click", UI.closeCard);
@@ -65,6 +65,7 @@
 
   UI.onInteract = function (res) {
     if (!res || !res.ok) return;
+    if (res.talk) { if (res.dialogue) UI.showPanel("💬 對話", res.dialogue.title, res.dialogue.body); return; }
     var s = res.state || (SENXUN.quest && SENXUN.quest.state());
     refreshHud();
     if (!s) return;
@@ -72,13 +73,18 @@
     else if (s.event === "objective-complete") { toast("✅ 目標完成!"); if (s.unlockedCard) UI.showCard(s.unlockedCard); }
   };
 
-  UI.showCard = function (id) {
-    var c = SENXUN.cards && SENXUN.cards.get(id);
-    if (!c || !elCard) return;
-    if (elCardTitle) elCardTitle.textContent = (c.icon ? c.icon + " " : "") + c.title;
-    if (elCardBody) elCardBody.textContent = c.body;
+  UI.showPanel = function (tag, title, body) {
+    if (!elCard) return;
+    if (elCardTag) elCardTag.textContent = tag;
+    if (elCardTitle) elCardTitle.textContent = title;
+    if (elCardBody) elCardBody.textContent = body;
     elCard.classList.add("show"); cardShown = true;
     if (elPrompt) elPrompt.classList.remove("show");
+  };
+  UI.showCard = function (id) {
+    var c = SENXUN.cards && SENXUN.cards.get(id);
+    if (!c) return;
+    UI.showPanel("📖 知識卡", (c.icon ? c.icon + " " : "") + c.title, c.body);
     refreshHud();
   };
   UI.closeCard = function () {

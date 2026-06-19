@@ -96,5 +96,20 @@ ok('全部完成 done=true', Q.state().done === true, 'done=' + Q.state().done);
 ok('事件 all-complete', Q.state().event === 'all-complete', Q.state().event);
 ok('解鎖 KC4(共4張)', K.list().length === 4, JSON.stringify(K.list()));
 
+// ── 增量 3:NPC/敘事引導 talk 點(常駐、不消耗、quest 優先) ──
+console.log('--- 增量 3: talk 點 ---');
+SENXUN.cards.init(); Q.init(); I.init();   // 重置一輪(前面已跑到 done)
+I.addTalk({ id: 'npc', x: 150, y: 298, label: '與巡守員對話', dialogue: { title: '巡守員', body: '歡迎來到柴山，沿著發光點調查海岸，再循指引上山。' } });
+ok('talk 點已加入', I.talks().length === 1, '共' + I.talks().length);
+ok('NPC 附近偵測到 talk 點', I.inRange(150, 300).some(p => p.id === 'npc'), JSON.stringify(I.inRange(150, 300).map(p => p.id)));
+ok('quest 點優先於 talk(兩者都在範圍時)', I.inRange(150, 294)[0] && I.inRange(150, 294)[0].id !== 'npc', JSON.stringify(I.inRange(150, 294).map(p => p.id)));
+var bp = Q.state().progress;
+var tk = I.tryInteract(150, 300);
+ok('觸發 talk 回傳 talk:true', tk.ok === true && tk.talk === true);
+ok('talk 不推進任務', Q.state().progress === bp, 'progress=' + Q.state().progress);
+var tk2 = I.tryInteract(150, 300);
+ok('talk 可重複(不消耗)', tk2.ok === true && tk2.talk === true);
+ok('NPC 不算進 nextTarget(導引只指任務點)', (function () { var nt = I.nextTarget(150, 300); return !nt || nt.id !== 'npc'; })());
+
 console.log(`\n=== 總結 ===  ${pass} PASS / ${fail} FAIL  →  ${fail === 0 ? 'PASS ✅' : 'FAIL ❌'}`);
 process.exit(fail === 0 ? 0 : 1);

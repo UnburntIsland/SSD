@@ -25,53 +25,73 @@
   }
 
   var pts = [];
-  I.init = function (custom) { pts = custom || defaults(); };
+  I.init = function (custom) { pts = (custom || defaults()).slice(); };
   I.points = function () { return pts; };
+  // 加入常駐對話點(NPC/嚮導):永遠可互動、不消耗、不推進任務
+  I.addTalk = function (p) {
+    pts.push({ id: p.id, x: p.x, y: p.y, kind: "talk", label: p.label || "對話",
+      dialogue: p.dialogue || null, persistent: true, triggered: false });
+  };
+  I.talks = function () { return pts.filter(function (p) { return p.persistent; }); };
 
-  // 只考慮「當前目標」的點(避免越級觸發,也讓導引只指向當前目標)
   function curObj() { return SENXUN.quest ? SENXUN.quest.state().objectiveId : null; }
-  function active(p) { return !p.triggered && (!p.objective || p.objective === curObj()); }
-
+  // talk 點永遠可互動;任務點依「當前目標、未觸發」
+  function active(p) {
+    if (p.persistent) return true;
+    if (p.triggered) return false;
+    return !p.objective || p.objective === curObj();
+  }
+  function notTalk(p) { return !p.persistent; }
+  function isTalk(p) { return !!p.persistent; }
   function d2(p, x, y) { var dx = p.x - x, dy = p.y - y; return dx * dx + dy * dy; }
 
-  I.inRange = function (x, y) {
+  function collect(x, y, pred) {
     var out = [];
     for (var i = 0; i < pts.length; i++) {
-      if (!active(pts[i])) continue;
-      var dd = d2(pts[i], x, y);
-      if (dd <= RADIUS * RADIUS) out.push({ id: pts[i].id, label: pts[i].label, dist: Math.sqrt(dd) });
+      var p = pts[i];
+      if (!active(p) || !pred(p)) continue;
+      var dd = d2(p, x, y);
+      if (dd <= RADIUS * RADIUS) out.push({ id: p.id, label: p.label, dist: Math.sqrt(dd) });
     }
     out.sort(function (a, b) { return a.dist - b.dist; });
     return out;
-  };
-
-  I.nearestInRange = function (x, y) {
+  }
+  function nearest(x, y, pred) {
     var best = null, bd = RADIUS * RADIUS;
     for (var i = 0; i < pts.length; i++) {
-      if (!active(pts[i])) continue;
-      var dd = d2(pts[i], x, y);
-      if (dd <= bd) { bd = dd; best = pts[i]; }
+      var p = pts[i];
+      if (!active(p) || !pred(p)) continue;
+      var dd = d2(p, x, y);
+      if (dd <= bd) { bd = dd; best = p; }
     }
     return best;
-  };
+  }
 
-  // 導引用:當前目標尚未觸發、離玩家最近的點(供箭頭指向)
+  // 任務點優先;沒有任務點在範圍才回 talk 點
+  I.inRange = function (x, y) {
+    var q = collect(x, y, notTalk);
+    return q.length ? q : collect(x, y, isTalk);
+  };
+  I.nearestInRange = function (x, y) { return nearest(x, y, notTalk) || nearest(x, y, isTalk); };
+
+  // 導引:只指向當前任務點(排除 talk)
   I.nextTarget = function (x, y) {
     var best = null, bd = Infinity;
     for (var i = 0; i < pts.length; i++) {
-      if (!active(pts[i])) continue;
-      var dd = (x == null) ? 0 : d2(pts[i], x, y);
-      if (dd < bd) { bd = dd; best = pts[i]; }
+      var p = pts[i];
+      if (!active(p) || p.persistent) continue;
+      var dd = (x == null) ? 0 : d2(p, x, y);
+      if (dd < bd) { bd = dd; best = p; }
     }
     return best ? { id: best.id, x: best.x, y: best.y, label: best.label } : null;
   };
 
-  // 觸發最近的未觸發互動點;回傳 {ok, point, state}
+  // 觸發:任務點優先(消耗+推進);否則 talk 點(顯示對話、不消耗)
   I.tryInteract = function (x, y) {
-    var p = I.nearestInRange(x, y);
-    if (!p) return { ok: false };
-    p.triggered = true;
-    var state = SENXUN.quest ? SENXUN.quest.onInspect(p) : null;
-    return { ok: true, point: p, state: state };
+    var q = nearest(x, y, notTalk);
+    if (q) { q.triggered = true; var s = SENXUN.quest ? SENXUN.quest.onInspect(q) : null; return { ok: true, point: q, state: s }; }
+    var t = nearest(x, y, isTalk);
+    if (t) return { ok: true, talk: true, point: t, dialogue: t.dialogue };
+    return { ok: false };
   };
 })(typeof window !== "undefined" ? window : globalThis);

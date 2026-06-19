@@ -4,6 +4,7 @@
   "private": true,
   "description": "森循島 南部(西子灣·柴山)場景 — 自動化遊玩測試工具鏈",
   "scripts": {
+    "playtest": "node tests/run_playtest.mjs",
     "test:logic": "node tests/logic_smoke.cjs",
     "test:browser": "playwright test",
     "serve": "python -m http.server 8080"

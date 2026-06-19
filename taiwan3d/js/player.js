@@ -26,6 +26,7 @@
   function place() { grp.position.set(px - W / 2, Hm.groundY(px, pz), pz - MH / 2); grp.rotation.y = pdir; }
   P.pos = function () { return grp.position; };
   P.tile = function () { return { x: px, y: pz }; };
+  P.setTile = function (tx, tz) { px = tx; pz = tz; place(); }; // 除錯/截圖用瞬移(不影響玩法)
   P.update = function (dt, keys, cam) {
     var f = 0, s = 0;
     if (keys.KeyW || keys.ArrowUp) f += 1; if (keys.KeyS || keys.ArrowDown) f -= 1;

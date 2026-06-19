@@ -25,6 +25,9 @@
     SENXUN.terrain.build(THREE, scene);
     SENXUN.vegetation.build(THREE, scene);
     if (SENXUN.props && SENXUN.props.build) SENXUN.props.build(THREE, scene); // 場景道具(洞穴/峭壁),南部專用
+    if (SENXUN.envart && SENXUN.envart.build) SENXUN.envart.build(THREE, scene); // 環境美術陳設(步道/海岸/平台/地標/夕陽)
+    if (SENXUN.markers && SENXUN.markers.build) SENXUN.markers.build(THREE, scene); // 互動點發光標記
+    if (SENXUN.npc && SENXUN.npc.build) SENXUN.npc.build(THREE, scene); // 嚮導 NPC + 解說牌(敘事引導)
     SENXUN.player.build(THREE, scene, ISL.spawn);
     var cam = SENXUN.camera.build(THREE, renderer.domElement);
     SENXUN.ui.build();
@@ -75,6 +78,11 @@
       quest: function () { return SENXUN.quest.state(); },
       interactablesInRange: function () { var t = SENXUN.player.tile(); return SENXUN.interactions.inRange(t.x, t.y); },
       cards: function () { return SENXUN.cards.list(); },
+      markersActive: function () { return SENXUN.markers ? SENXUN.markers.activeCount() : 0; },
+      npcCount: function () { return SENXUN.npc ? (SENXUN.npc.count || 0) : 0; },
+      envCount: function () { return SENXUN.envart ? (SENXUN.envart.count || 0) : 0; },
+      warp: function (x, y) { SENXUN.player.setTile(x, y); return SENXUN.player.tile(); },
+      talk: function () { var ts = SENXUN.interactions.talks(); if (ts[0] && ts[0].dialogue) { SENXUN.ui.showPanel("💬 對話", ts[0].dialogue.title, ts[0].dialogue.body); return true; } return false; },
       interact: function () { onInteract(); return SENXUN.quest.state(); }
     };
 
@@ -86,6 +94,8 @@
       SENXUN.camera.update(SENXUN.player.pos());
       SENXUN.lighting.update(dt);
       SENXUN.ui.update(dt, SENXUN.player, SENXUN.interactions);
+      if (SENXUN.markers) SENXUN.markers.update(dt);
+      if (SENXUN.npc) SENXUN.npc.update(dt);
       updateGuide();
       renderer.render(scene, cam);
     }

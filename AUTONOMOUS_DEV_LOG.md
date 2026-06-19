@@ -6,6 +6,88 @@
 
 ---
 
+## 2026-06-19 #7 — Environment Art Pass 1（環境美術優先，平均 4.0→6.3）
+
+**角色/範圍**：Environment Art Director / Level Artist / Technical Artist / Playtester；分支 `vertical-slice`。依指示「環境美術優先」，不加玩法/背包/戰鬥。
+
+**新增文件**：`ENVIRONMENT_ART_DIRECTION.md`（風格/色彩/區域/視覺目標）、`ART_PASS_LOG.md`（評分與改動，含 Pass 1 前後比較）。
+
+**新增環境物件**（全程程式生成，集中於 `js/environment_art_south.js`＝`SENXUN.envart`，~430 件）
+- 步道：石階板 + 兩側灰白邊石排列 + 灌木叢（沿上山 polyline）→ 把「路」視覺化，兼視覺引導。
+- 海岸：漂流木、卵石堆、灰白珊瑚礁石灰岩塊（礁岩帶）。
+- 天雨洞：層疊石灰岩壁 + 兩側巨岩（讀得出喀斯特岩層）。
+- 山頂：木棧觀景平台 + 欄杆 + 橘色旗幟（明確登頂地標）。
+- 地標：大白榕、石灰岩巨岩露頭。
+- 全圖：西方夕陽日盤 + 光暈；`south_scene` 暖化陽光、加深近霧景深（fogNear 260→200）。
+- 物件**無碰撞**，不影響移動/任務。散佈用 InstancedMesh 控 draw call。
+- 為截圖 QA 加 `player.setTile` + `debug.warp`（除錯瞬移，不影響玩法）。
+
+**美術評分（玩家視角，前→後）**：島嶼真實感4→6、完成度3→6、層次5→7、探索慾4→6、視覺引導5→7、地標3→6、沉浸感4→6。**平均 4.0 → 6.3（+2.3，達標 +2）**。
+
+**playtest（`npm run playtest`）**：`logic_smoke PASS · slice_logic 39/39 · playwright 11/11` → **ALL GREEN ✅**。新增 Tier2 #11（`envCount>50` + 海岸/步道/山頂三區截圖）。
+
+**截圖**：`tests/shots/06-beach.png`、`07-trail.png`、`08-summit.png`、`00-initial.png`、`01-after-W.png`。
+
+**改了哪些檔案**：新增 `js/environment_art_south.js`、`ENVIRONMENT_ART_DIRECTION.md`、`ART_PASS_LOG.md`；改 `js/main.js`（build envart + `debug.envCount/warp`）、`js/south_scene.js`（光影/霧）、`js/player.js`（`setTile`）、`south.html`、`tests/playtest.spec.mjs`、`playwright.config.mjs`（test timeout 60s）。
+
+**下一輪 Pass 2 建議**：打破地表均勻感（草叢 instancing/頂點色噪點/沙灘濕區/岩石苔色）、樹種多樣化、近岸浪花泡沫；角色美術仍依指示延後。
+
+---
+
+## 2026-06-19 #6 — 角色A+B 第2輪：NPC 嚮導 + 解說牌（敘事引導，條件 6 達成）
+
+**角色/範圍**：主程式 + 遊玩測試員；分支 `vertical-slice`。
+
+**B. 遊玩測試員 — 本輪最嚴重 3 問題**
+1. 世界中沒有 NPC/敘事引導物（硬條件 6 未達）。
+2. 角色太樸素、鏡頭仍偏俯視（條件 4 未最終確認）。
+3. 環境修復缺「環境回饋」——修復後世界沒有可見變化（條件 8）。
+
+**C. 主程式 — 修最關鍵的 #1（條件 6）**
+- 新增 `js/npc_south.js`（`SENXUN.npc`）：**巡守員嚮導 NPC**（綠制服+帽，出生點旁，輕微擺動）＋ **4 面解說牌**（CanvasTexture 純 JS 畫字：①西子灣海岸 ②柴山步道 ③天雨洞 ④山頂復育）。
+- **NPC 可對話**：透過 interactions 新增的「常駐 talk 點」——走近按 E 顯示巡守員的歡迎＋操作說明＋目標提示。
+- `interactions_south.js` 重構：新增 `addTalk/talks`；talk 點永遠 active、**任務點優先於 talk**（不影響既有測試）、不消耗；`nextTarget`/markers 排除 talk。
+- `ui_south.js`：`showCard` 重構為 `showPanel`（重用為對話框）；`onInteract` 處理 talk。
+
+**TDD**：`slice_logic.cjs` 加 talk 點測試（常駐/不消耗/任務優先/導引排除）→ RED（`addTalk` 不存在）→ 實作 → GREEN（39/39）。
+
+**測試結果（`npm run playtest`）**：`logic_smoke:PASS · slice_logic:PASS(39/39) · playwright:PASS(10P/0S)` → **ALL GREEN ✅**。新增 Tier2 #10（`npcCount>0` + 巡守員對話面板）。截圖 `05-npc-dialogue.png`、`01-after-W.png`（可見解說牌+發光標記）。
+
+**目前可玩流程**：開始畫面 →（巡守員可對話、解說牌指路、🎯+發光點）海岸調查 3 點 → 步道上山(獼猴) 2 點 → 天雨洞 → 山頂環境修復 → 完成畫面；4 張知識卡。
+
+**目標條件進度**：1✅ 2✅ 3✅ **6✅(NPC+解說牌)** 7✅ 8(流程✅,環境回饋待加) 9✅；4 已降俯角(待最終確認)；10 約 3-6 分鐘。
+
+**改了哪些檔案**：新增 `js/npc_south.js`；改 `js/interactions_south.js`、`js/markers_south.js`、`js/ui_south.js`、`js/main.js`、`south.html`、`tests/slice_logic.cjs`、`tests/playtest.spec.mjs`。
+
+**下一輪要修什麼**：#3 —— 環境修復任務加「**環境回饋**」（完成目標 4 後山頂出現原生樹/移除外來種的**可見變化**，補強條件 8），順帶角色外觀小升級。
+
+---
+
+## 2026-06-19 #5 — 角色A+B 第1輪：安全 checkpoint + 一鍵自動測試 + 互動點發光標記
+
+**角色/範圍**：主程式 + 遊玩測試員；分支 `vertical-slice`。
+
+**A. 安全 checkpoint**：開分支 `vertical-slice`、commit `93dc009`（整個切片+測試+文件；`node_modules` 已忽略）。`main` 維持切片前狀態，可隨時回滾。
+
+**B. 遊玩測試員 — 本輪最嚴重 3 問題**
+1. 互動點在 3D 世界裡看不見（tip 說「走近發光點」卻沒有發光點，只能靠螢幕角落 🎯 pin）。
+2. 沒有世界中的敘事引導物/NPC（目標條件 6）。
+3. 角色太樸素（橘色圓柱無動畫）、鏡頭仍偏俯視。
+
+**C. 主程式 — 修最重要的 #1**：新增 `js/markers_south.js`（`SENXUN.markers`），在每個「當前目標、未觸發」的互動點放**發光光柱 + 浮動光球**（青色，對比暖色場景）；`main.js` build/update + `debug.markersActive`。截圖 `01-after-W.png` 確認海灘上可見發光標記 → tip 的「發光點」名實相符。
+
+**D. 最小自動遊玩測試（你的要求）**：新增 `tests/run_playtest.mjs` + `npm run playtest` — 一鍵跑 Tier1（`logic_smoke`/`slice_logic`）+ Tier2（`playwright`），Tier2 涵蓋你列的 1-9（本機 server 開 south.html → 等 canvas → 無 JS error → 模擬 W/D/S/A → tile 改變 → HUD 顯示地點/任務 → 走到第一個互動點 → 按 E → 知識卡/任務狀態出現），**並自動把結果寫入本日誌**（見底部 🤖 紀錄區，第 10 項)。Playwright 先前你已批准安裝，本輪無需再裝。
+
+**測試結果（`npm run playtest`）**：`logic_smoke:PASS · slice_logic:PASS(32/32) · playwright:PASS(9P/0S)` → **ALL GREEN ✅**。Tier2 #7 新增「當前目標應有世界中發光標記」斷言通過。
+
+**目前可玩流程**：開始畫面 →（發光標記+🎯指引）海岸調查 3 點 → 步道上山(獼猴) 2 點 → 天雨洞 → 山頂環境修復 → 完成畫面；4 張知識卡。實走約 3-6 分鐘。
+
+**改了哪些檔案**：新增 `js/markers_south.js`、`tests/run_playtest.mjs`；改 `js/main.js`、`south.html`、`tests/playtest.spec.mjs`、`package.json`。
+
+**下一輪要修什麼**：#2/#3 —— 加**世界中的敘事引導物**（解說牌/路標或簡單嚮導，滿足條件 6 並強化方向感），並改善**角色外觀/移動回饋**與鏡頭手感。
+
+---
+
 ## 2026-06-19 #4 — 垂直切片增量 2：目標 2-4 + 指引 + 開始/完成畫面 + 鏡頭（全綠）
 
 **做了什麼**（你選「繼續增量2 + 調鏡頭」）
@@ -184,3 +266,13 @@ E. 地標 / 地名解析
 ### 下一步（等你確認後）
 - 你點頭 → 安裝 Playwright + 建 Tier 2 骨架 → 依 `GAMEPLAY_VERTICAL_SLICE.md` §9 順序開始實作切片，每步跑 Tier 1（迴歸）+ Tier 2 並回填本 LOG。
 - **目前先停止，等待你的確認。**
+
+
+---
+
+## 🤖 自動測試紀錄 (run_playtest.mjs, append-only)
+
+- `2026-06-19 05:55:01 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(9P) → ALL GREEN ✅
+- `2026-06-19 06:09:22 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(10P) → ALL GREEN ✅
+- `2026-06-19 07:06:05 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(10P/1F) → FAIL ❌
+- `2026-06-19 07:14:14 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅

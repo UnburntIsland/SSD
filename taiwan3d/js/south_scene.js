@@ -22,12 +22,12 @@
     C.walkSpeed = 22;
     // 夕照光(lighting.js 讀取;未設則維持原樣,全台版不變)
     C.sun = {
-      dir: [-1.30, 0.32, 0.18],   // 夕陽自西方海面斜射
-      color: 0xffb066, intensity: 1.55,
-      amb: 0x6a5a4c, ambI: 0.42,
-      hemiSky: 0xf2d3a8, hemiGround: 0x4a3a2a, hemiI: 0.5,
-      sky: 0xf0c89a,                // 暖色天空
-      fog: 0xe7bd8c, fogNear: 260, fogFar: 1000
+      dir: [-1.30, 0.30, 0.18],   // 夕陽自西方海面斜射
+      color: 0xffad5a, intensity: 1.62,
+      amb: 0x6a5a4c, ambI: 0.40,
+      hemiSky: 0xf6cf96, hemiGround: 0x46382a, hemiI: 0.46,
+      sky: 0xf2c48f,                // 暖色天空
+      fog: 0xe9bd86, fogNear: 200, fogFar: 1150   // 拉近近霧增加空氣層次
     };
     // 夕照海面:低粗糙→陽光鏡面反光;metalness 維持 0(無 envMap,金屬度會讓水面變黑)
     C.seaMat = { color: 0x357f97, opacity: 0.92, roughness: 0.2, metalness: 0.0, y: -0.4 };
