@@ -28,16 +28,21 @@ function load(f) { vm.runInThisContext(fs.readFileSync(path.join(JS, f), 'utf8')
 const SENXUN = globalThis.SENXUN;
 const ISL = globalThis.SENXUN_ISLAND;
 
-/* ---------- 極小 THREE stub（只實作 player.js 用到的 API） ---------- */
+/* ---------- 極小 THREE stub（涵蓋 player.js 人物模型用到的 API） ---------- */
 function Vec3(x, y, z) { this.x = x || 0; this.y = y || 0; this.z = z || 0; }
 Vec3.prototype.normalize = function () { const l = Math.hypot(this.x, this.y, this.z) || 1; this.x /= l; this.y /= l; this.z /= l; return this; };
-function makePos() { return { x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z = z; } }; }
-function Group() { this.position = makePos(); this.rotation = { x: 0, y: 0, z: 0 }; this.add = function () { return this; }; }
-function Mesh() { this.position = makePos(); this.rotation = { x: 0, y: 0, z: 0 }; this.translateY = function () { return this; }; }
+function XYZ() { return { x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; } }; }
+function Obj3() { this.position = XYZ(); this.rotation = XYZ(); this.scale = XYZ(); }
+Obj3.prototype.add = function () { return this; };
+Obj3.prototype.translateY = function () { return this; };
+function Geo() {}
+Geo.prototype.translate = function () { return this; };
+Geo.prototype.scale = function () { return this; };
+Geo.prototype.rotateX = function () { return this; };
 const THREE = {
-  Vector3: Vec3, Group: Group, Mesh: Mesh,
-  CylinderGeometry: function () {}, SphereGeometry: function () {}, ConeGeometry: function () {},
-  MeshStandardMaterial: function () {},
+  Vector3: Vec3, Group: Obj3, Mesh: Obj3,
+  CylinderGeometry: Geo, SphereGeometry: Geo, ConeGeometry: Geo, BoxGeometry: Geo, IcosahedronGeometry: Geo, CircleGeometry: Geo, PlaneGeometry: Geo,
+  MeshStandardMaterial: function () {}, MeshBasicMaterial: function () {},
 };
 const scene = { add() {} };
 

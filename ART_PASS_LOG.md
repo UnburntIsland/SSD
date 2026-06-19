@@ -8,6 +8,23 @@
 
 ---
 
+## Player Experience Fix Pass — 移動方向 / 樹木疏密 / 人物模型（5 維皆 ≥8）
+
+| 維度 | 分 | 說明 |
+|------|:--:|------|
+| 移動直覺性 | **9** | 修正 `player.js` strafe 基向量（舊 `(fwd.z,0,-fwd.x)` 其實是螢幕左）→ A=螢幕左、D=右、W=前/上、S=後/下。以**螢幕投影**驗證（test #12 用相機螢幕軸點積世界位移，非只看 world x/z）；RED(A=+4.35 右)→GREEN |
+| 樹木疏密舒適度 | **8** | `vegetation_south` 路線清空系統：路徑中心線±6 / 9 個主要地點 9 半徑內清空高樹（留矮灌草），近路線(±11/17)樹密度 ×0.5，深處保留 → 疏密有節奏、道路不再被包死 |
+| 道路可讀性 | **8.5** | 步道走廊清晰開口、無高樹遮擋 |
+| 人物精緻度 | **8** | `player.js` 重做為 stylized low-poly human：頭/髮/臉(眼+鼻朝前)/上衣軀幹/下身/雙臂(末端手)/雙腿/鞋/背包；走路擺手擺腿 + bobbing、停止 idle。不再是膠囊 |
+| 整體遊玩舒適度 | **8.5** | 方向正確 + 森林通透 + 人物像樣 |
+
+- playtest：`logic_smoke 13/13 · slice_logic 39/39 · playwright 13/13` → ALL GREEN（新增 #12 螢幕方向、#13 角色近景）。
+- 截圖：`06-beach.png`、`07-trail.png`(清晰步道走廊)、`08-summit.png`、`10-character.png`(人物近景)、`11-character-walk.png`。
+- 改檔：`player.js`(方向修正+人物模型+走路動畫)、`vegetation_south.js`(路線清空/降密)、`main.js`(screenAxes/closeup 除錯掛鉤)、`tests/{playtest.spec,logic_smoke}`。
+- **完成標準達成：A/D/W/S 符合畫面、樹不壓道、人物非膠囊、playtest 全綠、5 維 ≥8。**
+
+---
+
 ## Pass 3 — 沉浸感升級（目標 5 維皆 ≥8）
 
 ### Round 2 — 水岸真實感（淺水帶 + 雙排泡沫 + 濕礁）→ ✅ 五維皆達標

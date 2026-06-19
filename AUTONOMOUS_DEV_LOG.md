@@ -6,6 +6,30 @@
 
 ---
 
+## 2026-06-19 #12 — Player Experience Fix Pass：移動方向 / 樹木疏密 / 人物模型
+
+**角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。依使用者三點人工試玩問題。
+
+**Step 1 — 移動方向（A 往右 → 修正）**
+- 根因：`player.js` strafe `right = (fwd.z,0,-fwd.x)` 實為**螢幕左**向量 → A/D 相反。修正為 `(-fwd.z,0,fwd.x)`＝`cross(forward,up)`＝螢幕右。
+- 驗證（**螢幕投影、非只 world 軸**）：新增 `debug.screenAxes`（相機右/上世界向量）+ test #12，以世界位移點積螢幕軸判定方向。RED（A 螢幕Δx=+4.35 右）→ 修正 → GREEN（A 左 / D 右 / W 上 / S 下）。
+- 連帶修 `walkToward` 測試輔助的 A/D→x 對應（否則 #8/#9 導航失效）。
+
+**Step 2 — 降低樹密度（路線清空）**
+- `vegetation_south`：加 `CLEAR`（9 個主要地點）+ 步道中心線距離。路徑±6 / 地點 9 內**清空高樹**（留矮灌草）；近路線（±11 / 17）樹密度 **×0.5**；深處保留 → 道路不再被包死、疏密有節奏。
+
+**Step 3 — 升級人物模型**
+- `player.js` 重做：stylized low-poly human（頭/髮/臉:眼+鼻朝前/上衣軀幹/下身/雙臂+手/雙腿/鞋/背包）。走路擺手擺腿 + bobbing、停止 idle。不再是膠囊。單一角色,效能無虞。
+- 連帶升級 `logic_smoke` 的 THREE stub（新模型用到 BoxGeometry/geo.translate/mesh.scale/子物件 add）→ 13/13。
+
+**玩家驗收評分（全 ≥8）**：移動直覺 **9**、樹木疏密 **8**、道路可讀 **8.5**、人物精緻 **8**、整體舒適 **8.5**。
+
+**測試**：`logic_smoke 13/13 · slice_logic 39/39 · playwright 13/13` → **ALL GREEN**（新增 #12 螢幕方向、#13 角色近景）。截圖 `06/07/08/10/11`。
+
+**改了哪些檔案**：`js/player.js`（方向修正+人物模型+走路動畫）、`js/vegetation_south.js`（路線清空/降密）、`js/main.js`（`screenAxes`/`closeup` 除錯掛鉤）、`tests/playtest.spec.mjs`（#12/#13 + walkToward 修正）、`tests/logic_smoke.cjs`（stub 升級）。未併回 main。
+
+---
+
 ## 2026-06-19 #11 — Environment Art Pass 3：沉浸感升級（5 維皆 ≥8，達標收束）
 
 **角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。只做環境美術，不動玩法。
@@ -358,3 +382,6 @@ E. 地標 / 地名解析
 - `2026-06-19 07:55:21 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
 - `2026-06-19 09:12:25 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
 - `2026-06-19 09:19:23 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 09:46:01 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
+- `2026-06-19 09:57:20 UTC` — logic_smoke:FAIL · slice_logic:PASS · playwright:PASS(12P) → FAIL ❌
+- `2026-06-19 10:03:41 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(13P) → ALL GREEN ✅

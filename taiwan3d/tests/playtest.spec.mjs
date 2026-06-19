@@ -73,7 +73,7 @@ async function walkToward(page, tx, ty, maxMs = 20000) {
     if (Math.hypot(tx - t.x, ty - t.y) < 6) { await release(); return true; }
     const want = [];
     if (ty - t.y < -1) want.push('w'); else if (ty - t.y > 1) want.push('s');
-    if (tx - t.x > 1) want.push('a'); else if (tx - t.x < -1) want.push('d');
+    if (tx - t.x > 1) want.push('d'); else if (tx - t.x < -1) want.push('a'); // D=+x, A=-x(修正後)
     for (const k of held) if (!want.includes(k)) await page.keyboard.up(k);
     for (const k of want) if (!held.includes(k)) await page.keyboard.down(k);
     held = want;
@@ -262,5 +262,37 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     await page.waitForTimeout(400); await shot(page, '06-beach.png');
     await page.evaluate(() => window.SENXUN.debug.warp(250, 205)); await page.waitForTimeout(900); await shot(page, '07-trail.png');
     await page.evaluate(() => window.SENXUN.debug.warp(332, 48)); await page.waitForTimeout(900); await shot(page, '08-summit.png');
+  });
+
+  test('12. 移動方向符合畫面直覺(A→畫面左 / D→右 / W→上 / S→下)', async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(PAGE); await waitReadyDebug(page); await startGame(page);
+    // 以「世界位移 · 相機螢幕軸」判定畫面方向(不受相機跟隨位移影響;非只看 world x/z)
+    async function probe(key) {
+      await page.evaluate(() => window.SENXUN.debug.warp(150, 289)); // 開闊海灘,四向可走
+      await page.waitForTimeout(250);
+      const b = await page.evaluate(() => { const p = window.SENXUN.player.pos(); return { x: p.x, y: p.y, z: p.z }; });
+      await page.keyboard.down(key); await page.waitForTimeout(1200); await page.keyboard.up(key);
+      return await page.evaluate((b) => {
+        const p = window.SENXUN.player.pos(), a = window.SENXUN.debug.screenAxes();
+        const dx = p.x - b.x, dy = p.y - b.y, dz = p.z - b.z;
+        return { sdx: dx * a.rx + dy * a.ry + dz * a.rz, sdy: dx * a.ux + dy * a.uy + dz * a.uz, moved: Math.hypot(dx, dz) };
+      }, b);
+    }
+    const A = await probe('a'); expect(A.moved, 'A 應有移動').toBeGreaterThan(2); expect(A.sdx, 'A → 畫面左(螢幕x變小)').toBeLessThan(0);
+    const D = await probe('d'); expect(D.sdx, 'D → 畫面右').toBeGreaterThan(0);
+    const W = await probe('w'); expect(W.sdy, 'W → 畫面上(螢幕y變大)').toBeGreaterThan(0);
+    const S = await probe('s'); expect(S.sdy, 'S → 畫面下').toBeLessThan(0);
+  });
+
+  test('13. 角色近景截圖(模型 QA)', async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(PAGE); await waitReadyDebug(page); await startGame(page);
+    await page.evaluate(() => window.SENXUN.debug.warp(150, 288));
+    await page.evaluate(() => window.SENXUN.debug.closeup(true));
+    await page.waitForTimeout(500);
+    await shot(page, '10-character.png');
+    await page.keyboard.down('w'); await page.waitForTimeout(500); await shot(page, '11-character-walk.png'); await page.keyboard.up('w');
+    await page.evaluate(() => window.SENXUN.debug.closeup(false));
   });
 });

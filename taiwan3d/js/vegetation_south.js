@@ -14,6 +14,9 @@
     var VB = (C && C.vegBounds) || { x0: 30, x1: 374, y0: 2, y1: 398 };
 
     var trees = [], shrubs = [], coastal = [], banyans = [], reefrocks = [], palms = [];
+    // 玩家主要路線/地點(出生點、NPC、海岸調查、登山口、步道、洞穴、觀景台):周圍降低樹密度、清出視野
+    var CLEAR = [[150, 294], [150, 288], [160, 290], [140, 290], [150, 298], [186, 276], [216, 240], [300, 250], [332, 44]];
+    function clearDist(px, py) { var m = 1e9; for (var i = 0; i < CLEAR.length; i++) { var ax = px - CLEAR[i][0], ay = py - CLEAR[i][1], dd = ax * ax + ay * ay; if (dd < m) m = dd; } return Math.sqrt(m); }
     // step 2 取樣:控制總三角形數(headless 軟體渲染友善;真機更輕鬆)。樹較大,間距 2 仍成林。
     for (var y = VB.y0; y < VB.y1; y += 2) for (var x = VB.x0; x < VB.x1; x += 2) {
       if (Hm.terrAt(x, y) <= 1) continue;
@@ -22,15 +25,19 @@
       var b = s.biome, elev = s.elev || 0, d = S.inland(x + 0.5, y + 0.5);
       if (b === "trail") continue;                       // 步道淨空
       if (b === "broadleaf") {
-        var tdist = Math.abs((x + 0.5) - S.trailX(d));    // 距步道中心線
-        if (d < 16) {                                     // 近海低地 → 稀疏海岸灌木
-          if (h < 0.09) coastal.push([x + 0.5, y + 0.5, h, h2]);
-        } else if (tdist < 6.5) {                          // 步道兩側過渡帶 → 矮灌木(留可走空間+柔邊)
-          if (h < 0.20) shrubs.push([x + 0.5, y + 0.5, h, h2]);
-        } else {                                           // 山坡/山谷:越高越密
+        var px = x + 0.5, py = y + 0.5;
+        var tdist = Math.abs(px - S.trailX(d));    // 距步道中心線
+        var kd = clearDist(px, py);                 // 距最近主要地點
+        if (d < 16) {                               // 近海低地 → 稀疏海岸灌木
+          if (h < 0.09) coastal.push([px, py, h, h2]);
+        } else if (tdist < 6 || kd < 9) {            // 路徑/地點正上方 → 清空高樹,只留矮灌/草(視野開口)
+          if (h < 0.16) shrubs.push([px, py, h, h2]);
+        } else {                                     // 山坡/山谷:越高越密;玩家路線周圍 -50%
           var dens = U.clamp(0.18 + elev * 0.013, 0.18, 0.42);
-          if (h < dens) trees.push([x + 0.5, y + 0.5, h, h2]);
-          else if (h < dens + 0.07) shrubs.push([x + 0.5, y + 0.5, h, h2]);
+          var nearRoute = (tdist < 11) || (kd < 17);
+          if (nearRoute) dens *= 0.5;
+          if (h < dens) trees.push([px, py, h, h2]);
+          else if (h < dens + (nearRoute ? 0.10 : 0.07)) shrubs.push([px, py, h, h2]);
         }
       } else if (b === "karst") {
         if (h < 0.28) reefrocks.push([x + 0.5, y + 0.5, h, h2]);
