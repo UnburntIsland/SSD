@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-06-19 #10 — 條件 10：最終彙整文件（目標達成 10/10，收束）
+
+依 /goal 完成條件，將「修改檔案清單 / 測試方式 / 已知限制 / 下一階段建議」**集中成文** → `FINAL_REPORT.md`。
+
+**10 項硬條件全達成**：1 開啟無 error、2 開始畫面+教學+HUD+銘牌、3 移動不卡死/落海/穿地、4 鏡頭降俯角不像開發者工具、5 地貌可辨、6 NPC+解說牌、7 七個互動點、8 環境修復任務含可見環境回饋+完成畫面、9 一鍵自動 playtest(11/11 green)、10 本最終文件。
+
+**測試**：`npm run playtest` → `logic_smoke PASS · slice_logic 39/39 · playwright 11/11` → ALL GREEN。
+
+**狀態**：vertical slice 目標達成，於分支 `vertical-slice`（commit 鏈 93dc009→9e06140→8f3e470→33f68fa→本輪）。後續（Art Pass 3／時長／角色／聲音／併回 main）見 `FINAL_REPORT.md` §6。**目標完成，停止自動迭代。**
+
+---
+
 ## 2026-06-19 #9 — 環境美術升級 Round 1：樹木重做 + 自然步道（玩家確認）
 
 **角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。依使用者確認的計畫，本輪只做環境美術、優先樹木與道路，不動玩法。
