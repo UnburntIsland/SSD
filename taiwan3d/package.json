@@ -1,0 +1,14 @@
+{
+  "name": "senxun-south-playtest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "森循島 南部(西子灣·柴山)場景 — 自動化遊玩測試工具鏈",
+  "scripts": {
+    "test:logic": "node tests/logic_smoke.cjs",
+    "test:browser": "playwright test",
+    "serve": "python -m http.server 8080"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}

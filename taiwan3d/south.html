@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>森循島 — 西子灣·柴山</title>
+<style>
+ html,body{margin:0;height:100%;background:#0d1622;overflow:hidden;font-family:"Noto Sans TC",system-ui,sans-serif}
+ /* 地點銘牌(進入新區域時淡入的大標) */
+ #nameplate{position:fixed;left:50%;top:18px;transform:translateX(-50%);text-align:center;
+   color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .6s}
+ #nameplate.show{opacity:1}
+ #region{font-size:24px;font-weight:800;letter-spacing:2px}
+ #region-en{font-size:12px;letter-spacing:3px;color:#ffe2b8;margin-top:2px}
+ #tip{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);color:#f2ead8;
+   background:rgba(10,18,28,.55);padding:6px 14px;border-radius:20px;font-size:12px;letter-spacing:1px}
+ #err{position:fixed;left:12px;bottom:12px;color:#ffb0a0;font-size:12px;white-space:pre-wrap}
+ /* 正式遊戲 HUD:常駐顯示地點 + 目標 + 進度 + 知識卡數(加深底色提高對比) */
+ #hud{position:fixed;left:14px;top:14px;color:#f4ecdc;background:rgba(10,16,24,.66);
+   padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.65;max-width:46vw;
+   border:1px solid rgba(255,217,160,.22);box-shadow:0 4px 16px rgba(0,0,0,.35);backdrop-filter:blur(3px)}
+ #hud .lbl{color:#ffd9a0;font-weight:700;letter-spacing:1px}
+ #hud .loc{font-weight:700;color:#fff}
+ #hud .goal{color:#eef4fb;font-weight:700;margin-top:2px}
+ #hud .prog{color:#bfe1c4;font-size:12px}
+ #hud .cards{color:#ffe2b8;font-size:12px;opacity:.92}
+ #hud hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:7px 0}
+ /* 互動提示(走近互動點時出現) */
+ #prompt{position:fixed;left:50%;bottom:54px;transform:translateX(-50%);
+   color:#10202c;background:rgba(255,221,150,.96);padding:8px 16px;border-radius:22px;
+   font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 14px rgba(0,0,0,.4);
+   opacity:0;transition:opacity .2s;pointer-events:none}
+ #prompt.show{opacity:1}
+ /* 知識卡彈窗 */
+ #card{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+   background:rgba(6,10,16,.55);opacity:0;pointer-events:none;transition:opacity .3s;z-index:20}
+ #card.show{opacity:1;pointer-events:auto}
+ #card .panel{max-width:420px;margin:18px;background:linear-gradient(160deg,#1d2a36,#142029);
+   border:1px solid rgba(255,217,160,.4);border-radius:16px;padding:22px 24px;
+   box-shadow:0 10px 40px rgba(0,0,0,.5);color:#f1ead9;transform:translateY(8px);transition:transform .3s}
+ #card.show .panel{transform:translateY(0)}
+ #card .ktag{color:#ffd9a0;font-size:12px;letter-spacing:2px;font-weight:700}
+ #card .ktitle{font-size:21px;font-weight:800;margin:6px 0 10px;color:#fff}
+ #card .kbody{font-size:14px;line-height:1.85;color:#e6ecf2}
+ #card .kclose{margin-top:16px;text-align:center;color:#10202c;background:#ffd996;
+   padding:8px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
+ /* 目標完成 / 解鎖 提示 */
+ #toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);
+   color:#10202c;background:rgba(180,240,190,.96);padding:9px 18px;border-radius:24px;
+   font-size:15px;font-weight:800;letter-spacing:1px;box-shadow:0 4px 14px rgba(0,0,0,.4);
+   opacity:0;transition:opacity .35s;pointer-events:none;z-index:15}
+ #toast.show{opacity:1}
+ /* 開始畫面 */
+ #start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+   background:radial-gradient(ellipse at 50% 42%,rgba(13,22,34,.32),rgba(8,12,20,.84));
+   color:#f4ecdc;z-index:30;text-align:center;transition:opacity .5s}
+ #start.hide{opacity:0;pointer-events:none}
+ #start .title{font-size:34px;font-weight:800;letter-spacing:3px;text-shadow:0 3px 14px rgba(0,0,0,.6)}
+ #start .sub{font-size:15px;color:#ffe2b8;margin:14px 0 26px;max-width:80vw;line-height:1.9}
+ #start .go{color:#10202c;background:#ffd996;padding:11px 26px;border-radius:24px;font-weight:800;
+   font-size:15px;letter-spacing:1px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:pulse 1.8s infinite}
+ @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+ /* 目標指引 pin */
+ #goalmark{position:fixed;transform:translate(-50%,-50%);font-size:22px;text-align:center;
+   text-shadow:0 0 6px rgba(0,0,0,.8);pointer-events:none;opacity:0;transition:opacity .25s;z-index:12}
+ #goalmark.show{opacity:1}
+ #goalmark .lab{display:block;font-size:11px;color:#fff;background:rgba(10,16,24,.72);
+   padding:1px 7px;border-radius:8px;margin-top:1px;white-space:nowrap}
+ /* 完成畫面 */
+ #complete{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+   background:rgba(6,10,16,.72);opacity:0;pointer-events:none;transition:opacity .4s;z-index:25}
+ #complete.show{opacity:1;pointer-events:auto}
+ #complete .panel{max-width:440px;margin:18px;background:linear-gradient(160deg,#1f2e2a,#14201c);
+   border:1px solid rgba(180,240,190,.4);border-radius:18px;padding:26px;color:#f1ead9;text-align:center;
+   box-shadow:0 10px 40px rgba(0,0,0,.5)}
+ #complete .ctitle{font-size:26px;font-weight:800;color:#fff}
+ #complete .csub{font-size:14px;color:#cfe6d4;margin:10px 0 16px;line-height:1.85}
+ #complete .clist{text-align:left;font-size:13px;line-height:1.95;color:#e6ecf2;
+   background:rgba(0,0,0,.22);border-radius:10px;padding:11px 15px}
+ #complete .cgo{margin-top:18px;color:#10202c;background:#b4f0be;padding:10px;border-radius:10px;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+ <div id="hud">
+   <div><span class="lbl">📍 地點</span>　<span id="hud-loc" class="loc">西子灣海灘</span></div>
+   <hr>
+   <div><span class="lbl">🎯 目標</span></div>
+   <div class="goal" id="hud-goal">調查西子灣海岸</div>
+   <div class="prog" id="hud-prog">調查點 0 / 3</div>
+   <div class="cards" id="hud-cards">📖 知識卡 0</div>
+ </div>
+ <div id="nameplate">
+   <div id="region">西子灣海灘</div>
+   <div id="region-en"></div>
+ </div>
+ <div id="prompt"></div>
+ <div id="toast"></div>
+ <div id="card">
+   <div class="panel">
+     <div class="ktag">📖 知識卡</div>
+     <div class="ktitle" id="card-title"></div>
+     <div class="kbody" id="card-body"></div>
+     <div class="kclose" id="card-close">按 E／點擊 繼續</div>
+   </div>
+ </div>
+ <div id="goalmark">🎯<span class="lab" id="goalmark-lab"></span></div>
+ <div id="complete">
+   <div class="panel">
+     <div class="ctitle">🏆 柴山調查完成!</div>
+     <div class="csub">你走完了從西子灣海岸、沿柴山步道上山、探訪石灰岩溶洞、到山頂環境修復的旅程。</div>
+     <div class="clist" id="complete-cards"></div>
+     <div class="cgo" id="complete-go">重新探索</div>
+   </div>
+ </div>
+ <div id="start">
+   <div class="title">森循島 — 西子灣·柴山</div>
+   <div class="sub">沿著夕陽下的海岸，走上這座由珊瑚礁長成的山。<br>調查地貌、解開在地知識、修復環境。</div>
+   <div class="go" id="start-go">按任意鍵／點擊 開始探索</div>
+ </div>
+ <div id="tip">WASD／方向鍵 移動　·　走近發光點按 E 調查</div>
+ <div id="err"></div>
+ <!-- three.js:本機優先(離線/CI 可重現);若本機檔缺失則自動回退 cdnjs -->
+ <script src="vendor/three.min.js"></script>
+ <script>window.THREE||document.write('<script src="https:\/\/cdnjs.cloudflare.com\/ajax\/libs\/three.js\/r128\/three.min.js"><\/script>')</script>
+ <script src="js/util.js"></script>
+ <script src="js/config.js"></script>
+ <script src="js/south_scene.js"></script>
+ <script src="js/heightmap_south.js"></script>
+ <script src="js/terrain.js"></script>
+ <script src="js/vegetation.js"></script>
+ <script src="js/lighting.js"></script>
+ <script src="js/regions_south.js"></script>
+ <script src="js/cards_south.js"></script>
+ <script src="js/quest_south.js"></script>
+ <script src="js/interactions_south.js"></script>
+ <script src="js/camera_south.js"></script>
+ <script src="js/player.js"></script>
+ <script src="js/south_props.js"></script>
+ <script src="js/ui_south.js"></script>
+ <script src="js/main.js"></script>
+</body>
+</html>
