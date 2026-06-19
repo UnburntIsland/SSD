@@ -63,7 +63,7 @@
     }
     // 各目標解說牌(敘事引導物)
     signpost(THREE, scene, 150, 283, "① 西子灣海岸\n調查潮間帶");
-    signpost(THREE, scene, 192, 268, "② 柴山步道\n循指引上山");
+    signpost(THREE, scene, 180, 270, "② 柴山步道\n循指引上山"); // 置於步道西側空地,不擋走線
     signpost(THREE, scene, 300, 258, "③ 天雨洞\n石灰岩溶洞");
     signpost(THREE, scene, 332, 52, "④ 山頂觀景台\n環境復育");
     N.count = count;

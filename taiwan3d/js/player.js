@@ -6,7 +6,7 @@
   var C = SENXUN.config, Hm = SENXUN.height;
   var P = (SENXUN.player = {});
   var THREE, grp, body, armL, armR, legL, legR, W, MH, px, pz, pdir = 0, maxStep = 999;
-  var phase = 0, swing = 0, bob = 0, lastSafe = null;
+  var phase = 0, swing = 0, bob = 0, lastSafe = null, lastSafeHits = 0;
 
   P.build = function (three, scene, spawn) {
     THREE = three; var ISL = root.SENXUN_ISLAND; W = ISL.W; MH = ISL.H;
@@ -63,6 +63,7 @@
   P.pos = function () { return grp.position; };
   P.tile = function () { return { x: px, y: pz }; };
   P.setTile = function (tx, tz) { px = tx; pz = tz; place(); }; // 除錯/截圖用瞬移(不影響玩法)
+  P.lastSafeHits = function () { return lastSafeHits; };          // 脫困觸發次數(正常走路應為 0)
 
   P.update = function (dt, keys, cam) {
     var f = 0, s = 0;
@@ -78,7 +79,7 @@
       if (walkable(nx, pz, curY)) px = nx; if (walkable(px, nz, curY)) pz = nz;
       px = Math.max(1, Math.min(W - 2, px)); pz = Math.max(1, Math.min(MH - 2, pz));
       // 脫困:若落入 blocker(極端情況)→ 回上一個安全位置;否則記錄安全位置
-      if (SENXUN.collision && SENXUN.collision.blocked(px, pz)) { if (lastSafe) { px = lastSafe.x; pz = lastSafe.y; } }
+      if (SENXUN.collision && SENXUN.collision.blocked(px, pz)) { if (lastSafe) { px = lastSafe.x; pz = lastSafe.y; lastSafeHits++; } }
       else lastSafe = { x: px, y: pz };
       pdir = Math.atan2(vx, vz); moving = true;
     }

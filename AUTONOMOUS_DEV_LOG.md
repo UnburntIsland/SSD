@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-06-19 #14 — Playable Exploration Pass R2：逐樹樹幹碰撞 + 路線驗證
+
+**角色/範圍**：主程式 + Playtester；分支 `vertical-slice`。只修探索碰撞細節，不新增玩法/NPC/卡/美術/地圖。
+
+**新增 collision 類型**：**逐樹樹幹碰撞**（小半徑、僅樹幹非樹冠）：一般樹 r0.6、白榕 r1.4；`vegetation_south` 算出 `V.trunks`，`main.js` 於 `collision.init()` 後 `registerMany` 進空間網格。灌木/草/小石/礁岩塊**不擋**。沿用 R1：海/淺海、陡坡、實體物件、關卡邊界。
+
+**樹幹碰撞如何避免擋路**：註冊前過濾——**步道中心線 ±16、9 個主要地點半徑 18 內的樹一律不註冊樹幹碰撞**（仍照常顯示），保證主路線/出生點/互動點/洞口/山頂永遠有無碰撞走廊。發現兩面**解說牌正好在走線上**（②柴山步道、④山頂）→ 依「擋路就移/不註冊」原則：②牌移到步道西側、④牌不註冊碰撞。
+
+**峽谷/陡坡/水岸**：驗證 `maxStep=3` 已正確處理——不能跨 >3 落差→不會走出懸崖/卡峭壁、進出對稱（不會單向掉進泰國谷出不來）；視覺步道(壓平)可走、視覺岩壁(陡)被擋。水岸沿用：沙灘可走、深/淺海不可入、軸分離沿水線斜滑、海岸互動點可達；`last-safe` 正常走路 **0 次觸發**。
+
+**新增測試**：Tier1 `logic_smoke` 新增 **F.主路線可走性**（steer 出生點→登山口→步道→天雨洞→山頂全到、終點在陸+關卡內、`lastSafeHits<30`）；Tier2 **#14**（不可穿實體+不出界）、**#15**（主路線含樹幹碰撞、沿步道 waypoint 可走、`lastSafeHits===0`）。
+
+**測試結果**：`logic_smoke PASS(含路線F) · slice_logic 47/47 · playwright 15/15` → **ALL GREEN**。迴歸：#8 全程任務仍可完成、#12 方向仍正確。
+
+**已知限制**：① 灌木/小石/礁岩塊不擋（刻意，避免過度阻擋/密林卡死）。② 樹幹碰撞為圓柱近似。③ 直線抄捷徑穿深林仍會被樹幹擋（預期：離開步道進深林有碰撞）。④ 關卡邊界為矩形隱形牆（非貼合海岸多邊形）。
+
+**改了哪些檔案**：`js/collision_south.js`（`registerMany`、移除/移動兩牌）、`js/vegetation_south.js`（`V.trunks`+路線過濾）、`js/main.js`（註冊樹幹+`lastSafeHits` debug）、`js/player.js`（`lastSafeHits` 計數）、`js/npc_south.js`（②牌移位）、`tests/{logic_smoke.cjs, playtest.spec.mjs}`。未併回 main。
+
+---
+
 ## 2026-06-19 #13 — Playable Exploration Pass R1：實體碰撞 + 關卡邊界 + 脫困
 
 **角色/範圍**：主程式 + Playtester；分支 `vertical-slice`。先輸出分析+計畫、經使用者確認範圍（實體物件+邊界+脫困；逐樹碰撞留 R2）後實作。
@@ -408,3 +428,5 @@ E. 地標 / 地名解析
 - `2026-06-19 09:57:20 UTC` — logic_smoke:FAIL · slice_logic:PASS · playwright:PASS(12P) → FAIL ❌
 - `2026-06-19 10:03:41 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(13P) → ALL GREEN ✅
 - `2026-06-19 10:40:07 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(14P) → ALL GREEN ✅
+- `2026-06-19 14:44:38 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:FAIL(13P/2F) → FAIL ❌
+- `2026-06-19 14:58:37 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(15P) → ALL GREEN ✅

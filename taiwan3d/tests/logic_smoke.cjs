@@ -23,7 +23,7 @@ const JS = path.join(__dirname, '..', 'js');
 function load(f) { vm.runInThisContext(fs.readFileSync(path.join(JS, f), 'utf8'), { filename: f }); }
 
 // 依 south.html 載入順序載入「邏輯層」子集（不含 terrain/vegetation/lighting/camera/props/ui —— 那些需要 THREE/DOM）
-['util.js', 'config.js', 'south_scene.js', 'heightmap_south.js', 'regions_south.js', 'player.js'].forEach(load);
+['util.js', 'config.js', 'south_scene.js', 'heightmap_south.js', 'regions_south.js', 'collision_south.js', 'player.js'].forEach(load);
 
 const SENXUN = globalThis.SENXUN;
 const ISL = globalThis.SENXUN_ISLAND;
@@ -60,6 +60,7 @@ function r2(n) { return Math.round(n * 100) / 100; }
 /* ---------- 初始化（同 main.js 的順序） ---------- */
 SENXUN.height.init(ISL);
 SENXUN.regions.init(ISL);
+if (SENXUN.collision) SENXUN.collision.init(); // 實體 blocker + 關卡邊界(樹幹需 THREE,Node 不載入;主路線本就排除樹幹碰撞)
 SENXUN.player.build(THREE, scene, ISL.spawn);
 
 const H = SENXUN.height, R = SENXUN.regions, S = SENXUN.south, P = SENXUN.player;
@@ -152,6 +153,31 @@ log('E. 地標 / 地名解析');
   const named = reg && reg.name === m.name;
   soft(`${m.name} (${m.kind})`, `terr=${terr} ${onLand ? '可踏' : '✗在深海'}  地名解析:${named ? 'OK' : '「' + (reg && reg.name) + '」'}`);
 });
+log('');
+
+// F. 主路線可走(含碰撞 + 邊界 + 陡坡):出生點 → 登山口 → 步道 → 天雨洞 → 山頂
+log('F. 主路線可走性(含碰撞/邊界/陡坡)');
+SENXUN.player.build(THREE, scene, ISL.spawn); // 重置到出生點
+function steerTo(tx, ty, maxFrames) {
+  var cam = { position: { x: 0, y: 60, z: 0 } };
+  for (var i = 0; i < maxFrames; i++) {
+    var p = P.pos(); cam.position.x = p.x; cam.position.y = p.y + 60; cam.position.z = p.z + 72;
+    var t = P.tile(), dx = tx - t.x, dy = ty - t.y;
+    if (Math.hypot(dx, dy) < 6.5) return { ok: true, frames: i, tile: P.tile() };
+    var keys = {};
+    if (dy < -1) keys.KeyW = true; else if (dy > 1) keys.KeyS = true;
+    if (dx > 1) keys.KeyD = true; else if (dx < -1) keys.KeyA = true; // D=+x, A=-x(修正後)
+    P.update(1 / 60, keys, cam);
+  }
+  return { ok: false, frames: maxFrames, tile: P.tile() };
+}
+var WPS = [['登山口', 186, 276], ['步道', 216, 240], ['天雨洞', 300, 250], ['山頂觀景', 332, 44]];
+for (var wi = 0; wi < WPS.length; wi++) {
+  var r = steerTo(WPS[wi][1], WPS[wi][2], 60 * 50);
+  hard('可走到 ' + WPS[wi][0] + '(未被擋死)', r.ok === true, '用' + r2(r.frames / 60) + 's 停在(' + r2(r.tile.x) + ',' + r2(r.tile.y) + ')');
+}
+hard('全程未掉海/不出界(終點在陸且關卡內)', H.terrAt(Math.round(P.tile().x), Math.round(P.tile().y)) === 4 && SENXUN.collision.inBounds(P.tile().x, P.tile().y));
+hard('脫困(last-safe)未在正常路線狂觸發', P.lastSafeHits() < 30, 'hits=' + P.lastSafeHits());
 log('');
 
 /* ---------- 總結 ---------- */

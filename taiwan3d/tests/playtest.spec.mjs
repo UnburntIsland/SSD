@@ -300,7 +300,7 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     test.setTimeout(60000);
     await page.goto(PAGE); await waitReadyDebug(page); await startGame(page);
     expect(await page.evaluate(() => window.SENXUN.debug.colBlocked(150, 298)), 'NPC 為實體').toBe(true);
-    expect(await page.evaluate(() => window.SENXUN.debug.colBlocked(150, 255)), '開闊地非實體').toBe(false);
+    expect(await page.evaluate(() => window.SENXUN.debug.colBlocked(160, 288)), '開闊海灘非實體').toBe(false);
     expect(await page.evaluate(() => window.SENXUN.debug.inBounds(20, 200)), '西側出界').toBe(false);
     // 走入 NPC(150,298):從北側壓 S 應被擋,不穿過
     await page.evaluate(() => window.SENXUN.debug.warp(150, 293)); await page.waitForTimeout(250);
@@ -312,5 +312,19 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     await page.keyboard.down('d'); await page.waitForTimeout(1500); await page.keyboard.up('d');
     const t2 = await page.evaluate(() => window.SENXUN.player.tile());
     expect(t2.x, '東緣邊界擋住(x≤~360)').toBeLessThan(361.5);
+  });
+
+  test('15. 主路線(含樹幹碰撞)可走、不被樹卡住、last-safe 不誤觸', async ({ page }) => {
+    test.setTimeout(120000);
+    await page.goto(PAGE); await waitReadyDebug(page); await startGame(page);
+    // 沿步道中心線 waypoint 上行(玩家應沿可見步道走,而非直線穿林):出生點→登山口→步道中段→步道
+    const r1 = await walkToward(page, 186, 276, 45000);
+    expect(r1, '應走到登山口(樹幹未擋死主路線)').toBe(true);
+    const rMid = await walkToward(page, 200, 252, 30000);
+    expect(rMid, '應沿步道走到中段').toBe(true);
+    const r2 = await walkToward(page, 216, 240, 30000);
+    expect(r2, '應走到步道點(樹幹未擋死)').toBe(true);
+    const hits = await page.evaluate(() => window.SENXUN.debug.lastSafeHits());
+    expect(hits, 'last-safe 正常走路不應觸發').toBe(0);
   });
 });

@@ -147,6 +147,19 @@
     discs(trees, 1.9, 0.34); discs(shrubs, 1.2, 0.3); discs(coastal, 1.3, 0.28);
     discs(banyans, 3.6, 0.36); discs(reefrocks, 1.25, 0.3); discs(palms, 1.0, 0.26);
 
+    // 樹幹碰撞資料:只給「離主路線夠遠」的樹/榕(主路線一律不註冊→絕不擋路);半徑 < 視覺樹冠。
+    // main.js 在 collision.init() 後以 registerMany 註冊到空間網格。
+    var trunks = [];
+    function clearOfRoute(qx, qy) {
+      if (clearDist(qx, qy) < 18) return false;                      // 出生點/NPC/互動點/洞口/山頂 等附近不擋
+      var dd = S.inland(qx, qy);
+      if (Math.abs(qx - S.trailX(dd)) < 16) return false;            // 步道走廊不擋(寬鬆,容許玩家略偏離曲線)
+      return true;
+    }
+    for (var ti = 0; ti < trees.length; ti++) { var tt = trees[ti]; if (clearOfRoute(tt[0], tt[1])) trunks.push([tt[0], tt[1], 0.6]); }      // 一般樹:小半徑
+    for (var bi = 0; bi < banyans.length; bi++) { var bb2 = banyans[bi]; if (clearOfRoute(bb2[0], bb2[1])) trunks.push([bb2[0], bb2[1], 1.4]); } // 大榕:較大半徑
+    V.trunks = trunks;
+
     V.counts = counts; V.meshes = meshes;
     return meshes;
   };

@@ -11,7 +11,7 @@
   // 實體 blocker [x, y, r] — 座標對應 npc_south / south_props / environment_art(半徑 < 7)
   var SOLID = [
     [150, 298, 1.2],                                       // 巡守員 NPC
-    [150, 283, 0.8], [192, 268, 0.8], [300, 258, 0.8], [332, 52, 0.8], // 解說牌(細柱)
+    [150, 283, 0.8], [180, 270, 0.8], [300, 258, 0.8],   // 解說牌(細柱);②牌移到步道西側、山頂牌(332,52)不註冊—避免擋走線
     [82, 232, 4.4], [300, 250, 4.2],                       // 洞口岩丘(猴洞/天雨洞;ip6 仍可從外觸發)
     [70, 250, 4.0], [58, 270, 4.0],                        // 西子灣岬角峭壁
     [266, 168, 4.5],                                       // 石灰岩巨岩露頭
@@ -28,6 +28,7 @@
     for (var i = 0; i < list.length; i++) Col.register(list[i][0], list[i][1], list[i][2]);
     return list.length;
   };
+  Col.registerMany = function (list) { for (var i = 0; i < list.length; i++) Col.register(list[i][0], list[i][1], list[i][2]); return list.length; };
   // 半徑 < CELL,故只需查 3x3 鄰格
   Col.blocked = function (x, y) {
     var cx = Math.floor(x / CELL), cy = Math.floor(y / CELL);
