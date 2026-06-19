@@ -6,7 +6,7 @@
   var C = SENXUN.config, Hm = SENXUN.height;
   var P = (SENXUN.player = {});
   var THREE, grp, body, armL, armR, legL, legR, W, MH, px, pz, pdir = 0, maxStep = 999;
-  var phase = 0, swing = 0, bob = 0;
+  var phase = 0, swing = 0, bob = 0, lastSafe = null;
 
   P.build = function (three, scene, spawn) {
     THREE = three; var ISL = root.SENXUN_ISLAND; W = ISL.W; MH = ISL.H;
@@ -48,12 +48,15 @@
 
     scene.add(grp);
     px = spawn.x + 0.5; pz = spawn.y + 0.5; place();
+    lastSafe = { x: px, y: pz };
     P.group = grp; return grp;
   };
 
   function walkable(fx, fz, curY) {
     if (Hm.terrAt(Math.floor(fx), Math.floor(fz)) <= 1) return false;          // 海/淺海不可走
     if (curY !== undefined && Math.abs(Hm.groundY(fx, fz) - curY) > maxStep) return false; // 太陡擋住
+    var Col = SENXUN.collision;
+    if (Col) { if (!Col.inBounds(fx, fz)) return false; if (Col.blocked(fx, fz)) return false; } // 關卡邊界 + 實體物件
     return true;
   }
   function place() { grp.position.set(px - W / 2, Hm.groundY(px, pz), pz - MH / 2); grp.rotation.y = pdir; }
@@ -74,6 +77,9 @@
       var curY = Hm.groundY(px, pz);
       if (walkable(nx, pz, curY)) px = nx; if (walkable(px, nz, curY)) pz = nz;
       px = Math.max(1, Math.min(W - 2, px)); pz = Math.max(1, Math.min(MH - 2, pz));
+      // 脫困:若落入 blocker(極端情況)→ 回上一個安全位置;否則記錄安全位置
+      if (SENXUN.collision && SENXUN.collision.blocked(px, pz)) { if (lastSafe) { px = lastSafe.x; pz = lastSafe.y; } }
+      else lastSafe = { x: px, y: pz };
       pdir = Math.atan2(vx, vz); moving = true;
     }
     // 走路動畫(擺手擺腿 + bobbing);停止平滑回 idle

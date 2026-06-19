@@ -15,7 +15,7 @@ const JS = path.join(__dirname, '..', 'js');
 function load(f) { vm.runInThisContext(fs.readFileSync(path.join(JS, f), 'utf8'), { filename: f }); }
 
 ['util.js', 'config.js', 'south_scene.js', 'heightmap_south.js', 'regions_south.js',
- 'cards_south.js', 'quest_south.js', 'interactions_south.js'].forEach(load);
+ 'cards_south.js', 'quest_south.js', 'interactions_south.js', 'collision_south.js'].forEach(load);
 
 const SENXUN = globalThis.SENXUN, ISL = globalThis.SENXUN_ISLAND;
 SENXUN.height.init(ISL); SENXUN.regions.init(ISL);
@@ -110,6 +110,18 @@ ok('talk 不推進任務', Q.state().progress === bp, 'progress=' + Q.state().pr
 var tk2 = I.tryInteract(150, 300);
 ok('talk 可重複(不消耗)', tk2.ok === true && tk2.talk === true);
 ok('NPC 不算進 nextTarget(導引只指任務點)', (function () { var nt = I.nextTarget(150, 300); return !nt || nt.id !== 'npc'; })());
+
+// ── 探索碰撞 / 關卡邊界(collision_south) ──
+console.log('--- 碰撞 / 邊界 ---');
+var Col = SENXUN.collision; Col.init();
+ok('blocked: NPC(150,298) 圓內', Col.blocked(150, 298) === true);
+ok('blocked: 開闊陸地(150,255) 否', Col.blocked(150, 255) === false);
+ok('blocked: 天雨洞(300,250) 圓內', Col.blocked(300, 250) === true);
+ok('blocked: 洞外(300,240) 否(互動仍可達)', Col.blocked(300, 240) === false);
+ok('inBounds: 關卡內(150,200) 是', Col.inBounds(150, 200) === true);
+ok('inBounds: 西出界(20,200) 否', Col.inBounds(20, 200) === false);
+ok('inBounds: 南出界(150,460) 否', Col.inBounds(150, 460) === false);
+ok('inBounds: 北出界(150,20) 否', Col.inBounds(150, 20) === false);
 
 console.log(`\n=== 總結 ===  ${pass} PASS / ${fail} FAIL  →  ${fail === 0 ? 'PASS ✅' : 'FAIL ❌'}`);
 process.exit(fail === 0 ? 0 : 1);

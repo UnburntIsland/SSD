@@ -6,6 +6,28 @@
 
 ---
 
+## 2026-06-19 #13 — Playable Exploration Pass R1：實體碰撞 + 關卡邊界 + 脫困
+
+**角色/範圍**：主程式 + Playtester；分支 `vertical-slice`。先輸出分析+計畫、經使用者確認範圍（實體物件+邊界+脫困；逐樹碰撞留 R2）後實作。
+
+**現況分析（已交付）**：移動在 `player.js`、高度在 `heightmap_south`；原本僅有「海/淺海(`terrAt<=1`)+陡坡(`maxStep`)+bbox clamp」環境碰撞，**無物件碰撞、無關卡邊界**（可亂走到地圖角落未設計地形）；樹位置未持久化（instanced）故逐樹碰撞留待 R2。
+
+**做了什麼**
+- 新增 `js/collision_south.js`（`SENXUN.collision`）：**空間網格 blocker**（NPC/解說牌/洞口岩丘/峭壁/大露頭/白榕樹幹，半徑一律 **< 互動半徑 7**）+ **`inBounds` 關卡邊界**（設計半島 bbox 44–360 × 30–402）。
+- `player.walkable()` 串接 `inBounds`+`blocked`（維持軸分離滑動）；新增 **last-safe 脫困**（落入 blocker→回上一安全位置）。
+- `main.js` 世界建好後 `collision.init()`；`debug.colBlocked/inBounds` 供測試。
+- **平台甲板/步道不設 blocker**（要能站上/走）；洞口半徑 < 7 → 互動點 ip6 仍可從外觸發。
+
+**規則**：WALKABLE｜BLOCKED(海/陡坡/實體圓內/出界)｜SOFT(邊界夾回=隱形牆)｜STUCK(滑動 + last-safe)。
+
+**測試**：`logic_smoke 13/13 · slice_logic 47/47(+8 碰撞/邊界) · playwright 14/14(+#14 不穿實體+不出界)` → **ALL GREEN**。**迴歸**：#8 全程 4 目標仍可完成（碰撞未擋住任務路線）、#12 方向仍正確。
+
+**改了哪些檔案**：新增 `js/collision_south.js`；改 `js/player.js`（walkable+脫困）、`js/main.js`（init+debug）、`south.html`（載入）、`tests/{slice_logic.cjs, playtest.spec.mjs}`。未併回 main。
+
+**下一輪 R2 建議**：逐樹樹幹碰撞（spatial grid + 小半徑 + 路線可達測試）、峽谷(泰國谷)邊緣安全、近水軟阻避免抖動。
+
+---
+
 ## 2026-06-19 #12 — Player Experience Fix Pass：移動方向 / 樹木疏密 / 人物模型
 
 **角色/範圍**：Environment / Technical / Level Artist + Playtester；分支 `vertical-slice`。依使用者三點人工試玩問題。
@@ -385,3 +407,4 @@ E. 地標 / 地名解析
 - `2026-06-19 09:46:01 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(11P) → ALL GREEN ✅
 - `2026-06-19 09:57:20 UTC` — logic_smoke:FAIL · slice_logic:PASS · playwright:PASS(12P) → FAIL ❌
 - `2026-06-19 10:03:41 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(13P) → ALL GREEN ✅
+- `2026-06-19 10:40:07 UTC` — logic_smoke:PASS · slice_logic:PASS · playwright:PASS(14P) → ALL GREEN ✅

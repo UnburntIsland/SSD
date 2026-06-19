@@ -27,6 +27,7 @@
     if (SENXUN.props && SENXUN.props.build) SENXUN.props.build(THREE, scene); // 場景道具(洞穴/峭壁),南部專用
     if (SENXUN.envart && SENXUN.envart.build) SENXUN.envart.build(THREE, scene); // 環境美術陳設(步道/海岸/平台/地標/夕陽)
     if (SENXUN.restore && SENXUN.restore.build) SENXUN.restore.build(THREE, scene); // 環境修復前後狀態(條件8回饋)
+    if (SENXUN.collision && SENXUN.collision.init) SENXUN.collision.init();          // 探索碰撞:註冊實體 blocker + 關卡邊界
     if (SENXUN.markers && SENXUN.markers.build) SENXUN.markers.build(THREE, scene); // 互動點發光標記
     if (SENXUN.npc && SENXUN.npc.build) SENXUN.npc.build(THREE, scene); // 嚮導 NPC + 解說牌(敘事引導)
     SENXUN.player.build(THREE, scene, ISL.spawn);
@@ -88,6 +89,8 @@
       warp: function (x, y) { SENXUN.player.setTile(x, y); return SENXUN.player.tile(); },
       screenAxes: function () { cam.updateMatrixWorld(); var e = cam.matrixWorld.elements; return { rx: e[0], ry: e[1], rz: e[2], ux: e[4], uy: e[5], uz: e[6] }; }, // 相機右/上 世界向量(驗畫面方向)
       closeup: function (v) { dbgCloseup = !!v; }, // 角色近景截圖用
+      colBlocked: function (x, y) { return SENXUN.collision ? SENXUN.collision.blocked(x, y) : false; },
+      inBounds: function (x, y) { return SENXUN.collision ? SENXUN.collision.inBounds(x, y) : true; },
       talk: function () { var ts = SENXUN.interactions.talks(); if (ts[0] && ts[0].dialogue) { SENXUN.ui.showPanel("💬 對話", ts[0].dialogue.title, ts[0].dialogue.body); return true; } return false; },
       interact: function () { onInteract(); return SENXUN.quest.state(); }
     };

@@ -295,4 +295,22 @@ test.describe('Phase 1 — 互動/任務/知識卡', () => {
     await page.keyboard.down('w'); await page.waitForTimeout(500); await shot(page, '11-character-walk.png'); await page.keyboard.up('w');
     await page.evaluate(() => window.SENXUN.debug.closeup(false));
   });
+
+  test('14. 探索碰撞:不穿過實體 + 不出關卡邊界', async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(PAGE); await waitReadyDebug(page); await startGame(page);
+    expect(await page.evaluate(() => window.SENXUN.debug.colBlocked(150, 298)), 'NPC 為實體').toBe(true);
+    expect(await page.evaluate(() => window.SENXUN.debug.colBlocked(150, 255)), '開闊地非實體').toBe(false);
+    expect(await page.evaluate(() => window.SENXUN.debug.inBounds(20, 200)), '西側出界').toBe(false);
+    // 走入 NPC(150,298):從北側壓 S 應被擋,不穿過
+    await page.evaluate(() => window.SENXUN.debug.warp(150, 293)); await page.waitForTimeout(250);
+    await page.keyboard.down('s'); await page.waitForTimeout(1500); await page.keyboard.up('s');
+    const t1 = await page.evaluate(() => window.SENXUN.player.tile());
+    expect(t1.y, 'NPC 擋住、未穿過(y 不超過 ~296)').toBeLessThan(297);
+    // 東緣關卡邊界:壓 D 應停在邊界內
+    await page.evaluate(() => window.SENXUN.debug.warp(354, 200)); await page.waitForTimeout(250);
+    await page.keyboard.down('d'); await page.waitForTimeout(1500); await page.keyboard.up('d');
+    const t2 = await page.evaluate(() => window.SENXUN.player.tile());
+    expect(t2.x, '東緣邊界擋住(x≤~360)').toBeLessThan(361.5);
+  });
 });
