@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>森循島 — 西子灣·柴山</title>
+<style>
+ html,body{margin:0;height:100%;background:#0d1622;overflow:hidden;font-family:"Noto Sans TC",system-ui,sans-serif}
+ /* 正式遊戲地點銘牌(取代開發者面板) */
+ #nameplate{position:fixed;left:50%;top:18px;transform:translateX(-50%);text-align:center;
+   color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.55);pointer-events:none;opacity:0;transition:opacity .6s}
+ #nameplate.show{opacity:1}
+ #region{font-size:24px;font-weight:800;letter-spacing:2px}
+ #region-en{font-size:12px;letter-spacing:3px;color:#ffe2b8;margin-top:2px}
+ #tip{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);color:#f2ead8;
+   background:rgba(10,18,28,.42);padding:6px 14px;border-radius:20px;font-size:12px;letter-spacing:1px}
+ #err{position:fixed;left:12px;bottom:12px;color:#ffb0a0;font-size:12px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+ <div id="nameplate">
+   <div id="region">西子灣海灘</div>
+   <div id="region-en"></div>
+ </div>
+ <div id="tip">WASD／方向鍵　移動探索</div>
+ <div id="err"></div>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+ <script src="js/util.js"></script>
+ <script src="js/config.js"></script>
+ <script src="js/south_scene.js"></script>
+ <script src="js/heightmap_south.js"></script>
+ <script src="js/terrain.js"></script>
+ <script src="js/vegetation.js"></script>
+ <script src="js/lighting.js"></script>
+ <script src="js/regions_south.js"></script>
+ <script src="js/camera_south.js"></script>
+ <script src="js/player.js"></script>
+ <script src="js/ui_south.js"></script>
+ <script src="js/main.js"></script>
+</body>
+</html>
